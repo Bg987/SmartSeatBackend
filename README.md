@@ -1,1 +1,1 @@
-# SmartSeat
+#Smart Seating Arrangement-------------
