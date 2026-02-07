@@ -22,6 +22,7 @@ public class authenticationController {
             String result = AuthService.verifyUser(user,response);
             return ResponseEntity.ok(result);
         }
+
         catch(Exception e){
             return ResponseEntity.status(401).body(e.getMessage());
         }

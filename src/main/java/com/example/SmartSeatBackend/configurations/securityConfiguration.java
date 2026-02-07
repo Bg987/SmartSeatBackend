@@ -28,7 +28,12 @@ public class securityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         //ignore below route for authentication and jwt filter as this routes is for login and authorization
-                        .requestMatchers("/", "/api/auth/**", "/error").permitAll()
+                        .requestMatchers("/",
+                                "/api/auth/**",
+                                "/error",
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html").permitAll()
                         //calls jwtFiler first as user login and cookies generated
                         .anyRequest().authenticated()
                 )
