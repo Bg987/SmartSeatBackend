@@ -53,6 +53,6 @@ public class authenticationController {
     @PreAuthorize("hasRole('student')")
     @GetMapping("/student")
     public String student(){
-        return "helle student";
+        return "hello student";
     }
 }
