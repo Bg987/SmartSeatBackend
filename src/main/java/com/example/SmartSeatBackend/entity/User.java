@@ -29,7 +29,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
+    @Column(nullable = false,length = 255)
     private String password;
 
     // Enum definition matches the DTO validation pattern

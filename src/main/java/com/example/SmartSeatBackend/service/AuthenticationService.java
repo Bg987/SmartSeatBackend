@@ -31,6 +31,11 @@ public class AuthenticationService {
     public String verifyUser(UserDTO userdata, HttpServletResponse response){
         Set<String> validRoles = Set.of("university", "college", "student");
 
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        System.out.println(rawPassword);
+        System.out.println(encodedPassword);
+
         if (!validRoles.contains(userdata.getRole())) {
             throw new BadCredentialsException("invalid role");
         }
@@ -45,10 +50,7 @@ public class AuthenticationService {
             throw new BadCredentialsException("wrong password");
         }
 
-        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-        System.out.println(rawPassword);
-        System.out.println(encodedPassword);
+
         jakarta.servlet.http.Cookie cookie =  Cookie.setCookie(u.getUserId(),u.getRole().toString());
         response.addCookie(cookie);
         //as frontend ready redirect to respective role dashboard
