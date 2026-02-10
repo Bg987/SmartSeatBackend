@@ -30,6 +30,7 @@ public class UniversityService {
     @Autowired
     private passwordConfiguration passwordUtil;
 
+   @Autowired
     private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){

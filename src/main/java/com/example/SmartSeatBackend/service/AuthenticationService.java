@@ -12,6 +12,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class AuthenticationService {
     private Cookie Cookie;
     private final PasswordEncoder passwordEncoder;
 
-    public String verifyUser(UserDTO userdata, HttpServletResponse response){
+    public ResponseEntity verifyUser(UserDTO userdata, HttpServletResponse response){
         Set<String> validRoles = Set.of("university", "college", "student");
 
         if (!validRoles.contains(userdata.getRole())) {
@@ -52,7 +53,14 @@ public class AuthenticationService {
         jakarta.servlet.http.Cookie cookie =  Cookie.setCookie(u.getUserId(),u.getRole().toString());
         response.addCookie(cookie);
         //as frontend ready redirect to respective role dashboard
-        return "welcome "+u.getName();
+
+        return ResponseEntity.ok(Map.of(
+                "message", "Login successful",
+                "name", u.getName(),
+                "role", u.getRole().name(),
+                "email", u.getMail()
+        ));
+
     }
 
     public ResponseEntity<String> logout(HttpServletResponse response){
