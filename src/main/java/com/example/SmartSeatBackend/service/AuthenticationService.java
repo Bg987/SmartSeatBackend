@@ -63,6 +63,8 @@ public class AuthenticationService {
 
     }
 
+
+
     public ResponseEntity<String> logout(HttpServletResponse response){
         jakarta.servlet.http.Cookie cookie= Cookie.delCookie("AUTH_JWT");
         response.addCookie(cookie);
