@@ -15,6 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.SmartSeatBackend.entity.College;
 
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -49,4 +50,10 @@ public class UniversityService {
         collegeRepo.save(college);
         return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
     }
+
+    public ResponseEntity<List<User>> getAllColleges() {
+        List<User> colleges = userRepo.findByRole(User.Role.college);
+        return ResponseEntity.ok(colleges);
+    }
+
 }

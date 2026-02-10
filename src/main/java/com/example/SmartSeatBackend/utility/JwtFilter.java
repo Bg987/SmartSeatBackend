@@ -34,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Skip filter logic for login/public endpoints
-        if (path.startsWith("/api/auth/login") || path.startsWith("/swagger-ui")) {
+        if (path.startsWith("/api/auth") || path.startsWith("/swagger-ui")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -74,7 +74,7 @@ public class JwtFilter extends OncePerRequestFilter {
           filterChain.doFilter(request, response);
       }
       catch(Exception e){
-          System.out.println("error after filter = "+e.getMessage());
+          //System.out.println("error after filter = "+e.getMessage());
           throw e;
       }
     }
