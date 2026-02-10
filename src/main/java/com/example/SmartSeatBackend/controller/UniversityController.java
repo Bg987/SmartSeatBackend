@@ -2,16 +2,16 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.CollegeDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
+import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -33,6 +33,11 @@ public class UniversityController {
             System.out.println("error in college insert "+e.getMessage());
             return ResponseEntity.status(400).body("college already exist in database");
         }
+    }
+
+    @GetMapping("/colleges")
+    public ResponseEntity<List<User>> getAllColleges() {
+        return uniservice.getAllColleges();
     }
 }
 

@@ -18,7 +18,7 @@ public class JwtUtil {
     private final SecretKey key;
 
     // Spring injects "sec" right here, safely
-    public JwtUtil(@Value("${JwtSecret}") String sec) {
+    public JwtUtil(@Value("ZmFrZVNlY3JldEtleUZha2VTZWNyZXRLZXlGYWtlU2VjcmV0") String sec) {
         this.key = Keys.hmacShaKeyFor(sec.getBytes(StandardCharsets.UTF_8));
     }
 

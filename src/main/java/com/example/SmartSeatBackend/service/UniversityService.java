@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.SmartSeatBackend.entity.College;
@@ -34,25 +33,20 @@ public class UniversityService {
     private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){
-        try{
-            User userCollege = new User();
-            userCollege.setName("Admin of "+collegeData.getCollegeName());
-            userCollege.setMail(collegeData.getEmail());
-            userCollege.setMobileNumber(collegeData.getContactNumber());
-            userCollege.setRole(User.Role.college);
-            String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-            String encodedPassword = passwordEncoder.encode(rawPassword);
-            userCollege.setPassword(encodedPassword);
-            User savedUser = userRepo.save(userCollege);
-            College college = new College();
-            college.setName(collegeData.getCollegeName());
-            college.setAddress(collegeData.getAddress());
-            college.setUser(savedUser);
-            collegeRepo.save(college);
-            return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
-        }
-        catch(Exception e){
-            throw  new BadCredentialsException(e.getMessage());
-        }
+        User userCollege = new User();
+        userCollege.setName("Admin of "+collegeData.getCollegeName());
+        userCollege.setMail(collegeData.getEmail());
+        userCollege.setMobileNumber(collegeData.getContactNumber());
+        userCollege.setRole(User.Role.college);
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+        userCollege.setPassword(encodedPassword);
+        User savedUser = userRepo.save(userCollege);
+        College college = new College();
+        college.setName(collegeData.getCollegeName());
+        college.setAddress(collegeData.getAddress());
+        college.setUser(savedUser);
+        collegeRepo.save(college);
+        return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
     }
 }
