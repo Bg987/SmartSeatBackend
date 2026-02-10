@@ -31,6 +31,13 @@ public class JwtFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getServletPath();
+
+        // Skip filter logic for login/public endpoints
+        if (path.startsWith("/api/auth/login") || path.startsWith("/swagger-ui")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {

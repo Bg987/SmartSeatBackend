@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.configurations;
 
 
+import com.example.SmartSeatBackend.utility.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ public class securityConfiguration {
     @Autowired
     private forbiddenHandler myForbiddenHandler;
 
+    @Autowired
+    private JwtFilter jFiler;
 
 
     @Bean
@@ -29,7 +32,7 @@ public class securityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         //ignore below route for authentication and jwt filter as this routes is for login and authorization
                         .requestMatchers("/",
-                                "/api/auth/**",
+                                "/api/**",
                                 "/error",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
