@@ -10,8 +10,6 @@ import lombok.NoArgsConstructor;
 @Table(name = "colleges") // Best practice: use plural table names
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class College {
 
     @Id

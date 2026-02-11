@@ -1,7 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 
-
 import com.example.SmartSeatBackend.DTO.CollegeDTO;
+import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
@@ -21,10 +21,7 @@ import java.util.List;
 @RequestMapping("/api/university")
 public class UniversityController {
 
-
-    @Autowired
-    private UniversityService uniservice;
-
+    private final UniversityService uniservice;
 
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
@@ -49,15 +46,36 @@ public class UniversityController {
        }
    }
 
+//    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData){
+//        try{
+//            return  uniservice.addCollege(collageData);
+//        }
+//        catch(Exception e){
+//            System.out.println("error in college insert "+e.getMessage());
+//            return ResponseEntity.status(400).body("college already exist in database");
+//        }
+//    }
 
 
+    @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
         return uniservice.getAllColleges();
     }
-}
 
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/addSubject")
+    public ResponseEntity addSubject(@RequestBody SubjectDTO subject){
+        return uniservice.addSubject(subject);
+    }
+}
 //college added succesfully email = admin@ldrp.ac.in password 883a3916
 //university - registrar@gtu.ac.in b55580de
 
 // college-> mahatmagandhi@gmail.com password 0dd1837d
+
+//university - registrar@gtu.ac.in 85297175
+//college added admin@ldrp.ac.in 224619b2
+//college principal@vgecg.ac.in fa24f07c
+//college principal@gecg28.ac.in  13190ccf
+

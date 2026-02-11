@@ -2,6 +2,7 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.service.AuthenticationService;
+import com.example.SmartSeatBackend.utility.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,17 +17,16 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthenticationController {
 
-    @Autowired
-    private AuthenticationService AuthService;
+    private final AuthenticationService AuthService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody UserDTO user, HttpServletResponse response){
+    public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){
         try{
             ResponseEntity result = AuthService.verifyUser(user,response);
             return result;
         }
         catch(BadCredentialsException e){
-            return ResponseEntity.status(400).body(e.getMessage());
+            return ResponseEntity.status(400).body(new ApiResponse(false, e.getMessage(), null));
         }
 
     }

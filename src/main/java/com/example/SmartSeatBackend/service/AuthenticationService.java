@@ -3,6 +3,7 @@ package com.example.SmartSeatBackend.service;
 import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.UserRepository;
+import com.example.SmartSeatBackend.utility.ApiResponse;
 import com.example.SmartSeatBackend.utility.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,48 +21,53 @@ import java.util.UUID;
 @Service
 public class AuthenticationService {
 
-    @Autowired
-    private UserRepository userRepository;
 
-
-
-    @Autowired
-    private Cookie Cookie;
+    private final UserRepository userRepository;
+    private final Cookie Cookie;
     private final PasswordEncoder passwordEncoder;
 
-    public ResponseEntity verifyUser(UserDTO userdata, HttpServletResponse response){
+    public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
+
         Set<String> validRoles = Set.of("university", "college", "student");
 
         if (!validRoles.contains(userdata.getRole())) {
-            throw new BadCredentialsException("invalid role");
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse(false, "Invalid role", null));
         }
-        User u = userRepository.findByMail(userdata.getMail())
-                .orElseThrow(()->new BadCredentialsException(userdata.getRole()+" not found"));
 
-        if(!userdata.getRole().equals(u.getRole().toString())){
-            throw new BadCredentialsException("You are not registered for this role");
+        User u = userRepository.findByMail(userdata.getMail())
+                .orElse(null);
+
+        if (u == null) {
+            return ResponseEntity.status(401)
+                    .body(new ApiResponse(false, userdata.getRole() + " not found", null));
+        }
+
+        if (!userdata.getRole().equals(u.getRole().toString())) {
+            return ResponseEntity.status(401)
+                    .body(new ApiResponse(false, "You are not registered for this role", null));
         }
 
         if (!passwordEncoder.matches(userdata.getPassword(), u.getPassword())) {
-            throw new BadCredentialsException("wrong password");
+            return ResponseEntity.status(401)
+                    .body(new ApiResponse(false, "Wrong password", null));
         }
 
-        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-        System.out.println(rawPassword);
-        System.out.println(encodedPassword);
-        jakarta.servlet.http.Cookie cookie =  Cookie.setCookie(u.getUserId(),u.getRole().toString());
+        jakarta.servlet.http.Cookie cookie =
+                Cookie.setCookie(u.getUserId(), u.getRole().toString());
         response.addCookie(cookie);
-        //as frontend ready redirect to respective role dashboard
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Login successful",
+        Map<String, Object> data = Map.of(
                 "name", u.getName(),
                 "role", u.getRole().name(),
                 "email", u.getMail()
-        ));
+        );
 
+        return ResponseEntity.ok(
+                new ApiResponse(true, "Login successful", data)
+        );
     }
+
 
 
 

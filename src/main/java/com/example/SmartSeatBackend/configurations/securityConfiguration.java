@@ -2,6 +2,7 @@ package com.example.SmartSeatBackend.configurations;
 
 
 import com.example.SmartSeatBackend.utility.JwtFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,12 +16,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class securityConfiguration {
 
-    @Autowired
     private forbiddenHandler myForbiddenHandler;
 
-    @Autowired
     private JwtFilter jFiler;
 
 

@@ -1,10 +1,12 @@
 package com.example.SmartSeatBackend.service;
-
-
+import com.example.SmartSeatBackend.DTO.CollegeDTO;
+import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.configurations.passwordConfiguration;
+import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
+import com.example.SmartSeatBackend.repository.SubjectRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
@@ -24,20 +26,20 @@ import java.io.Reader;
 import java.util.List;
 import java.util.UUID;
 
+
+
 @RequiredArgsConstructor
 @Service
 public class UniversityService {
 
-    @Autowired
-    private CollegeRepository collegeRepo;
+    private final CollegeRepository collegeRepo;
 
-    @Autowired
-    private UserRepository userRepo;
+    private final UserRepository userRepo;
 
-    @Autowired
-    private passwordConfiguration passwordUtil;
+    private final SubjectRepository subRepo;
 
-   @Autowired
+    private final passwordConfiguration passwordUtil;
+
     private final PasswordEncoder passwordEncoder;
 
 
@@ -61,10 +63,23 @@ public class UniversityService {
     }
 
 
+
+    public ResponseEntity addSubject(SubjectDTO subjectdto){
+        Subject subject = new Subject();
+        subject.setSubjectName(subjectdto.getSubjectName());
+        System.out.println(subject.getSubjectName());
+        subRepo.save(subject);
+        return ResponseEntity.ok("subject added successfully");
+    }
+
+
+
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
+
+
 
 
     public void saveCollegesFromCSV(MultipartFile file) throws IOException {

@@ -5,10 +5,9 @@ import lombok.*;
 
 @Entity
 @Table(name = "users") // Maps to the Postgres 'users' table
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class User {
 
     @Id
@@ -29,7 +28,7 @@ public class User {
     @Column(nullable = false)
     private Role role;
 
-    @Column(nullable = false)
+    @Column(nullable = false,length = 255)
     private String password;
 
     // Enum definition matches the DTO validation pattern

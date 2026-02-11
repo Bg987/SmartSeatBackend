@@ -20,8 +20,8 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+
+    private final  JwtUtil jwtUtil;
 
     //called this filter all the api calls exclude route mentioned in permitall in security config
     @Override
@@ -34,7 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         // Skip filter logic for login/public endpoints
-        if (path.startsWith("/api/auth/login") || path.startsWith("/swagger-ui")) {
+        if (path.startsWith("/api/auth") || path.startsWith("/swagger-ui")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -68,9 +68,14 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
-
         }
 
-        filterChain.doFilter(request, response);
+      try{
+          filterChain.doFilter(request, response);
+      }
+      catch(Exception e){
+          //System.out.println("error after filter = "+e.getMessage());
+          throw e;
+      }
     }
 }
