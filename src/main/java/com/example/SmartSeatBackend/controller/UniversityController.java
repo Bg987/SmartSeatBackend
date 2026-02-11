@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.CollegeDTO;
+import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
@@ -40,6 +41,12 @@ public class UniversityController {
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
         return uniservice.getAllColleges();
+    }
+
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/addSubject")
+    public ResponseEntity addSubject(@RequestBody SubjectDTO subject){
+        return uniservice.addSubject(subject);
     }
 }
 

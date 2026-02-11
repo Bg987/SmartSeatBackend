@@ -2,10 +2,13 @@ package com.example.SmartSeatBackend.service;
 
 
 import com.example.SmartSeatBackend.DTO.CollegeDTO;
+import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.configurations.passwordConfiguration;
+import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
+import com.example.SmartSeatBackend.repository.SubjectRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -29,6 +32,9 @@ public class UniversityService {
     private UserRepository userRepo;
 
     @Autowired
+    private SubjectRepository subRepo;
+
+    @Autowired
     private passwordConfiguration passwordUtil;
 
     private final PasswordEncoder passwordEncoder;
@@ -49,6 +55,14 @@ public class UniversityService {
         college.setUser(savedUser);
         collegeRepo.save(college);
         return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
+    }
+
+    public ResponseEntity addSubject(SubjectDTO subjectdto){
+        Subject subject = new Subject();
+        subject.setSubjectName(subjectdto.getSubjectName());
+        System.out.println(subject.getSubjectName());
+        subRepo.save(subject);
+        return ResponseEntity.ok("subject added successfully");
     }
 
     public ResponseEntity<List<User>> getAllColleges() {
