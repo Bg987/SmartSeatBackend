@@ -23,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -82,7 +83,9 @@ public class UniversityService {
 
 
 
-    public void saveCollegesFromCSV(MultipartFile file) throws IOException {
+    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
+
+        List<String> responses = new ArrayList<>();
 
         try (
                 Reader reader = new BufferedReader(
@@ -103,11 +106,16 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
-                //  Direct existing method call
-                addCollege(tempCollege);
+                ResponseEntity<String> response = addCollege(tempCollege);
+
+                responses.add(response.getBody());
             }
         }
+
+        return responses;
     }
+
+
 
 
 }

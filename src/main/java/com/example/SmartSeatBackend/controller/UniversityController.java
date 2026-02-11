@@ -33,18 +33,21 @@ public class UniversityController {
 
 
 
-   @PostMapping("/addColleges")
-   public ResponseEntity<String> addColleges(@RequestParam("file") MultipartFile file)
-   {
 
-       try {
-           uniservice.saveCollegesFromCSV(file);
-           return ResponseEntity.ok("File uploaded successfully!");
-       } catch (Exception e) {
-           return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                   .body("Error processing file");
-       }
-   }
+    @PostMapping("/addColleges")
+    public ResponseEntity<List<String>> addColleges(@RequestParam("file") MultipartFile file) {
+        try {
+            List<String> responses = uniservice.saveCollegesFromCSV(file);
+            System.out.println(responses);
+            return ResponseEntity.ok(responses);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(List.of("Error processing file: " + e.getMessage()));
+        }
+    }
+
+
 
 //    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData){
 //        try{
