@@ -25,17 +25,13 @@ import java.util.UUID;
 @Service
 public class UniversityService {
 
-    @Autowired
-    private CollegeRepository collegeRepo;
+    private final CollegeRepository collegeRepo;
 
-    @Autowired
-    private UserRepository userRepo;
+    private final UserRepository userRepo;
 
-    @Autowired
-    private SubjectRepository subRepo;
+    private final SubjectRepository subRepo;
 
-    @Autowired
-    private passwordConfiguration passwordUtil;
+    private final passwordConfiguration passwordUtil;
 
     private final PasswordEncoder passwordEncoder;
 

@@ -1,13 +1,15 @@
 package com.example.SmartSeatBackend.utility;
 
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
+@AllArgsConstructor
 public class Cookie {
 
-    @Autowired
+
     private JwtUtil jwt;
 
     public jakarta.servlet.http.Cookie setCookie(Long id, String role){

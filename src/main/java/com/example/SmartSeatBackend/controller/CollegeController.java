@@ -24,8 +24,8 @@ import java.io.IOException;
 @RequestMapping("/api/college")
 public class CollegeController {
 
-    @Autowired
-    private CollegeService colService;
+
+    private final CollegeService colService;
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents/exel")

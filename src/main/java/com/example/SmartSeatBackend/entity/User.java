@@ -5,10 +5,9 @@ import lombok.*;
 
 @Entity
 @Table(name = "users") // Maps to the Postgres 'users' table
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 public class User {
 
     @Id

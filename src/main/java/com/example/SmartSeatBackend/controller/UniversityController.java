@@ -19,10 +19,7 @@ import java.util.List;
 @RequestMapping("/api/university")
 public class UniversityController {
 
-
-    @Autowired
-    private UniversityService uniservice;
-
+    private final UniversityService uniservice;
 
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")

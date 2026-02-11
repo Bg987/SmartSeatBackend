@@ -20,8 +20,8 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtUtil jwtUtil;
+
+    private final  JwtUtil jwtUtil;
 
     //called this filter all the api calls exclude route mentioned in permitall in security config
     @Override
