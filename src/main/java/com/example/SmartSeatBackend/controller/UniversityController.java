@@ -23,7 +23,8 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
-    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData){
+    public ResponseEntity<?> addCollege(@RequestBody TempCollegeDTO collageData){
+        System.out.println("calls");
         try{
             return  uniservice.addCollege(collageData);
         }
@@ -37,6 +38,8 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
+
+        System.out.println("call ");
         return uniservice.getAllColleges();
     }
 

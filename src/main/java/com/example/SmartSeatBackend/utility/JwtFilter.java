@@ -47,7 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
                      //check whether token malformed or expired not by verifying signature
                     if(!jwtUtil.validateToken(token)){
 
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType("application/json");
                         //later have to add redirect login as frontend ready instead of message
                         response.getWriter().write(

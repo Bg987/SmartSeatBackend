@@ -44,7 +44,7 @@ public class AuthenticationService {
         }
 
         if (!userdata.getRole().equals(u.getRole().toString())) {
-            return ResponseEntity.status(401)
+            return ResponseEntity.status(403)
                     .body(new ApiResponse(false, "You are not registered for this role", null));
         }
 
