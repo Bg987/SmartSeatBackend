@@ -5,15 +5,19 @@ import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
+import com.example.SmartSeatBackend.utility.StringProcess;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -23,9 +27,10 @@ public class UniversityController {
 
     private final UniversityService uniservice;
 
+
+    //only single college
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
-
     public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData)
     {
         return  uniservice.addCollege(collageData);
@@ -33,32 +38,20 @@ public class UniversityController {
 
 
 
-
+    //using csv
+    @PreAuthorize("hasRole('university')")
     @PostMapping("/addColleges")
-    public ResponseEntity<List<String>> addColleges(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<List<String>> addColleges(@RequestParam("file") MultipartFile file) throws IOException {
         try {
             List<String> responses = uniservice.saveCollegesFromCSV(file);
             System.out.println(responses);
             return ResponseEntity.ok(responses);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(List.of("Error processing file: " + e.getMessage()));
+        } catch (DataIntegrityViolationException e) {
+            String response = StringProcess.process(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(List.of("Error processing file: " +response));
         }
     }
-
-
-
-//    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData){
-//        try{
-//            return  uniservice.addCollege(collageData);
-//        }
-//        catch(Exception e){
-//            System.out.println("error in college insert "+e.getMessage());
-//            return ResponseEntity.status(400).body("college already exist in database");
-//        }
-//    }
-
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
@@ -81,4 +74,5 @@ public class UniversityController {
 //college added admin@ldrp.ac.in 224619b2
 //college principal@vgecg.ac.in fa24f07c
 //college principal@gecg28.ac.in  13190ccf
+//ngrok http 8080
 

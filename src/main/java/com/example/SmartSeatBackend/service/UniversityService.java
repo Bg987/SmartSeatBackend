@@ -14,6 +14,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.SmartSeatBackend.entity.College;
@@ -79,8 +80,6 @@ public class UniversityService {
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
-
-
 
 
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {

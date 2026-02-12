@@ -34,6 +34,4 @@ public class CollegeController {
         return ResponseEntity.ok(" done ");
     }
 
-
-
 }
