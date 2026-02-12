@@ -37,9 +37,10 @@ public class AuthenticationController {
         return AuthService.logout(response);
     }
 
-    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    //@PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PatchMapping("/changePassword")
     public ResponseEntity<?> changePassword(@RequestBody PasswordDTO passworddata,@AuthenticationPrincipal String Id){
+
         return AuthService.passwordchange(passworddata,Id);
     }
 }

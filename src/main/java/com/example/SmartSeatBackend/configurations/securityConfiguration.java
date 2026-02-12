@@ -22,13 +22,13 @@ public class securityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disable CSRF for JWT/Stateless use
+                // Disable CSRF for JWT/Stateless use
                 .csrf(csrf -> csrf.disable())
 
-                // 2. Enable CORS with the bean defined below
+                // Enable CORS with the bean defined below
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // 3. Set session to stateless (we don't want JSESSIONID)
+                // Set session to stateless (we don't want JSESSIONID)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
@@ -39,7 +39,7 @@ public class securityConfiguration {
                         .anyRequest().authenticated()
                 )
 
-                // 4. Register your custom JWT Filter before the standard one
+                //Register your custom JWT Filter before the standard one
                 .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
 
                 .exceptionHandling(exception -> exception
