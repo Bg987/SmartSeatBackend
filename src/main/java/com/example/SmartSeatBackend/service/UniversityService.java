@@ -8,6 +8,9 @@ import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.SubjectRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -26,6 +29,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -44,7 +48,7 @@ public class UniversityService {
 
     private final PasswordEncoder passwordEncoder;
 
-
+    private final Validator validator;
 
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){
         User userCollege = new User();
@@ -73,8 +77,6 @@ public class UniversityService {
         subRepo.save(subject);
         return ResponseEntity.ok("subject added successfully");
     }
-
-
 
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
@@ -105,16 +107,17 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
+                Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(tempCollege);
+
+                if (!violations.isEmpty()) {
+                    // This stops execution and jumps straight to the Global Exception Handler
+                    throw new ConstraintViolationException(violations);
+                }
                 ResponseEntity<String> response = addCollege(tempCollege);
 
                 responses.add(response.getBody());
             }
         }
-
         return responses;
     }
-
-
-
-
 }

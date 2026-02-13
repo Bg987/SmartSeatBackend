@@ -5,6 +5,7 @@ import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.service.AuthenticationService;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +40,7 @@ public class AuthenticationController {
 
     //@PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PatchMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@RequestBody PasswordDTO passworddata,@AuthenticationPrincipal String Id){
+    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, @AuthenticationPrincipal String Id){
 
         return AuthService.passwordchange(passworddata,Id);
     }

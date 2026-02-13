@@ -93,7 +93,7 @@ public class AuthenticationService {
         String encodedPassword = passwordEncoder.encode(data.getNewPassword());
         u.setPassword(encodedPassword);
 
-        //Save back to PostgreSQL
+        //Save
         userRepository.save(u);
         return ResponseEntity.ok(
                 new ApiResponse(true, "password changed successfully", data)

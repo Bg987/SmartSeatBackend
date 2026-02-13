@@ -6,6 +6,7 @@ import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -31,12 +32,16 @@ public class UniversityController {
     //only single college
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
-    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData)
+    public ResponseEntity<String> addCollege(@Valid @RequestBody TempCollegeDTO collageData)
     {
-        return  uniservice.addCollege(collageData);
+        try{
+            return  uniservice.addCollege(collageData);
+        }
+        catch(Exception e){
+            System.out.println("error in college insert "+e.getMessage());
+            return ResponseEntity.status(409).body("college already exist in database");
+        }
     }
-
-
 
     //using csv
     @PreAuthorize("hasRole('university')")
@@ -70,7 +75,7 @@ public class UniversityController {
 
 // college-> mahatmagandhi@gmail.com password 0dd1837d
 
-//university - registrar@gtu.ac.in 85297175
+//university - registrar@gtu.ac.in gtubggd
 //college added admin@ldrp.ac.in 224619b2
 //college principal@vgecg.ac.in fa24f07c
 //college principal@gecg28.ac.in  13190ccf
