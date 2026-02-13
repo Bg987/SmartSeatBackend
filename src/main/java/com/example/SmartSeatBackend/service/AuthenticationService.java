@@ -33,7 +33,10 @@ public class AuthenticationService {
     public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
 
         Set<String> validRoles = Set.of("university", "college", "student");
-
+//        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+//        String encodedPassword = passwordEncoder.encode(rawPassword);
+//        System.out.println(rawPassword);
+//        System.out.println(encodedPassword);
         if (!validRoles.contains(userdata.getRole())) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Invalid role", null));
@@ -43,7 +46,7 @@ public class AuthenticationService {
                 .orElse(null);
 
         if (u == null) {
-            return ResponseEntity.status(401)
+            return ResponseEntity.status(404)
                     .body(new ApiResponse(false, userdata.getRole() + " not found", null));
         }
 
