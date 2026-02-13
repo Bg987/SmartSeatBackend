@@ -65,13 +65,36 @@ public class UniversityService {
 
 
 
-    public ResponseEntity addSubject(SubjectDTO subjectdto){
+    public ResponseEntity<?> addSubject(SubjectDTO subjectdto){
+
+        // 🔹 1. Check duplicate
+        if(subRepo.existsById(subjectdto.getSubjectId())) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Subject ID already exists!");
+        }
+
+        if(subjectdto.getSubjectId().length()<4)
+        {
+            return ResponseEntity.badRequest().body("Subjectid Length must be 4 or more!!");
+        }
+
+        if(subjectdto.getSubjectName().length()<4)
+        {
+            return ResponseEntity.badRequest().body("Name must be between 3 and 100 characters");
+        }
+
+
+        // 🔹 2. Create object
         Subject subject = new Subject();
+        subject.setSubjectId(subjectdto.getSubjectId());
         subject.setSubjectName(subjectdto.getSubjectName());
-        System.out.println(subject.getSubjectName());
+
         subRepo.save(subject);
-        return ResponseEntity.ok("subject added successfully");
+
+        return ResponseEntity.ok("Subject added successfully");
     }
+
 
 
 
@@ -106,9 +129,14 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
-                ResponseEntity<String> response = addCollege(tempCollege);
+                //  Duplicate check BEFORE calling addCollege
+                if (userRepo.existsByMail(tempCollege.getEmail())) {
+                    responses.add("FAILED: Duplicate Email → " + tempCollege.getEmail());
+                    continue;
+                }
 
-                responses.add(response.getBody());
+                ResponseEntity<String> response = addCollege(tempCollege);
+                responses.add("SUCCESS: " + response.getBody());
             }
         }
 

@@ -14,8 +14,12 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SubjectDTO {
 
+    @NotBlank(message="Subject code is required")
+    @Size(min=5, max=8, message = "Minimum 5 characters are required ")
+    private String subjectId;
 
-    @NotBlank(message = "College name is required")
+
+    @NotBlank(message = "Subject name is required")
     @Size(min = 1, max = 50, message = "Name must be between 3 and 100 characters")
     private String subjectName;
 }

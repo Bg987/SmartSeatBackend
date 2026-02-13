@@ -11,9 +11,8 @@ import lombok.NoArgsConstructor;
 public class Subject {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // Uses Postgres BIGSERIAL
     @Column(name = "subjectid")
-    private Long subjectId;
+    private String subjectId;
 
     @Column(name = "subject_name", nullable = false, length = 50)
     private String subjectName;

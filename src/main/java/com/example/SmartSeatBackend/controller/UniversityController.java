@@ -7,6 +7,7 @@ import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -35,29 +36,31 @@ public class UniversityController {
 
 
     @PostMapping("/addColleges")
-    public ResponseEntity<List<String>> addColleges(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
+
         try {
             List<String> responses = uniservice.saveCollegesFromCSV(file);
+
             System.out.println(responses);
             return ResponseEntity.ok(responses);
 
+        } catch (DataIntegrityViolationException ex) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(List.of("Duplicate Email Found: " +
+                            ex.getMostSpecificCause().getMessage()));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
                     .body(List.of("Error processing file: " + e.getMessage()));
         }
     }
 
 
 
-//    public ResponseEntity<String> addCollege(@RequestBody TempCollegeDTO collageData){
-//        try{
-//            return  uniservice.addCollege(collageData);
-//        }
-//        catch(Exception e){
-//            System.out.println("error in college insert "+e.getMessage());
-//            return ResponseEntity.status(400).body("college already exist in database");
-//        }
-//    }
 
 
     @PreAuthorize("hasRole('university')")
@@ -66,12 +69,14 @@ public class UniversityController {
         return uniservice.getAllColleges();
     }
 
-    @PreAuthorize("hasRole('university')")
+//    @PreAuthorize("hasRole('university')")
     @PostMapping("/addSubject")
     public ResponseEntity addSubject(@RequestBody SubjectDTO subject){
         return uniservice.addSubject(subject);
     }
 }
+
+
 //college added succesfully email = admin@ldrp.ac.in password 883a3916
 //university - registrar@gtu.ac.in b55580de
 
