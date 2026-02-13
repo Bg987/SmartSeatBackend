@@ -22,14 +22,17 @@ public class Cookie {
         return cookieSetting(cookieName,null,0);
 
     }
-    public jakarta.servlet.http.Cookie cookieSetting(String cookieName, String cookieData, int age){
+    public jakarta.servlet.http.Cookie cookieSetting(String cookieName, String cookieData, int age) {
         jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(cookieName, cookieData);
-        // 2. Set the path to match the original cookie (Crucial!)
         cookie.setPath("/");
-        // 3. Set HttpOnly/Secure if the original had them
         cookie.setHttpOnly(true);
-        //cookie.setSecure(true);  If using HTTPS-production
         cookie.setMaxAge(age);
-        return  cookie;
+
+        // Detect if we are on localhost or a production server
+        // You can also use a @Value from application.properties here
+        boolean isLocalhost = true;
+        cookie.setSecure(!isLocalhost);
+
+        return cookie;
     }
 }

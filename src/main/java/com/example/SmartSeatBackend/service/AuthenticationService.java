@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.PasswordDTO;
 import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.UserRepository;
@@ -10,10 +11,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -24,12 +27,16 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final Cookie Cookie;
+
     private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
 
         Set<String> validRoles = Set.of("university", "college", "student");
-
+//        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+//        String encodedPassword = passwordEncoder.encode(rawPassword);
+//        System.out.println(rawPassword);
+//        System.out.println(encodedPassword);
         if (!validRoles.contains(userdata.getRole())) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse(false, "Invalid role", null));
@@ -39,7 +46,7 @@ public class AuthenticationService {
                 .orElse(null);
 
         if (u == null) {
-            return ResponseEntity.status(401)
+            return ResponseEntity.status(404)
                     .body(new ApiResponse(false, userdata.getRole() + " not found", null));
         }
 
@@ -69,12 +76,30 @@ public class AuthenticationService {
     }
 
 
-
-
     public ResponseEntity<String> logout(HttpServletResponse response){
+
         jakarta.servlet.http.Cookie cookie= Cookie.delCookie("AUTH_JWT");
         response.addCookie(cookie);
         //later added login/index page of frontend
         return ResponseEntity.status(200).body("logout successfully");
+    }
+
+    public ResponseEntity<?> passwordchange(PasswordDTO data,@AuthenticationPrincipal String userId){
+        Long id = Long.parseLong(userId);
+        User u = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(data.getOldPassword(), u.getPassword())) {
+            return ResponseEntity.status(401)
+                    .body(new ApiResponse(false, "Wrong password", null));
+        }
+        String encodedPassword = passwordEncoder.encode(data.getNewPassword());
+        u.setPassword(encodedPassword);
+
+        //Save
+        userRepository.save(u);
+        return ResponseEntity.ok(
+                new ApiResponse(true, "password changed successfully", data)
+        );
     }
 }

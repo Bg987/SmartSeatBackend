@@ -8,12 +8,17 @@ import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.SubjectRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
+import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.SmartSeatBackend.entity.College;
@@ -25,6 +30,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -43,7 +49,7 @@ public class UniversityService {
 
     private final PasswordEncoder passwordEncoder;
 
-
+    private final Validator validator;
 
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){
         User userCollege = new User();
@@ -65,7 +71,7 @@ public class UniversityService {
 
 
 
-    public ResponseEntity<?> addSubject(SubjectDTO subjectdto){
+    public ResponseEntity<?> addSubject(@NotNull SubjectDTO subjectdto){
 
         // 🔹 1. Check duplicate
         if(subRepo.existsById(subjectdto.getSubjectId())) {
@@ -96,14 +102,10 @@ public class UniversityService {
     }
 
 
-
-
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
-
-
 
 
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
@@ -129,21 +131,24 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
+
                 //  Duplicate check BEFORE calling addCollege
                 if (userRepo.existsByMail(tempCollege.getEmail())) {
                     responses.add("FAILED: Duplicate Email → " + tempCollege.getEmail());
                     continue;
                 }
+         Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(tempCollege);
 
+                if (!violations.isEmpty()) {
+                    // This stops execution and jumps straight to the Global Exception Handler
+                    throw new ConstraintViolationException(violations);
+                }
                 ResponseEntity<String> response = addCollege(tempCollege);
+
+
                 responses.add("SUCCESS: " + response.getBody());
             }
         }
-
         return responses;
     }
-
-
-
-
 }

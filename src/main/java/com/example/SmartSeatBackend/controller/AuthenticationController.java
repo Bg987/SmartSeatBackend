@@ -1,14 +1,17 @@
 package com.example.SmartSeatBackend.controller;
 
+import com.example.SmartSeatBackend.DTO.PasswordDTO;
 import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.service.AuthenticationService;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -22,8 +25,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){
         try{
-            ResponseEntity result = AuthService.verifyUser(user,response);
-            return result;
+            return AuthService.verifyUser(user,response);
         }
         catch(BadCredentialsException e){
             return ResponseEntity.status(400).body(new ApiResponse(false, e.getMessage(), null));
@@ -31,27 +33,15 @@ public class AuthenticationController {
 
     }
 
-    @PostMapping("logout")
+    @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response){
         return AuthService.logout(response);
-
     }
 
-    @PreAuthorize("hasRole('university')")
-    @GetMapping("/university")
-    public String university(){
-        return "hello univeristy";
-    }
+    //@PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    @PatchMapping("/changePassword")
+    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, @AuthenticationPrincipal String Id){
 
-    @PreAuthorize("hasRole('college')")
-    @GetMapping("/college")
-    public String college(){
-        return "hello college";
-    }
-
-    @PreAuthorize("hasRole('student')")
-    @GetMapping("/student")
-    public String student(){
-        return "hello student";
+        return AuthService.passwordchange(passworddata,Id);
     }
 }
