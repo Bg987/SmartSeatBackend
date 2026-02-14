@@ -23,7 +23,6 @@ public class MessageService {
         data.put("password", password);
         data.put("name", name);
         kafkaTemplate.send(TOPIC, data);
-        System.out.println(">> Event sent to Kafka: ");
     }
 }
 

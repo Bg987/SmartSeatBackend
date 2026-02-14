@@ -32,7 +32,6 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-
         // Skip filter logic for login/logout/public endpoints
         if (path.startsWith("/api/auth/login")||path.startsWith("/api/auth/logout") || path.startsWith("/swagger-ui")) {
             filterChain.doFilter(request, response);
@@ -57,7 +56,7 @@ public class JwtFilter extends OncePerRequestFilter {
                     }
                     String Id = jwtUtil.extractId(token);
                     String role = jwtUtil.extractRole(token);
-
+                    System.out.println(Id+" "+role);
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     Id,
@@ -71,6 +70,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
       try{
+
           filterChain.doFilter(request, response);
       }
       catch(Exception e){

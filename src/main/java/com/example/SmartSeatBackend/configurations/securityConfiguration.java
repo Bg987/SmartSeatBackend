@@ -35,16 +35,15 @@ public class securityConfiguration {
                         // Public routes
                         .requestMatchers("/api/auth/login", "/api/auth/logout", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         // Everything else under /api requires authentication for @PreAuthorize to work
-                        .requestMatchers("/api/**").authenticated()
+                        //.requestMatchers("/api/**").authenticated()
                         .anyRequest().authenticated()
                 )
 
                 //Register your custom JWT Filter before the standard one
-                .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+                //.exceptionHandling(exception -> exception
+                        //.accessDeniedHandler(myForbiddenHandler)
 
-                .exceptionHandling(exception -> exception
-                        .accessDeniedHandler(myForbiddenHandler)
-                );
 
         return http.build();
     }
