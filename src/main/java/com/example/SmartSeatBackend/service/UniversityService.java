@@ -15,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,6 +49,7 @@ public class UniversityService {
     private final PasswordEncoder passwordEncoder;
 
     private final Validator validator;
+    private final MessageService msgService;
 
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){
         User userCollege = new User();
@@ -66,41 +66,19 @@ public class UniversityService {
         college.setAddress(collegeData.getAddress());
         college.setUser(savedUser);
         collegeRepo.save(college);
-        return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
+        msgService.sendCollegeRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName());
+        return ResponseEntity.ok("college added succesfully");
     }
 
 
 
-    public ResponseEntity<?> addSubject(@NotNull SubjectDTO subjectdto){
-
-        // 🔹 1. Check duplicate
-        if(subRepo.existsById(subjectdto.getSubjectId())) {
-            return ResponseEntity
-                    .badRequest()
-                    .body("Subject ID already exists!");
-        }
-
-        if(subjectdto.getSubjectId().length()<4)
-        {
-            return ResponseEntity.badRequest().body("Subjectid Length must be 4 or more!!");
-        }
-
-        if(subjectdto.getSubjectName().length()<4)
-        {
-            return ResponseEntity.badRequest().body("Name must be between 3 and 100 characters");
-        }
-
-
-        // 🔹 2. Create object
+    public ResponseEntity addSubject(SubjectDTO subjectdto){
         Subject subject = new Subject();
-        subject.setSubjectId(subjectdto.getSubjectId());
         subject.setSubjectName(subjectdto.getSubjectName());
-
+        System.out.println(subject.getSubjectName());
         subRepo.save(subject);
-
-        return ResponseEntity.ok("Subject added successfully");
+        return ResponseEntity.ok("subject added successfully");
     }
-
 
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
@@ -131,13 +109,7 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
-
-                //  Duplicate check BEFORE calling addCollege
-                if (userRepo.existsByMail(tempCollege.getEmail())) {
-                    responses.add("FAILED: Duplicate Email → " + tempCollege.getEmail());
-                    continue;
-                }
-         Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(tempCollege);
+                Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(tempCollege);
 
                 if (!violations.isEmpty()) {
                     // This stops execution and jumps straight to the Global Exception Handler
@@ -145,8 +117,7 @@ public class UniversityService {
                 }
                 ResponseEntity<String> response = addCollege(tempCollege);
 
-
-                responses.add("SUCCESS: " + response.getBody());
+                responses.add(response.getBody());
             }
         }
         return responses;
