@@ -40,16 +40,14 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         if (request.getCookies() != null) {
+            boolean found = false;
             for (Cookie cookie : request.getCookies()) {
-
                 if ("AUTH_JWT".equals(cookie.getName())) {
+                    found = true;
                     String token = cookie.getValue();
-                     //check whether token malformed or expired not by verifying signature
                     if(!jwtUtil.validateToken(token)){
-
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType("application/json");
-                        //later have to add redirect login as frontend ready instead of message
                         response.getWriter().write(
                                 "{ \"error\": \"Access denied\", \"message\": \"cookie modified or expired login again\" }"
                         );
@@ -68,9 +66,26 @@ public class JwtFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
+            if(!found){
+                // Reject request if JWT cookie not present
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json");
+                response.getWriter().write(
+                        "{ \"error\": \"Access denied\", \"message\": \"No JWT cookie found\" }"
+                );
+                return;
+            }
+        } else {
+            // No cookies at all
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{ \"error\": \"Access denied\", \"message\": \"No cookies sent\" }"
+            );
+            return;
         }
 
-      try{
+        try{
           filterChain.doFilter(request, response);
       }
       catch(Exception e){

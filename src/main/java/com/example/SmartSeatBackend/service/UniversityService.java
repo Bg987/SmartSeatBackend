@@ -71,7 +71,7 @@ public class UniversityService {
 
 
 
-    public ResponseEntity<?> addSubject(@NotNull SubjectDTO subjectdto){
+    public ResponseEntity<String> addSubject(@NotNull SubjectDTO subjectdto){
 
         // 🔹 1. Check duplicate
         if(subRepo.existsById(subjectdto.getSubjectId())) {
@@ -151,4 +151,45 @@ public class UniversityService {
         }
         return responses;
     }
+
+
+    public List<Subject> getAllSubjects() {
+
+        return subRepo.findAll();
+    }
+
+
+    public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException
+    {
+
+        List<String> responses = new ArrayList<>();
+
+        try (
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(reader,
+                        CSVFormat.DEFAULT
+                                .withFirstRecordAsHeader()
+                                .withIgnoreHeaderCase()
+                                .withTrim())
+        ) {
+
+            for (CSVRecord record : csvParser) {
+
+                SubjectDTO sub = new SubjectDTO();
+
+                sub.setSubjectId(record.get("subjectId"));
+                sub.setSubjectName(record.get("subjectName"));
+
+
+
+                ResponseEntity<String> response = addSubject(sub);
+
+
+                responses.add("SUCCESS: " + response.getBody());
+            }
+        }
+        return responses;
+    }
+
 }
