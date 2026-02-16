@@ -71,7 +71,7 @@ public class UniversityService {
 //                collegeData.getCollegeName()
 //        );
 
-        return ResponseEntity.ok("College added successfully");
+        return ResponseEntity.ok("College added successfully"+rawPassword);
     }
 
     // ================= ADD SUBJECT =================

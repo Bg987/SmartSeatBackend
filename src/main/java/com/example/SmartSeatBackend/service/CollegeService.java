@@ -1,15 +1,23 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.StudentsDTO;
+import com.example.SmartSeatBackend.entity.Students;
+import com.example.SmartSeatBackend.entity.Subject;
+import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.UUID;
+
 
 
 @RequiredArgsConstructor
@@ -17,19 +25,34 @@ import java.io.IOException;
 public class CollegeService {
 
 
+    private final PasswordEncoder passwordEncoder;
+    @Autowired
+    StudentRepository studentRepo;
+    public String  addStudent(StudentsDTO dto)
+    {
+        Students student = new Students();
+        student.setEnrollmentNo(dto.getEnrollmentNo());
+        student.setName(dto.getName());
+        student.setMobileNumber(dto.getMobileNumber());
+        student.setEmail(dto.getEmail());
+        student.setBranch(dto.getBranch());
+        student.setSpecialization(dto.getSpecialization());
+        student.setSemester(dto.getSemester());
+        student.setSubjects(dto.getSubjects()); // List directly maps if using @ElementCollection
+        student.setHasBacklog(dto.isHasBacklog());
+        student.setImgUrl(dto.getImgUrl());
+        student.setCollegeId(dto.getCollegeId());
 
-    public void exelProcess(MultipartFile file) throws IOException {
-        XSSFWorkbook workbook = new XSSFWorkbook(file.getInputStream());
-        DataFormatter formatter = new DataFormatter();
-        for(Sheet sheet : workbook) {
-            System.out.println(sheet.getSheetName());
 
-            for(Row row : sheet) {
-                for(Cell cell : row){
-                    String cellValue = formatter.formatCellValue(cell);
-                    System.out.println(cellValue + "\t");
-                }
-            }
-        }
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+        student.setPassword(encodedPassword);
+        // 3. Save to Database
+        studentRepo.save(student);
+
+        return "Student saved successfully with enrollment: " + student.getEnrollmentNo()+ "Password: "+rawPassword;
+
     }
+
 }

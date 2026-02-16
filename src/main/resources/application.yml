@@ -1,12 +1,29 @@
 server:
   port: 8080
-
 spring:
   datasource:
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require
     username: postgres.axxwxwxnqteramwkrwrn
-    password: x3NnNI0NNnT1YKNm
+    password: 39UknJkH1SsVc16v
     driver-class-name: org.postgresql.Driver
+
+    hikari:
+      maximum-pool-size: 3
+      minimum-idle: 1
+      idle-timeout: 30000
+      max-lifetime: 60000
+      connection-timeout: 30000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+
+
+    properties:
+      hibernate:
+        format_sql: true
 
   kafka:
     bootstrap-servers: localhost:9092
@@ -20,10 +37,3 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
