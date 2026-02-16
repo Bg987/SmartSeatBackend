@@ -70,11 +70,11 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("CONTROLLER AUTH: " + auth);
         return uniservice.getAllColleges();
     }
 
+//    @PreAuthorize(("hasRole('university')"))
+//    @GetMapping("/getAllSubjects")
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addSubject")
     public ResponseEntity addSubject(@RequestBody SubjectDTO subject){

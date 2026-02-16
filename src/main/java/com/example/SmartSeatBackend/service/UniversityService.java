@@ -66,7 +66,7 @@ public class UniversityService {
         college.setAddress(collegeData.getAddress());
         college.setUser(savedUser);
         collegeRepo.save(college);
-        msgService.sendCollegeRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName());
+        //msgService.sendCollegeRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName());
         return ResponseEntity.ok("college added succesfully");
     }
 
@@ -121,5 +121,10 @@ public class UniversityService {
             }
         }
         return responses;
+    }
+
+
+    public List<Subject> getSubjects(){
+        return subRepo.findAll();
     }
 }
