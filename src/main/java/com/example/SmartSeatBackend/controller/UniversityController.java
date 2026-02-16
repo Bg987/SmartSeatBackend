@@ -2,6 +2,7 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
+import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
@@ -11,7 +12,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -70,14 +70,48 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("CONTROLLER AUTH: " + auth);
         return uniservice.getAllColleges();
     }
 
-//    @PreAuthorize(("hasRole('university')"))
-//    @GetMapping("/getAllSubjects")
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getAllSubjects")
+    public ResponseEntity<List<Subject>> getAllSubjects() {
+
+        List<Subject> subjects = uniservice.getAllSubjects();
+        return ResponseEntity.ok(subjects);
+    }
+
+
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/uploadSubjects")
+    public ResponseEntity<List<String>> uploadSubjects(@RequestParam("file") MultipartFile file) {
+
+        try {
+            List<String> responses = uniservice.saveSubjectsFromCSV(file);
+            return ResponseEntity.ok(responses);
+
+        } catch (DataIntegrityViolationException ex) {
+
+            String response = StringProcess.process(ex.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(List.of("Duplicate Entry Found: " + response));
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(List.of("Error processing file: " + e.getMessage()));
+        }
+    }
+
+
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addSubject")
-    public ResponseEntity addSubject(@RequestBody SubjectDTO subject){
+    public ResponseEntity addSubject(@Valid  @RequestBody SubjectDTO subject){
         return uniservice.addSubject(subject);
     }
 }

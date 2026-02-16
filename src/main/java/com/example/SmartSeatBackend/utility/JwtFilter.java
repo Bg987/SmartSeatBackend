@@ -6,7 +6,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,10 +19,8 @@ import java.util.List;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
+    private final JwtUtil jwtUtil;
 
-    private final  JwtUtil jwtUtil;
-
-    //called this filter all the api calls exclude route mentioned in permitall in security config
     @Override
     protected void doFilterInternal(
             HttpServletRequest request,
@@ -32,50 +29,63 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String path = request.getServletPath();
-        // Skip filter logic for login/logout/public endpoints
-        if (path.startsWith("/api/auth/login")||path.startsWith("/api/auth/logout") || path.startsWith("/swagger-ui")) {
+
+        // Skip filter logic for public endpoints
+        if (path.startsWith("/api/auth/login") ||
+                path.startsWith("/api/auth/logout") ||
+                path.startsWith("/swagger-ui")) {
+
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
+        boolean found = false;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
 
                 if ("AUTH_JWT".equals(cookie.getName())) {
-                    String token = cookie.getValue();
-                     //check whether token malformed or expired not by verifying signature
-                    if(!jwtUtil.validateToken(token)){
+                    found = true;
 
+                    String token = cookie.getValue();
+
+                    // Validate token
+                    if (!jwtUtil.validateToken(token)) {
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         response.setContentType("application/json");
-                        //later have to add redirect login as frontend ready instead of message
                         response.getWriter().write(
-                                "{ \"error\": \"Access denied\", \"message\": \"cookie modified or expired login again\" }"
+                                "{ \"error\": \"Access denied\", \"message\": \"Cookie modified or expired. Login again.\" }"
                         );
-                        return ;
+                        return;
                     }
-                    String Id = jwtUtil.extractId(token);
+
+                    String id = jwtUtil.extractId(token);
                     String role = jwtUtil.extractRole(token);
-                    System.out.println(Id+" "+role);
+
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
-                                    Id,
+                                    id,
                                     null,
                                     List.of(new SimpleGrantedAuthority("ROLE_" + role))
                             );
 
                     SecurityContextHolder.getContext().setAuthentication(auth);
+                    break; // stop loop once found
                 }
             }
         }
 
-      try{
+        // If JWT cookie not found
+        if (!found) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{ \"error\": \"Access denied\", \"message\": \"No JWT cookie found\" }"
+            );
+            return;
+        }
 
-          filterChain.doFilter(request, response);
-      }
-      catch(Exception e){
-          //System.out.println("error after filter = "+e.getMessage());
-          throw e;
-      }
+        // Continue filter chain
+        filterChain.doFilter(request, response);
     }
 }

@@ -71,14 +71,48 @@ public class UniversityService {
     }
 
 
+    public List<Subject> getAllSubjects() {
 
+        return subRepo.findAll();
+    }
     public ResponseEntity addSubject(SubjectDTO subjectdto){
         Subject subject = new Subject();
         subject.setSubjectName(subjectdto.getSubjectName());
-        System.out.println(subject.getSubjectName());
+        subject.setSubjectId(subjectdto.getSubjectId());
         subRepo.save(subject);
         return ResponseEntity.ok("subject added successfully");
     }
+
+    public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException {
+
+        List<String> responses = new ArrayList<>();
+
+        try (
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(reader,
+                        CSVFormat.DEFAULT
+                                .withFirstRecordAsHeader()
+                                .withIgnoreHeaderCase()
+                                .withTrim())
+        ) {
+
+            for (CSVRecord record : csvParser) {
+
+                SubjectDTO sub = new SubjectDTO();
+
+                sub.setSubjectId(record.get("subjectId"));
+                sub.setSubjectName(record.get("subjectName"));
+
+                ResponseEntity<String> response = addSubject(sub);
+
+                responses.add("SUCCESS: " + response.getBody());
+            }
+        }
+
+        return responses;
+    }
+
 
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
@@ -121,10 +155,5 @@ public class UniversityService {
             }
         }
         return responses;
-    }
-
-
-    public List<Subject> getSubjects(){
-        return subRepo.findAll();
     }
 }

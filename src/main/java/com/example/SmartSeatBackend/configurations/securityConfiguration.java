@@ -30,8 +30,8 @@ public class securityConfiguration {
 
                 // Set session to stateless (we don't want JSESSIONID)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Public routes
                         .requestMatchers("/api/auth/login", "/api/auth/logout", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         // Everything else under /api requires authentication for @PreAuthorize to work
@@ -40,10 +40,8 @@ public class securityConfiguration {
                 )
 
                 //Register your custom JWT Filter before the standard one
-                .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
-                //.exceptionHandling(exception -> exception
-                        //.accessDeniedHandler(myForbiddenHandler)
-
+                .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exception -> exception.accessDeniedHandler(myForbiddenHandler));
 
         return http.build();
     }
