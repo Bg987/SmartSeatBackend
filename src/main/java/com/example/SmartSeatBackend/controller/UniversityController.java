@@ -6,21 +6,19 @@ import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
-
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+
 
 @AllArgsConstructor
 @RestController
@@ -29,73 +27,54 @@ public class UniversityController {
 
     private final UniversityService uniservice;
 
-    // ==============================
-    // ADD SINGLE COLLEGE
-    // ==============================
+
+    //only single college
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
-    public ResponseEntity<String> addCollege(@Valid @RequestBody TempCollegeDTO collageData) {
-        try {
-            return uniservice.addCollege(collageData);
-        } catch (Exception e) {
-            System.out.println("Error in college insert: " + e.getMessage());
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body("College already exists in database");
+    public ResponseEntity<String> addCollege(@Valid @RequestBody TempCollegeDTO collageData)
+    {
+        try{
+            return  uniservice.addCollege(collageData);
+        }
+        catch(Exception e){
+            System.out.println("error in college insert "+e.getMessage());
+            return ResponseEntity.status(409).body("college already exist in database");
         }
     }
 
-    // ==============================
-    // ADD MULTIPLE COLLEGES USING CSV
-    // ==============================
+    //using csv
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addColleges")
     public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
         try {
-            List<String> responses = uniservice.saveCollegesFromCSV(file);
-            return ResponseEntity.ok(responses);
+                List<String> responses = uniservice.saveCollegesFromCSV(file);
 
-        } catch (DataIntegrityViolationException ex) {
+                System.out.println(responses);
+                return ResponseEntity.ok(responses);
 
-            String response = StringProcess.process(ex.getMessage());
+            } catch (DataIntegrityViolationException ex) {
 
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Duplicate Entry Found: " + response));
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT)
+                        .body(List.of("Duplicate Email Found: " +
+                                ex.getMostSpecificCause().getMessage()));
 
-        } catch (Exception e) {
+            } catch (Exception e) {
 
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Error processing file: " + e.getMessage()));
-        }
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .body(List.of("Error processing file: " + e.getMessage()));
+            }
     }
 
-    // ==============================
-    // GET ALL COLLEGES
-    // ==============================
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
-
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         System.out.println("CONTROLLER AUTH: " + auth);
-
         return uniservice.getAllColleges();
     }
 
-    // ==============================
-    // ADD SUBJECT
-    // ==============================
-    @PreAuthorize("hasRole('university')")
-    @PostMapping("/addSubject")
-    public ResponseEntity<?> addSubject(@RequestBody SubjectDTO subject) {
-        return uniservice.addSubject(subject);
-    }
-
-    // ==============================
-    // GET ALL SUBJECTS
-    // ==============================
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getAllSubjects")
     public ResponseEntity<List<Subject>> getAllSubjects() {
@@ -104,9 +83,7 @@ public class UniversityController {
         return ResponseEntity.ok(subjects);
     }
 
-    // ==============================
-    // UPLOAD SUBJECTS CSV
-    // ==============================
+
     @PreAuthorize("hasRole('university')")
     @PostMapping("/uploadSubjects")
     public ResponseEntity<List<String>> uploadSubjects(@RequestParam("file") MultipartFile file) {
@@ -129,5 +106,12 @@ public class UniversityController {
                     .status(HttpStatus.BAD_REQUEST)
                     .body(List.of("Error processing file: " + e.getMessage()));
         }
+    }
+
+
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/addSubject")
+    public ResponseEntity addSubject(@Valid  @RequestBody SubjectDTO subject){
+        return uniservice.addSubject(subject);
     }
 }

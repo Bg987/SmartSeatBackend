@@ -30,7 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        // Skip public endpoints
+        //  Skip public endpoints
         if (path.startsWith("/api/auth/login") ||
                 path.startsWith("/api/auth/logout") ||
                 path.startsWith("/swagger-ui") ||
@@ -42,32 +42,47 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        // ✅ Read JWT from cookies
-        if (request.getCookies() != null) {
-            for (Cookie cookie : request.getCookies()) {
+        // Read JWT from cookies
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
                 if ("AUTH_JWT".equals(cookie.getName())) {
                     token = cookie.getValue();
+                    break;
                 }
             }
         }
 
-        // ✅ If token exists and valid → set authentication
-        if (token != null && jwtUtil.validateToken(token)) {
-
-            String id = jwtUtil.extractId(token);
-            String role = jwtUtil.extractRole(token);
-
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(
-                            id,
-                            null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
-                    );
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        //  If no token found
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // ❗ IMPORTANT: Always continue filter chain
+        //  If token invalid
+        if (!jwtUtil.validateToken(token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{ \"error\": \"Access denied\", \"message\": \"Cookie modified or expired. Login again.\" }"
+            );
+            return;
+        }
+
+        //  Extract details
+        String id = jwtUtil.extractId(token);
+        String role = jwtUtil.extractRole(token);
+
+        UsernamePasswordAuthenticationToken auth =
+                new UsernamePasswordAuthenticationToken(
+                        id,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role.toUpperCase()))
+                );
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+        // Continue filter chain
         filterChain.doFilter(request, response);
     }
 }
