@@ -28,8 +28,14 @@ public class CollegeService {
     private final PasswordEncoder passwordEncoder;
     @Autowired
     StudentRepository studentRepo;
-    public String  addStudent(StudentsDTO dto)
-    {
+    public String addStudent(StudentsDTO dto) {
+
+
+        if (studentRepo.existsById(dto.getEnrollmentNo())) {
+            return "Error: Enrollment number " + dto.getEnrollmentNo() + " already exists!";
+        }
+
+        // 2. Map DTO to Entity
         Students student = new Students();
         student.setEnrollmentNo(dto.getEnrollmentNo());
         student.setName(dto.getName());
@@ -38,21 +44,21 @@ public class CollegeService {
         student.setBranch(dto.getBranch());
         student.setSpecialization(dto.getSpecialization());
         student.setSemester(dto.getSemester());
-        student.setSubjects(dto.getSubjects()); // List directly maps if using @ElementCollection
+        student.setSubjects(dto.getSubjects());
         student.setHasBacklog(dto.isHasBacklog());
         student.setImgUrl(dto.getImgUrl());
         student.setCollegeId(dto.getCollegeId());
 
-
+        // 3. Password Generation Logic
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
-
         student.setPassword(encodedPassword);
-        // 3. Save to Database
+
+        // 4. Save to Database
         studentRepo.save(student);
 
-        return "Student saved successfully with enrollment: " + student.getEnrollmentNo()+ "Password: "+rawPassword;
-
+        return "Student saved successfully with enrollment: " + student.getEnrollmentNo() +
+                " | Temporary Password: " + rawPassword;
     }
 
 }
