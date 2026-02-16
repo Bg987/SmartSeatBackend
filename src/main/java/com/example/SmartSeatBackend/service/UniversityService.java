@@ -1,5 +1,5 @@
 package com.example.SmartSeatBackend.service;
-import com.example.SmartSeatBackend.DTO.CollegeDTO;
+
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.configurations.passwordConfiguration;
@@ -11,14 +11,12 @@ import com.example.SmartSeatBackend.repository.UserRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.example.SmartSeatBackend.entity.College;
@@ -33,65 +31,73 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-
-
 @RequiredArgsConstructor
 @Service
 public class UniversityService {
 
     private final CollegeRepository collegeRepo;
-
     private final UserRepository userRepo;
-
     private final SubjectRepository subRepo;
-
     private final passwordConfiguration passwordUtil;
-
     private final PasswordEncoder passwordEncoder;
-
     private final Validator validator;
+//    private final MessageService msgService;
 
-    public ResponseEntity<String> addCollege(TempCollegeDTO collegeData){
+    // ================= ADD COLLEGE =================
+    public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
+
         User userCollege = new User();
-        userCollege.setName("Admin of "+collegeData.getCollegeName());
+        userCollege.setName("Admin of " + collegeData.getCollegeName());
         userCollege.setMail(collegeData.getEmail());
         userCollege.setMobileNumber(collegeData.getContactNumber());
         userCollege.setRole(User.Role.college);
+
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         userCollege.setPassword(encodedPassword);
+
         User savedUser = userRepo.save(userCollege);
+
         College college = new College();
         college.setName(collegeData.getCollegeName());
         college.setAddress(collegeData.getAddress());
         college.setUser(savedUser);
+
         collegeRepo.save(college);
-        return ResponseEntity.ok("college added succesfully"+" email = "+collegeData.getEmail()+" password "+rawPassword);
+
+//        msgService.sendCollegeRegistrationEvent(
+//                collegeData.getEmail(),
+//                rawPassword,
+//                collegeData.getCollegeName()
+//        );
+
+        return ResponseEntity.ok("College added successfully");
     }
 
+    // ================= ADD SUBJECT =================
+    public ResponseEntity<String> addSubject(@NotNull SubjectDTO subjectdto) {
 
-
-    public ResponseEntity<String> addSubject(@NotNull SubjectDTO subjectdto){
-
-        // 🔹 1. Check duplicate
-        if(subRepo.existsById(subjectdto.getSubjectId())) {
+        // Duplicate Check
+        if (subRepo.existsById(subjectdto.getSubjectId())) {
             return ResponseEntity
                     .badRequest()
                     .body("Subject ID already exists!");
         }
 
-        if(subjectdto.getSubjectId().length()<4)
-        {
-            return ResponseEntity.badRequest().body("Subjectid Length must be 4 or more!!");
+        // Length Validation
+        if (subjectdto.getSubjectId().length() < 4) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Subject ID length must be 4 or more");
         }
 
-        if(subjectdto.getSubjectName().length()<4)
-        {
-            return ResponseEntity.badRequest().body("Name must be between 3 and 100 characters");
+        if (subjectdto.getSubjectName().length() < 4) {
+            return ResponseEntity
+                    .badRequest()
+                    .body("Subject name must be at least 4 characters");
         }
 
-
-        // 🔹 2. Create object
+        // Save Subject
         Subject subject = new Subject();
         subject.setSubjectId(subjectdto.getSubjectId());
         subject.setSubjectName(subjectdto.getSubjectName());
@@ -101,13 +107,14 @@ public class UniversityService {
         return ResponseEntity.ok("Subject added successfully");
     }
 
-
+    // ================= GET ALL COLLEGES =================
     public ResponseEntity<List<User>> getAllColleges() {
+
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
 
-
+    // ================= SAVE COLLEGES FROM CSV =================
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
         List<String> responses = new ArrayList<>();
@@ -131,36 +138,28 @@ public class UniversityService {
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
 
-
-                //  Duplicate check BEFORE calling addCollege
-                if (userRepo.existsByMail(tempCollege.getEmail())) {
-                    responses.add("FAILED: Duplicate Email → " + tempCollege.getEmail());
-                    continue;
-                }
-         Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(tempCollege);
+                Set<ConstraintViolation<TempCollegeDTO>> violations =
+                        validator.validate(tempCollege);
 
                 if (!violations.isEmpty()) {
-                    // This stops execution and jumps straight to the Global Exception Handler
                     throw new ConstraintViolationException(violations);
                 }
+
                 ResponseEntity<String> response = addCollege(tempCollege);
-
-
-                responses.add("SUCCESS: " + response.getBody());
+                responses.add(response.getBody());
             }
         }
+
         return responses;
     }
 
-
+    // ================= GET ALL SUBJECTS =================
     public List<Subject> getAllSubjects() {
-
         return subRepo.findAll();
     }
 
-
-    public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException
-    {
+    // ================= SAVE SUBJECTS FROM CSV =================
+    public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException {
 
         List<String> responses = new ArrayList<>();
 
@@ -181,15 +180,12 @@ public class UniversityService {
                 sub.setSubjectId(record.get("subjectId"));
                 sub.setSubjectName(record.get("subjectName"));
 
-
-
                 ResponseEntity<String> response = addSubject(sub);
-
 
                 responses.add("SUCCESS: " + response.getBody());
             }
         }
+
         return responses;
     }
-
 }

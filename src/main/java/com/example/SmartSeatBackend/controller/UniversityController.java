@@ -6,19 +6,23 @@ import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
+
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
+
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/university")
 public class UniversityController {
@@ -46,8 +50,7 @@ public class UniversityController {
     // ==============================
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addColleges")
-    public ResponseEntity<List<String>> addColleges(@RequestParam("file") MultipartFile file) {
-
+    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
         try {
             List<String> responses = uniservice.saveCollegesFromCSV(file);
             return ResponseEntity.ok(responses);
@@ -74,6 +77,10 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("CONTROLLER AUTH: " + auth);
+
         return uniservice.getAllColleges();
     }
 
@@ -86,17 +93,22 @@ public class UniversityController {
         return uniservice.addSubject(subject);
     }
 
+    // ==============================
+    // GET ALL SUBJECTS
+    // ==============================
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getAllSubjects")
     public ResponseEntity<List<Subject>> getAllSubjects() {
+
         List<Subject> subjects = uniservice.getAllSubjects();
         return ResponseEntity.ok(subjects);
     }
 
-
-
+    // ==============================
+    // UPLOAD SUBJECTS CSV
+    // ==============================
+    @PreAuthorize("hasRole('university')")
     @PostMapping("/uploadSubjects")
-
     public ResponseEntity<List<String>> uploadSubjects(@RequestParam("file") MultipartFile file) {
 
         try {
@@ -118,5 +130,4 @@ public class UniversityController {
                     .body(List.of("Error processing file: " + e.getMessage()));
         }
     }
-
 }

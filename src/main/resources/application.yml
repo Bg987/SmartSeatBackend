@@ -3,15 +3,26 @@ server:
 
 spring:
   datasource:
-    url:  jdbc:postgresql://db.axxwxwxnqteramwkrwrn.supabase.co:5432/postgres?sslmode=require
-    username: postgres
-    password: jC@MKgX!Pb*$G6t
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+    username: postgres.axxwxwxnqteramwkrwrn
+    password: x3NnNI0NNnT1YKNm
     driver-class-name: org.postgresql.Driver
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: my-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
   jpa:
     hibernate:
       ddl-auto: update
-
     properties:
       hibernate:
         format_sql: true

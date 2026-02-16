@@ -56,7 +56,7 @@ public class AuthenticationService {
         }
 
         if (!passwordEncoder.matches(userdata.getPassword(), u.getPassword())) {
-            return ResponseEntity.status(401)
+            return ResponseEntity.status(400)
                     .body(new ApiResponse(false, "Wrong password", null));
         }
 
