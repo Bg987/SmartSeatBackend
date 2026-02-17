@@ -7,8 +7,12 @@ import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Subject;
+<<<<<<< HEAD
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
+=======
+import org.springframework.beans.BeanUtils;
+>>>>>>> d95138f501d3712fd73c8f107c67a84897c176ba
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -32,6 +36,7 @@ public class CollegeService {
 
 
     private final PasswordEncoder passwordEncoder;
+
     @Autowired
     StudentRepository studentRepo;
     @Autowired
@@ -39,6 +44,11 @@ public class CollegeService {
 
     @Autowired
     RoomsRepository roomsRepo;
+    private final StudentRepository studentRepo;
+    private final MessageService msgService;
+
+
+
     public String addStudent(StudentsDTO dto) {
 
 
@@ -48,25 +58,31 @@ public class CollegeService {
 
         // 2. Map DTO to Entity
         Students student = new Students();
-        student.setEnrollmentNo(dto.getEnrollmentNo());
-        student.setName(dto.getName());
-        student.setMobileNumber(dto.getMobileNumber());
-        student.setEmail(dto.getEmail());
-        student.setBranch(dto.getBranch());
-        student.setSpecialization(dto.getSpecialization());
-        student.setSemester(dto.getSemester());
-        student.setSubjects(dto.getSubjects());
-        student.setHasBacklog(dto.isHasBacklog());
-        student.setImgUrl(dto.getImgUrl());
-        student.setCollegeId(dto.getCollegeId());
+//        student.setEnrollmentNo(dto.getEnrollmentNo());
+//        student.setName(dto.getName());
+//        student.setMobileNumber(dto.getMobileNumber());
+//        student.setEmail(dto.getEmail());
+//        student.setBranch(dto.getBranch());
+//        student.setSpecialization(dto.getSpecialization());
+//        student.setSemester(dto.getSemester());
+//        student.setSubjects(dto.getSubjects());
+//        student.setHasBacklog(dto.isHasBacklog());
+//        student.setImgUrl(dto.getImgUrl());
+//        student.setCollegeId(dto.getCollegeId());
 
         // 3. Password Generation Logic
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
+        BeanUtils.copyProperties(dto, student);
 
         // 4. Save to Database
         studentRepo.save(student);
+        //email service
+//        msgService.sendRegistrationEvent(
+//                dto.getEmail(),
+//                rawPassword,
+//                dto.getName(),String.valueOf(dto.getCollegeId()));
 
         return "Student saved successfully with enrollment: " + student.getEnrollmentNo() +
                 " | Temporary Password: " + rawPassword;

@@ -37,7 +37,7 @@ public class UniversityService {
     private final Validator validator;
     private final MessageService msgService;
 
-    // ✅ Add College
+    // Add College
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
 
         User userCollege = new User();
@@ -58,22 +58,24 @@ public class UniversityService {
 
         collegeRepo.save(college);
 
-        // Optional: Send email
-        // msgService.sendCollegeRegistrationEvent(
-        //         collegeData.getEmail(),
-        //         rawPassword,
-        //         collegeData.getCollegeName()
-        // );
+         //email service
+        //collegeID set to null so function identify data either student or college so send data based on it to kafka
+//         msgService.sendRegistrationEvent(
+//                 collegeData.getEmail(),
+//                 rawPassword,
+//                 collegeData.getCollegeName(),
+//                 null
+//         );
 
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
-    // ✅ Get All Subjects
+    //  Get All Subjects
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
     }
 
-    // ✅ Add Subject
+    // Add Subject
     public ResponseEntity<String> addSubject(SubjectDTO subjectdto) {
 
         Subject subject = new Subject();
@@ -85,7 +87,7 @@ public class UniversityService {
         return ResponseEntity.ok("Subject added successfully");
     }
 
-    // ✅ Upload Subjects CSV
+    //  Upload Subjects CSV
     public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException {
 
         List<String> responses = new ArrayList<>();
