@@ -26,6 +26,9 @@ public class Rooms {
     @Column(name = "roomNumber")
     private Integer roomNumber;
 
+    @Column(name="block")
+    private String block;
+
    @Column(name="capacity")
     private Integer capacity;
 

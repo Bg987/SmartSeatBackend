@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
     username: postgres.axxwxwxnqteramwkrwrn
-    password: x3NnNI0NNnT1YKNm
+    password: 39UknJkH1SsVc16v
     driver-class-name: org.postgresql.Driver
 
   kafka:

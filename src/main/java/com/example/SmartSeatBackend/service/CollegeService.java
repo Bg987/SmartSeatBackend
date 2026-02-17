@@ -88,7 +88,12 @@ public class CollegeService {
         Rooms room = new Rooms();
         room.setRoomNumber(dto.getRoomNumber());
         room.setCapacity(dto.getCapacity());
-        room.setCollege(college); // Set the College entity
+        if (dto.getBlock() == null || dto.getBlock().isEmpty()) {
+            room.setBlock("A");
+        } else {
+            room.setBlock(dto.getBlock());
+        }
+        room.setCollege(college);
 
         // 3. Save
         Rooms saved = roomsRepo.save(room);
@@ -96,6 +101,7 @@ public class CollegeService {
         // 4. Return DTO
         RoomsDTO response = new RoomsDTO();
         response.setRoomNumber(saved.getRoomNumber());
+        response.setBlock(saved.getBlock());
         response.setCapacity(saved.getCapacity());
         response.setCollege_id(saved.getCollege().getCollegeId());
 
