@@ -27,8 +27,10 @@ public class CollegeService {
 
 
     private final PasswordEncoder passwordEncoder;
-    @Autowired
-    StudentRepository studentRepo;
+    private final StudentRepository studentRepo;
+    private final MessageService msgService;
+
+
     public String addStudent(StudentsDTO dto) {
 
 
@@ -58,6 +60,11 @@ public class CollegeService {
 
         // 4. Save to Database
         studentRepo.save(student);
+        //email service
+//        msgService.sendRegistrationEvent(
+//                dto.getEmail(),
+//                rawPassword,
+//                dto.getName(),String.valueOf(dto.getCollegeId()));
 
         return "Student saved successfully with enrollment: " + student.getEnrollmentNo() +
                 " | Temporary Password: " + rawPassword;

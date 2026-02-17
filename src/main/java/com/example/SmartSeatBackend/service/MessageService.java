@@ -17,20 +17,16 @@ public class MessageService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendCollegeRegistrationEvent(String email, String password, String name) {
+    public void sendRegistrationEvent(String email, String password, String name,String collegeId) {
         Map<String, String> data = new HashMap<>();
         data.put("email", email);
         data.put("password", password);
         data.put("name", name);
-        kafkaTemplate.send(TOPIC1, data);
-    }
-
-    public void sendStudentRegistrationEvent(String data) {
-        Map<String, String> data1 = new HashMap<>();
-        data1.put("data", data);
-        //data.put("password", password);
-        //data.put("name", name);
-        kafkaTemplate.send(TOPIC2, data1);
+        if(collegeId!=null){//check wether student data or not
+            data.put("collegeId",collegeId);//put college id in case of student data
+        }
+        //select topic based on studnet or college data
+        kafkaTemplate.send((collegeId==null)?TOPIC1:TOPIC2, data);
     }
 }
 

@@ -53,8 +53,4 @@ public class Students {
     @Column(name = "college_id")
     private Integer collegeId;
 
-
-
-
-
 }
