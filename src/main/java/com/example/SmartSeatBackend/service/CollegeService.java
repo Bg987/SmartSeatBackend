@@ -1,8 +1,14 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.CollegeDTO;
+import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
+import com.example.SmartSeatBackend.entity.College;
+import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Subject;
+import com.example.SmartSeatBackend.repository.CollegeRepository;
+import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -28,6 +34,11 @@ public class CollegeService {
     private final PasswordEncoder passwordEncoder;
     @Autowired
     StudentRepository studentRepo;
+    @Autowired
+    CollegeRepository collegeRepo;
+
+    @Autowired
+    RoomsRepository roomsRepo;
     public String addStudent(StudentsDTO dto) {
 
 
@@ -60,5 +71,38 @@ public class CollegeService {
         return "Student saved successfully with enrollment: " + student.getEnrollmentNo() +
                 " | Temporary Password: " + rawPassword;
     }
+
+
+    public RoomsDTO addRooms(RoomsDTO dto) {
+        // 1. Fetch College entity by ID
+        College college = collegeRepo.findById(dto.getCollege_id())
+                .orElseThrow(() -> new RuntimeException("College not found"));
+
+        // 2. Check if roomNumber already exists for this college
+        boolean exists = roomsRepo.existsByRoomNumberAndCollege(dto.getRoomNumber(), college);
+        if (exists) {
+            throw new RuntimeException("Room number " + dto.getRoomNumber() + " already exists for this college");
+        }
+
+        // 3. Map DTO to Entity
+        Rooms room = new Rooms();
+        room.setRoomNumber(dto.getRoomNumber());
+        room.setCapacity(dto.getCapacity());
+        room.setCollege(college); // Set the College entity
+
+        // 3. Save
+        Rooms saved = roomsRepo.save(room);
+
+        // 4. Return DTO
+        RoomsDTO response = new RoomsDTO();
+        response.setRoomNumber(saved.getRoomNumber());
+        response.setCapacity(saved.getCapacity());
+        response.setCollege_id(saved.getCollege().getCollegeId());
+
+        return response;
+    }
+
+
+
 
 }

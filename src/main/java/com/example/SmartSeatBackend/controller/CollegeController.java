@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 
 
+import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
 import com.example.SmartSeatBackend.service.CollegeService;
 import jakarta.validation.Valid;
@@ -14,10 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
@@ -29,7 +33,8 @@ public class CollegeController {
 
 
      @PostMapping("/addStudents")
-     public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
+     public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO)
+     {
      try {
 
          String response = colService.addStudent(studentDTO);
@@ -42,6 +47,31 @@ public class CollegeController {
                  HttpStatus.INTERNAL_SERVER_ERROR);
      }
  }
+
+
+
+    @PostMapping("/addRooms")
+    public ResponseEntity<?> addRooms(@Valid @RequestBody RoomsDTO roomsDTO) {
+        try {
+            // Service returns RoomsDTO
+            RoomsDTO response = colService.addRooms(roomsDTO);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        } catch (RuntimeException e) {
+            // Simple map for error message
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+        }
+    }
+
+
 
 
 }
