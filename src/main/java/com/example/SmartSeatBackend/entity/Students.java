@@ -51,6 +51,6 @@ public class Students {
     private String imgUrl;
 
     @Column(name = "college_id")
-    private Integer collegeId;
+    private Long collegeId;
 
 }

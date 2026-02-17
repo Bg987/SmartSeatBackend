@@ -31,7 +31,7 @@ public class CollegeController {
 
     private final CollegeService colService;
 
-
+    @PreAuthorize("hasRole('college')")
      @PostMapping("/addStudents")
      public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO)
      {
@@ -49,7 +49,7 @@ public class CollegeController {
  }
 
 
-
+    @PreAuthorize("hasRole('college')")
     @PostMapping("/addRooms")
     public ResponseEntity<?> addRooms(@Valid @RequestBody RoomsDTO roomsDTO) {
         try {
@@ -70,8 +70,4 @@ public class CollegeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
-
-
-
-
 }

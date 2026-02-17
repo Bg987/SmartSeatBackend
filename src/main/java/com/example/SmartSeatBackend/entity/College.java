@@ -24,6 +24,6 @@ public class College {
     private String address;
 
     @OneToOne
-    @JoinColumn(name = "userid") // This must match the column name in your DB
+    @JoinColumn(name = "user_id") // This must match the column name in your DB
     private User user;
 }

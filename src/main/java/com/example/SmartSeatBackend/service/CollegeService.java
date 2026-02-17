@@ -7,12 +7,9 @@ import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Subject;
-<<<<<<< HEAD
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
-=======
 import org.springframework.beans.BeanUtils;
->>>>>>> d95138f501d3712fd73c8f107c67a84897c176ba
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -21,6 +18,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -72,8 +71,8 @@ public class CollegeService {
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
+        student.setCollegeId(getCollegeIdByUserId());
         BeanUtils.copyProperties(dto, student);
-
         // 4. Save to Database
         studentRepo.save(student);
         //email service
@@ -88,8 +87,9 @@ public class CollegeService {
 
 
     public RoomsDTO addRooms(RoomsDTO dto) {
-        // 1. Fetch College entity by ID
-        College college = collegeRepo.findById(dto.getCollege_id())
+        //  Fetch College entity by ID whcih
+
+        College college = collegeRepo.findById(getCollegeIdByUserId())
                 .orElseThrow(() -> new RuntimeException("College not found"));
 
         // 2. Check if roomNumber already exists for this college
@@ -117,12 +117,16 @@ public class CollegeService {
         response.setRoomNumber(saved.getRoomNumber());
         response.setBlock(saved.getBlock());
         response.setCapacity(saved.getCapacity());
-        response.setCollege_id(saved.getCollege().getCollegeId());
 
         return response;
     }
 
-
-
-
+    public Long getCollegeIdByUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // 2. Extract the Principal (which is "752" in your case)
+        String userId = auth.getPrincipal().toString();
+        return collegeRepo.findByUser_userId(Long.parseLong(userId)) // Or the method we fixed earlier
+                .map(College::getCollegeId)
+                .orElseThrow(() -> new RuntimeException("College not found for User ID: " + userId));
+    }
 }
