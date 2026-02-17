@@ -3,6 +3,7 @@ package com.example.SmartSeatBackend.controller;
 import com.example.SmartSeatBackend.DTO.PasswordDTO;
 import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.service.AuthenticationService;
+import com.example.SmartSeatBackend.service.MessageService;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService AuthService;
+
+    private final MessageService msgService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){

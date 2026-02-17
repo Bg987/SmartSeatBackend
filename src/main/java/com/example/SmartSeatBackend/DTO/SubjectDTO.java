@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class SubjectDTO {
 
     @NotBlank(message="Subject code is required")
-    @Size(min=5, max=8, message = "Minimum 5 characters are required ")
+    @Size(min=5, max=8, message = "Minimum 5 and maximum 8 characters are required ")
     private String subjectId;
 
 

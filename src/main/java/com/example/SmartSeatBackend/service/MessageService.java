@@ -11,8 +11,8 @@ import java.util.Map;
 public class MessageService {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
-    private final String TOPIC = "collegeRegisterTopic";
-
+    private final String TOPIC1 = "collegeRegisterTopic";
+    private final String TOPIC2 = "studentRegisterTopic";
     public MessageService(KafkaTemplate<String, Object> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
@@ -22,7 +22,15 @@ public class MessageService {
         data.put("email", email);
         data.put("password", password);
         data.put("name", name);
-        kafkaTemplate.send(TOPIC, data);
+        kafkaTemplate.send(TOPIC1, data);
+    }
+
+    public void sendStudentRegistrationEvent(String data) {
+        Map<String, String> data1 = new HashMap<>();
+        data1.put("data", data);
+        //data.put("password", password);
+        //data.put("name", name);
+        kafkaTemplate.send(TOPIC2, data1);
     }
 }
 
