@@ -38,8 +38,6 @@ public class CollegeService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    StudentRepository studentRepo;
-    @Autowired
     CollegeRepository collegeRepo;
 
     @Autowired
