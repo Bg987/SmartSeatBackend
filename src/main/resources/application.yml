@@ -1,8 +1,15 @@
 server:
   port: 8080
-
+  tomcat:
+    max-swallow-size: 10MB
 spring:
+  servlet:
+    multipart:
+      max-file-size: 6MB
   datasource:
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
     username: postgres.axxwxwxnqteramwkrwrn
     password: 39UknJkH1SsVc16v
@@ -29,3 +36,6 @@ spring:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+app:
+  cloudinary:
+    url: cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies

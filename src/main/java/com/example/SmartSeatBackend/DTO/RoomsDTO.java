@@ -17,7 +17,7 @@ public class RoomsDTO {
     @NotNull(message = "Room number is required")
     private Integer roomNumber;
 
-    private String block;
+    private String block ="A";
     @NotNull(message = "Room capacity cannot be blank")
     private Integer capacity;
 
