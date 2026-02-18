@@ -10,6 +10,10 @@ import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
+
+import com.example.SmartSeatBackend.utility.HelperMethods;
+import org.springframework.beans.BeanUtils;
+
 import com.example.SmartSeatBackend.repository.StudentRepository;
 
 import jakarta.validation.ConstraintViolation;
@@ -42,16 +46,14 @@ import java.util.UUID;
 public class CollegeService {
 
     private final PasswordEncoder passwordEncoder;
+    private final Validator validator;
+    private final CollegeRepository collegeRepo;
+    private final RoomsRepository roomsRepo;
     private final StudentRepository studentRepo;
     private final MessageService msgService;
-    private final Validator validator;
+    private final HelperMethods helper;
 
-    @Autowired
-    private CollegeRepository collegeRepo;
-
-    @Autowired
-    private RoomsRepository roomsRepo;
-
+    
     public String addStudent(StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
@@ -64,6 +66,16 @@ public class CollegeService {
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
+        student.setCollegeId(helper.getCollegeIdByUserId());
+        BeanUtils.copyProperties(dto, student);
+        // 4. Save to Database
+        studentRepo.save(student);
+        //email service
+//        msgService.sendRegistrationEvent(
+//                dto.getEmail(),
+//                rawPassword,
+//                dto.getName(),String.valueOf(dto.getCollegeId()));
+
 
         student.setCollegeId(getCollegeIdByUserId());
 
@@ -79,7 +91,7 @@ public class CollegeService {
 
     public RoomsDTO addRooms(RoomsDTO dto) {
 
-        College college = collegeRepo.findById(getCollegeIdByUserId())
+        College college = collegeRepo.findById(helper.getCollegeIdByUserId())
                 .orElseThrow(() -> new RuntimeException("College not found"));
 
         boolean exists = roomsRepo.existsByRoomNumberAndCollege(dto.getRoomNumber(), college);
@@ -91,6 +103,7 @@ public class CollegeService {
         Rooms room = new Rooms();
         room.setRoomNumber(dto.getRoomNumber());
         room.setCapacity(dto.getCapacity());
+
 
         if (dto.getBlock() == null || dto.getBlock().isEmpty()) {
             room.setBlock("A");
@@ -107,8 +120,25 @@ public class CollegeService {
         response.setBlock(saved.getBlock());
         response.setCapacity(saved.getCapacity());
 
-        return response;
+        room.setBlock(dto.getBlock());
+//        if (dto.getBlock() == null || dto.getBlock().isEmpty()) {
+//            room.setBlock("A");
+//        } else {
+//
+//        }
+        room.setCollege(college);
+
+
+        // Return DTO
+//        RoomsDTO response = new RoomsDTO();
+//        response.setRoomNumber(saved.getRoomNumber());
+//        response.setBlock(saved.getBlock());
+//        response.setCapacity(saved.getCapacity());
+
+
+        return dto;
     }
+
 
 
 
@@ -163,3 +193,4 @@ public class CollegeService {
                         new RuntimeException("College not found for User ID: " + userId));
     }
 }
+

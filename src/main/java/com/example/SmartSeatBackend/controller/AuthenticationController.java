@@ -28,6 +28,9 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){
         try{
+            if(user.getRole().equals("student")){
+                return  AuthService.verifyStudent(user,response);
+            }
             return AuthService.verifyUser(user,response);
         }
         catch(BadCredentialsException e){

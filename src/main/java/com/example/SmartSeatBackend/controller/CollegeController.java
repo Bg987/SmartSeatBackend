@@ -43,7 +43,7 @@ public class CollegeController {
     private final RoomsRepository roomRepo;
 
     @PreAuthorize("hasRole('college')")
-     @PostMapping("/addStudents")
+    @PostMapping("/addStudents")
      public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO)
      {
      try {

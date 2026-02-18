@@ -71,7 +71,8 @@ public class UniversityController {
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("CONTROLLER AUTH: " + auth);
+        String role = auth.getAuthorities().toString();
+        System.out.println(role);
         return uniservice.getAllColleges();
     }
 

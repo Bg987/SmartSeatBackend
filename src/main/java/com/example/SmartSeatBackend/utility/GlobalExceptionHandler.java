@@ -6,6 +6,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,4 +25,11 @@ public class GlobalExceptionHandler {
         });
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
+
+        @ExceptionHandler(MaxUploadSizeExceededException.class)
+        public ResponseEntity<String> handleMaxSizeException(MaxUploadSizeExceededException exc) {
+            return ResponseEntity.badRequest()
+                    .body("Image size cannot exceed 5 MB");
+        }
+
 }

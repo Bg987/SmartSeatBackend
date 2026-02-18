@@ -58,7 +58,7 @@ public class UniversityService {
 
         collegeRepo.save(college);
 
-         //email service
+        //email service
         //collegeID set to null so function identify data either student or college so send data based on it to kafka
 //         msgService.sendRegistrationEvent(
 //                 collegeData.getEmail(),
@@ -124,8 +124,9 @@ public class UniversityService {
     }
 
     //  Upload Colleges CSV
-    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException
-    {
+
+    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
+
 
         List<String> responses = new ArrayList<>();
 
