@@ -17,6 +17,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -114,10 +117,17 @@ public class CollegeController {
     }
 
     @GetMapping("/rooms")
-    public List<Rooms> getRoomsByCollege() {
+    public Page<Rooms> getRoomsByCollege(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
         Long collegeId = colService.getCollegeIdByUserId();
-        return roomRepo.findByCollegeCollegeId(collegeId);
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        return roomRepo.findByCollegeCollegeId(collegeId, pageable);
     }
+
 
 
 }
