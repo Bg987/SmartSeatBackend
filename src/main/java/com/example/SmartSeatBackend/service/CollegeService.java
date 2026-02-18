@@ -7,12 +7,10 @@ import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Subject;
-<<<<<<< HEAD
+
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
-=======
 import org.springframework.beans.BeanUtils;
->>>>>>> d95138f501d3712fd73c8f107c67a84897c176ba
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.Cell;
