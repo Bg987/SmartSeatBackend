@@ -3,6 +3,10 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
+import com.example.SmartSeatBackend.entity.Rooms;
+import com.example.SmartSeatBackend.entity.Students;
+import com.example.SmartSeatBackend.repository.RoomsRepository;
+import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.service.CollegeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +36,8 @@ public class CollegeController {
 
 
     private final CollegeService colService;
+    private final StudentRepository studentRepo;
+    private final RoomsRepository roomRepo;
 
     @PreAuthorize("hasRole('college')")
      @PostMapping("/addStudents")
@@ -96,4 +102,22 @@ public class CollegeController {
                    .body(List.of("Error processing file: " + e.getMessage()));
        }
    }
+
+
+
+   //Returns students information college vise----
+
+    @GetMapping("/students")
+    public List<Students> getStudentsByCollege() {
+        Long collegeId = colService.getCollegeIdByUserId();
+        return studentRepo.findByCollegeId(collegeId);
+    }
+
+    @GetMapping("/rooms")
+    public List<Rooms> getRoomsByCollege() {
+        Long collegeId = colService.getCollegeIdByUserId();
+        return roomRepo.findByCollegeCollegeId(collegeId);
+    }
+
+
 }
