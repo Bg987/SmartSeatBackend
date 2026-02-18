@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.service.CollegeService;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -41,6 +42,7 @@ public class CollegeController {
     private final CollegeService colService;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
+    private final HelperMethods helper;
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
@@ -112,7 +114,7 @@ public class CollegeController {
 
     @GetMapping("/students")
     public List<Students> getStudentsByCollege() {
-        Long collegeId = colService.getCollegeIdByUserId();
+        Long collegeId = helper.getCollegeIdByUserId();
         return studentRepo.findByCollegeId(collegeId);
     }
 
@@ -121,7 +123,7 @@ public class CollegeController {
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "5") int size) {
 
-            Long collegeId = colService.getCollegeIdByUserId();
+            Long collegeId = helper.getCollegeIdByUserId();
             Pageable pageable = PageRequest.of(page, size);
             return roomRepo.findByCollegeCollegeId(collegeId, pageable);
         }
