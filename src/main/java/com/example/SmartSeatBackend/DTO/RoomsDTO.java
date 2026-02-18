@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.modelmapper.internal.bytebuddy.implementation.bind.annotation.Default;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +21,4 @@ public class RoomsDTO {
     @NotNull(message = "Room capacity cannot be blank")
     private Integer capacity;
 
-    @NotNull(message = "College ID is required")
-    private Long college_id;
 }
