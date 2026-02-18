@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -70,4 +72,28 @@ public class CollegeController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
         }
     }
+
+   @PostMapping("/uploadRooms")
+   public ResponseEntity<?> addRooms(@RequestParam("file") MultipartFile file)
+   {
+       try {
+           List<String> responses = colService.saveRoomsFromCSV(file);
+
+           System.out.println(responses);
+           return ResponseEntity.ok(responses);
+
+       } catch (DataIntegrityViolationException ex) {
+
+           return ResponseEntity
+                   .status(HttpStatus.CONFLICT)
+                   .body(List.of("Duplicate data : " +
+                           ex.getMostSpecificCause().getMessage()));
+
+       } catch (Exception e) {
+
+           return ResponseEntity
+                   .status(HttpStatus.BAD_REQUEST)
+                   .body(List.of("Error processing file: " + e.getMessage()));
+       }
+   }
 }

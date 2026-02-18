@@ -117,14 +117,15 @@ public class UniversityService {
         return responses;
     }
 
-    // ✅ Get All Colleges
+    //  Get All Colleges
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
 
-    // ✅ Upload Colleges CSV
-    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
+    //  Upload Colleges CSV
+    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException
+    {
 
         List<String> responses = new ArrayList<>();
 
