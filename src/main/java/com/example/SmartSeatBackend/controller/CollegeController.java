@@ -66,10 +66,10 @@ public class CollegeController {
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
 
-        } catch (RuntimeException e) {
+        } catch (DataIntegrityViolationException e) {
             // Simple map for error message
             Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
+            error.put("message","room number "+roomsDTO.getRoomNumber()+" is already exist in "+roomsDTO.getBlock()+" block in college");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
 
         } catch (Exception e) {

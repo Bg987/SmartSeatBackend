@@ -94,12 +94,6 @@ public class CollegeService {
         College college = collegeRepo.findById(helper.getCollegeIdByUserId())
                 .orElseThrow(() -> new RuntimeException("College not found"));
 
-        boolean exists = roomsRepo.existsByRoomNumberAndCollege(dto.getRoomNumber(), college);
-        if (exists) {
-            throw new RuntimeException("Room number " + dto.getRoomNumber()
-                    + " already exists for this college");
-        }
-
         Rooms room = new Rooms();
         room.setRoomNumber(dto.getRoomNumber());
         room.setCapacity(dto.getCapacity());
@@ -121,26 +115,9 @@ public class CollegeService {
         response.setCapacity(saved.getCapacity());
 
         room.setBlock(dto.getBlock());
-//        if (dto.getBlock() == null || dto.getBlock().isEmpty()) {
-//            room.setBlock("A");
-//        } else {
-//
-//        }
         room.setCollege(college);
-
-
-        // Return DTO
-//        RoomsDTO response = new RoomsDTO();
-//        response.setRoomNumber(saved.getRoomNumber());
-//        response.setBlock(saved.getBlock());
-//        response.setCapacity(saved.getCapacity());
-
-
         return dto;
     }
-
-
-
 
     public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException
     {
