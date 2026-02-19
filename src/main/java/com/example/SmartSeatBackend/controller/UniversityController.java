@@ -2,6 +2,7 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
+import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
@@ -115,4 +116,19 @@ public class UniversityController {
     public ResponseEntity addSubject(@Valid  @RequestBody SubjectDTO subject){
         return uniservice.addSubject(subject);
     }
+
+
+
+    @PreAuthorize("hasRole('university')")
+    @PostMapping(
+            value = "/generateTimetable",
+            consumes = "application/json",
+            produces = "application/json"
+    )
+    public ResponseEntity<?> generateTimetable(
+            @Valid @RequestBody List<TimetableDTO> timetableDTOList
+    ) {
+        return uniservice.generateTimetable(timetableDTOList);
+    }
+
 }

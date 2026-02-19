@@ -2,11 +2,14 @@ package com.example.SmartSeatBackend.service;
 
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
+import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Subject;
+import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.SubjectRepository;
+import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -36,6 +39,7 @@ public class UniversityService {
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
     private final MessageService msgService;
+    private final TimetableRepo timetableRepo;
 
     // Add College
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
@@ -163,4 +167,32 @@ public class UniversityService {
 
         return responses;
     }
+
+    public ResponseEntity<Map<String, Object>> generateTimetable(List<TimetableDTO> timetableDTOList) {
+
+        List<Timetable> savedTimetables = new ArrayList<>();
+
+        for (TimetableDTO timetableDTO : timetableDTOList) {
+
+            Timetable timetable = new Timetable();
+
+            timetable.setSubjectId(timetableDTO.getSubjectId());
+            timetable.setSubjectName(timetableDTO.getSubjectName());
+            timetable.setExamDate(timetableDTO.getExamDate());
+            timetable.setCompleted(false);
+
+            savedTimetables.add(timetableRepo.save(timetable));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", true);
+        response.put("message", "Time table generated successfully");
+        response.put("count", savedTimetables.size());
+        response.put("data", savedTimetables);
+
+        return ResponseEntity.ok(response);
+    }
+
+
+
 }
