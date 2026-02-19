@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.service.CollegeService;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -17,6 +18,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -38,6 +42,16 @@ public class CollegeController {
     private final CollegeService colService;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
+    private final HelperMethods helper;
+
+
+    //Returns students information college vise----
+    @GetMapping("/students")
+    public List<Students> getStudentsByCollege() {
+        Long collegeId = helper.getCollegeIdByUserId();
+        return studentRepo.findByCollegeId(collegeId);
+    }
+
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
@@ -56,6 +70,15 @@ public class CollegeController {
      }
  }
 
+    @GetMapping("/rooms")
+    public Page<Rooms> getRoomsByCollege(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Long collegeId = helper.getCollegeIdByUserId();
+        Pageable pageable = PageRequest.of(page, size);
+        return roomRepo.findByCollegeCollegeId(collegeId, pageable);
+    }
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addRooms")
@@ -102,22 +125,4 @@ public class CollegeController {
                    .body(List.of("Error processing file: " + e.getMessage()));
        }
    }
-
-
-
-   //Returns students information college vise----
-
-    @GetMapping("/students")
-    public List<Students> getStudentsByCollege() {
-        Long collegeId = colService.getCollegeIdByUserId();
-        return studentRepo.findByCollegeId(collegeId);
-    }
-
-    @GetMapping("/rooms")
-    public List<Rooms> getRoomsByCollege() {
-        Long collegeId = colService.getCollegeIdByUserId();
-        return roomRepo.findByCollegeCollegeId(collegeId);
-    }
-
-
 }

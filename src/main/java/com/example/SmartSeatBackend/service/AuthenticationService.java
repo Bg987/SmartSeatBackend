@@ -122,11 +122,11 @@ public class AuthenticationService {
     public ResponseEntity<?> passwordchange(PasswordDTO data,@AuthenticationPrincipal String userId){
         Long id = Long.parseLong(userId);
         User u = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new RuntimeException("not found"));
 
         if (!passwordEncoder.matches(data.getOldPassword(), u.getPassword())) {
-            return ResponseEntity.status(401)
-                    .body(new ApiResponse(false, "Wrong password", null));
+            return ResponseEntity.status(400)
+                    .body(new ApiResponse(false, "Old password is wrong", null));
         }
         String encodedPassword = passwordEncoder.encode(data.getNewPassword());
         u.setPassword(encodedPassword);
@@ -134,7 +134,6 @@ public class AuthenticationService {
         //Save
         userRepository.save(u);
         return ResponseEntity.ok(
-                new ApiResponse(true, "password changed successfully", data)
-        );
+                new ApiResponse(true, "password changed successfully",data));
     }
 }

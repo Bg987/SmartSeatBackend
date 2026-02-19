@@ -74,10 +74,10 @@ public class CollegeService {
 //        msgService.sendRegistrationEvent(
 //                dto.getEmail(),
 //                rawPassword,
-//                dto.getName(),String.valueOf(dto.getCollegeId()));
+//                dto.getName(),
+//                String.valueOf(dto.getCollegeId()));
 
-
-        student.setCollegeId(getCollegeIdByUserId());
+        student.setCollegeId(helper.getCollegeIdByUserId());
 
         BeanUtils.copyProperties(dto, student);
 
@@ -99,11 +99,6 @@ public class CollegeService {
         room.setCapacity(dto.getCapacity());
 
 
-        if (dto.getBlock() == null || dto.getBlock().isEmpty()) {
-            room.setBlock("A");
-        } else {
-            room.setBlock(dto.getBlock());
-        }
 
         room.setCollege(college);
 
@@ -157,17 +152,4 @@ public class CollegeService {
 
         return responses;
     }
-
-
-    public Long getCollegeIdByUserId() {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userId = auth.getPrincipal().toString();
-
-        return collegeRepo.findByUser_userId(Long.parseLong(userId))
-                .map(College::getCollegeId)
-                .orElseThrow(() ->
-                        new RuntimeException("College not found for User ID: " + userId));
-    }
 }
-
