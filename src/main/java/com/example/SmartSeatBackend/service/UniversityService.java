@@ -37,39 +37,6 @@ public class UniversityService {
     private final Validator validator;
     private final MessageService msgService;
 
-    // Add College
-    public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
-
-        User userCollege = new User();
-        userCollege.setName("Admin of " + collegeData.getCollegeName());
-        userCollege.setMail(collegeData.getEmail());
-        userCollege.setMobileNumber(collegeData.getContactNumber());
-        userCollege.setRole(User.Role.college);
-
-        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        userCollege.setPassword(passwordEncoder.encode(rawPassword));
-
-        User savedUser = userRepo.save(userCollege);
-
-        College college = new College();
-        college.setName(collegeData.getCollegeName());
-        college.setAddress(collegeData.getAddress());
-        college.setUser(savedUser);
-
-        collegeRepo.save(college);
-
-        //email service
-        //collegeID set to null so function identify data either student or college so send data based on it to kafka
-//         msgService.sendRegistrationEvent(
-//                 collegeData.getEmail(),
-//                 rawPassword,
-//                 collegeData.getCollegeName(),
-//                 null
-//         );
-
-        return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
-    }
-
     //  Get All Subjects
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
@@ -117,10 +84,44 @@ public class UniversityService {
         return responses;
     }
 
+
     //  Get All Colleges
     public ResponseEntity<List<User>> getAllColleges() {
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
+    }
+
+    // Add College
+    public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
+
+        User userCollege = new User();
+        userCollege.setName("Admin of " + collegeData.getCollegeName());
+        userCollege.setMail(collegeData.getEmail());
+        userCollege.setMobileNumber(collegeData.getContactNumber());
+        userCollege.setRole(User.Role.college);
+
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        userCollege.setPassword(passwordEncoder.encode(rawPassword));
+
+        User savedUser = userRepo.save(userCollege);
+
+        College college = new College();
+        college.setName(collegeData.getCollegeName());
+        college.setAddress(collegeData.getAddress());
+        college.setUser(savedUser);
+
+        collegeRepo.save(college);
+
+        //email service
+        //collegeID set to null so function identify data either student or college so send data based on it to kafka
+//         msgService.sendRegistrationEvent(
+//                 collegeData.getEmail(),
+//                 rawPassword,
+//                 collegeData.getCollegeName(),
+//                 null
+//         );
+
+        return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
     //  Upload Colleges CSV

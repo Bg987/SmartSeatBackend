@@ -74,8 +74,8 @@ public class CollegeService {
 //        msgService.sendRegistrationEvent(
 //                dto.getEmail(),
 //                rawPassword,
-//                dto.getName(),String.valueOf(dto.getCollegeId()));
-
+//                dto.getName(),
+//                String.valueOf(dto.getCollegeId()));
 
         student.setCollegeId(helper.getCollegeIdByUserId());
 
@@ -152,6 +152,4 @@ public class CollegeService {
 
         return responses;
     }
-
 }
-

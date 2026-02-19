@@ -44,6 +44,15 @@ public class CollegeController {
     private final RoomsRepository roomRepo;
     private final HelperMethods helper;
 
+
+    //Returns students information college vise----
+    @GetMapping("/students")
+    public List<Students> getStudentsByCollege() {
+        Long collegeId = helper.getCollegeIdByUserId();
+        return studentRepo.findByCollegeId(collegeId);
+    }
+
+
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
      public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO)
@@ -61,6 +70,15 @@ public class CollegeController {
      }
  }
 
+    @GetMapping("/rooms")
+    public Page<Rooms> getRoomsByCollege(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size) {
+
+        Long collegeId = helper.getCollegeIdByUserId();
+        Pageable pageable = PageRequest.of(page, size);
+        return roomRepo.findByCollegeCollegeId(collegeId, pageable);
+    }
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addRooms")
@@ -107,24 +125,4 @@ public class CollegeController {
                    .body(List.of("Error processing file: " + e.getMessage()));
        }
    }
-
-
-
-   //Returns students information college vise----
-
-    @GetMapping("/students")
-    public List<Students> getStudentsByCollege() {
-        Long collegeId = helper.getCollegeIdByUserId();
-        return studentRepo.findByCollegeId(collegeId);
-    }
-
-    @GetMapping("/rooms")
-        public Page<Rooms> getRoomsByCollege(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "5") int size) {
-
-            Long collegeId = helper.getCollegeIdByUserId();
-            Pageable pageable = PageRequest.of(page, size);
-            return roomRepo.findByCollegeCollegeId(collegeId, pageable);
-        }
 }
