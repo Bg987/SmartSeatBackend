@@ -27,9 +27,9 @@ public class StudentController {
     private final HelperMethods helper;
 
     @PreAuthorize("hasAnyRole('college', 'student')")
-    @PostMapping({"/addStudentImage", "/{studentId}/addStudentImage"})
+    @PostMapping({"/addStudentImage", "/{enrollmentNo}/addStudentImage"})
     public ResponseEntity<?> addStudentImage(
-            @PathVariable(required = false) String studentId, // Changed to String for safety
+            @PathVariable(required = false) String enrollmentNo, // Changed to String for safety
             @RequestParam("file") MultipartFile file) throws IOException {
 
         if (file.isEmpty()) {
@@ -48,18 +48,12 @@ public class StudentController {
         Long StudentId;
 
         try {
-            if ("ROLE_college".equals(role) && studentId != null && !studentId.equals("null")) {
+            if ("ROLE_college".equals(role) && enrollmentNo != null && !enrollmentNo.equals("null")) {
 
                 Long collegeId = helper.getCollegeIdByUserId();
-                StudentId = Long.parseLong(studentId);
-                if(!stuService.belongsToCollege(StudentId,collegeId)){
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                            .body("Only your college student image update allowed, not outside students.");
-                }
-
+                StudentId = stuService.getVerifiedStudentId(enrollmentNo,collegeId);
             }
             else if ("ROLE_student".equals(role)) {
-                // Recommendation: Cast to your Custom User class if possible
                 StudentId = Long.parseLong(auth.getName());
                 if (stuService.checkIfImageExists(StudentId)) {
                     return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -69,11 +63,13 @@ public class StudentController {
             else {
                 return ResponseEntity.badRequest().body("ID missing for college role or unauthorized.");
             }
-
             return stuService.insertStudentImage(file, StudentId);
         }
         catch (NumberFormatException e) {
             return ResponseEntity.badRequest().body("Invalid ID format provided.");
+        }
+        catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
