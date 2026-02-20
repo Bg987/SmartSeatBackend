@@ -125,4 +125,30 @@ public class CollegeController {
                    .body(List.of("Error processing file: " + e.getMessage()));
        }
    }
+
+
+
+    @PostMapping("/uploadStudents")
+    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file)
+    {
+        try {
+            List<String> responses = colService.saveStudentsFromCSV(file);
+
+            System.out.println(responses);
+            return ResponseEntity.ok(responses);
+
+        } catch (DataIntegrityViolationException ex) {
+
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(List.of("Duplicate data : " +
+                            ex.getMostSpecificCause().getMessage()));
+
+        } catch (Exception e) {
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(List.of("Error processing file: " + e.getMessage()));
+        }
+    }
 }

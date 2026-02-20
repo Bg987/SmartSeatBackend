@@ -1,9 +1,6 @@
 package com.example.SmartSeatBackend.DTO;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -35,12 +32,12 @@ public class StudentsDTO {
     private Integer semester;
 
     @NotEmpty(message = "At least one subject must be provided")
-    private List<String> subjects;
+    private List<@NotBlank(message = "Subject code cannot be blank") String> subjects;
 
     private boolean hasBacklog;
 
     private String imgUrl;
 
-    @NotNull(message = "College ID is required")
-    private Integer collegeId;
+
+    private Long collegeId;
 }

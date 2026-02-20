@@ -53,7 +53,7 @@ public class CollegeService {
     private final MessageService msgService;
     private final HelperMethods helper;
 
-    
+
     public String addStudent(StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
@@ -62,25 +62,32 @@ public class CollegeService {
 
         Students student = new Students();
 
-        // Generate Random Password
+        //  Basic Mapping
+        student.setEnrollmentNo(dto.getEnrollmentNo());
+        student.setName(dto.getName());
+        student.setMobileNumber(dto.getMobileNumber());
+        student.setEmail(dto.getEmail());
+        student.setBranch(dto.getBranch());
+        student.setSpecialization(dto.getSpecialization());
+        student.setSemester(dto.getSemester());
+        student.setHasBacklog(dto.isHasBacklog());
+        student.setImgUrl(dto.getImgUrl());
+
+        //  College ID from logged-in user (secure)
+        student.setCollegeId(helper.getCollegeIdByUserId());
+
+
+        System.out.println(student.getCollegeId());
+
+        //  Subjects (ElementCollection)
+        student.setSubjects(dto.getSubjects());
+
+        //  Generate Random Password
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
-        student.setCollegeId(helper.getCollegeIdByUserId());
-        BeanUtils.copyProperties(dto, student);
-        // 4. Save to Database
-        studentRepo.save(student);
-        //email service
-//        msgService.sendRegistrationEvent(
-//                dto.getEmail(),
-//                rawPassword,
-//                dto.getName(),
-//                String.valueOf(dto.getCollegeId()));
 
-        student.setCollegeId(helper.getCollegeIdByUserId());
-
-        BeanUtils.copyProperties(dto, student);
-
+        // ️ Save
         studentRepo.save(student);
 
         return "Student saved successfully with enrollment: "
@@ -99,7 +106,6 @@ public class CollegeService {
         room.setCapacity(dto.getCapacity());
 
 
-
         room.setCollege(college);
 
         Rooms saved = roomsRepo.save(room);
@@ -114,8 +120,7 @@ public class CollegeService {
         return dto;
     }
 
-    public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException
-    {
+    public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException {
 
         List<String> responses = new ArrayList<>();
 
@@ -147,6 +152,54 @@ public class CollegeService {
 
                 RoomsDTO response = addRooms(room);
                 responses.add("Room " + response.getRoomNumber() + " saved successfully");
+            }
+        }
+
+        return responses;
+    }
+
+
+    public List<String> saveStudentsFromCSV(MultipartFile file) throws IOException {
+
+        List<String> responses = new ArrayList<>();
+
+        try (
+                Reader reader = new BufferedReader(
+                        new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(
+                        reader,
+                        CSVFormat.DEFAULT
+                                .withFirstRecordAsHeader()
+                                .withIgnoreHeaderCase()
+                                .withTrim())
+        ) {
+
+            for (CSVRecord record : csvParser) {
+
+                StudentsDTO student = new StudentsDTO();
+
+                student.setEnrollmentNo(record.get("enrollmentNo"));
+                student.setName(record.get("name"));
+                student.setEmail(record.get("email"));
+                student.setBranch(record.get("branch"));
+                student.setSemester(Integer.parseInt(record.get("semester")));
+
+                // Subjects split by |
+                String subjectsRaw = record.get("subjects");
+                List<String> subjects = List.of(subjectsRaw.split("\\|"));
+                student.setSubjects(subjects);
+
+                // Validation
+                Set<ConstraintViolation<StudentsDTO>> violations =
+                        validator.validate(student);
+
+                if (!violations.isEmpty()) {
+                    throw new ConstraintViolationException(violations);
+                }
+
+                // Save student
+                String res = addStudent(student);
+                responses.add(res);
             }
         }
 
