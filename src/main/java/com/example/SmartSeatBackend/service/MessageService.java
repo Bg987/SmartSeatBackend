@@ -22,7 +22,7 @@ public class MessageService {
         data.put("email", email);
         data.put("password", password);
         data.put("name", name);
-        if(collegeId!=null){//check wether student data or not
+        if(collegeId!=null){//check weather student data or not
             data.put("collegeId",collegeId);//put college id in case of student data
         }
         //select topic based on studnet or college data
