@@ -1,5 +1,8 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.entity.StudentEmbedding;
+import com.example.SmartSeatBackend.repository.StudentEmbeddingRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -11,12 +14,14 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@AllArgsConstructor
 public class FaceApiService {
 
+    private  final StudentEmbeddingRepository embeddingRepository; // Inject the new repository
     // Replace this with the Ngrok URL printed in your Colab console
-    private final String COLAB_URL = "";
+    private final String COLAB_URL = "https://nonswimming-nonseriously-lester.ngrok-free.dev/get-embedding";
 
-    public float[] getEmbeddingFromColab(MultipartFile file) throws Exception {
+    public float[] getEmbeddingFromColabAndStore(MultipartFile file,Long studentID) throws Exception {
         RestTemplate restTemplate = new RestTemplate();
 
         // 1. Prepare Headers
@@ -38,24 +43,27 @@ public class FaceApiService {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
-        // 3. Send POST Request
+        //POST Request
         ResponseEntity<Map> response = restTemplate.postForEntity(COLAB_URL, requestEntity, Map.class);
-
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
             Map<String, Object> responseBody = response.getBody();
 
             if ("success".equals(responseBody.get("status"))) {
                 List<Double> embeddingList = (List<Double>) responseBody.get("embedding");
 
-                // Convert List<Double> to float[]
+                // Convert List<Double> to float[] to store in database
                 float[] result = new float[embeddingList.size()];
                 for (int i = 0; i < embeddingList.size(); i++) {
                     result[i] = embeddingList.get(i).floatValue();
                 }
+
+                String vectorString = java.util.Arrays.toString(result);
+                //System.out.println(vectorString);
+                // Use the native upsert  to store embeddings
+                embeddingRepository.upsertEmbedding(studentID, vectorString);
                 return result;
             }
         }
-
         throw new RuntimeException("Failed to get embedding from AI server");
     }
 }

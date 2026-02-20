@@ -34,7 +34,7 @@ public interface StudentRepository extends JpaRepository<Students, String> {
             "FROM Students s WHERE s.studentId = :id")
     boolean existsProfilePic(@Param("id") Long id);
 
-    @Query("SELECT COUNT(s) > 0 FROM Students s WHERE s.studentId = :stuId AND s.collegeId = :collId")
-    boolean existsByStudentIdAndCollegeId(@Param("stuId") Long stuId, @Param("collId") Long collId);
+    @Query("SELECT s.studentId FROM Students s WHERE s.enrollmentNo = :stuEnId AND s.collegeId = :collId")
+    Optional<Long> findStudentIdByEnrollmentAndCollege(@Param("stuEnId") String stuEnId, @Param("collId") Long collId);
 
 }
