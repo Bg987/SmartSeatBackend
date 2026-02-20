@@ -29,4 +29,7 @@ public class Timetable {
 
     @Column(name="completed")
     private boolean completed;
+
+    @Column(name="batchid")
+    private String batchId;
 }

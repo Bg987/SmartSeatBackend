@@ -24,6 +24,7 @@ public class TimetableDTO {
 
     private boolean completed;
 
+    private String batchId;//for conserving single time table...
 
     @AssertTrue(message = "Exam date must be at least 1 month from today and not in the past")
     public boolean isExamDateValid() {

@@ -4,6 +4,7 @@ import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Subject;
+import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
@@ -131,4 +132,13 @@ public class UniversityController {
         return uniservice.generateTimetable(timetableDTOList);
     }
 
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getTimetable/{batchId}")
+    public ResponseEntity<List<Timetable>> getTimetable(@PathVariable String batchId) {
+
+        List<Timetable>timeTable = uniservice.getTimetable(batchId);
+
+        return ResponseEntity.ok(timeTable);
+    }
 }

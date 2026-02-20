@@ -173,6 +173,7 @@ public class UniversityService {
 
         List<Timetable> savedTimetables = new ArrayList<>();
 
+        String batchId = UUID.randomUUID().toString();
         for (TimetableDTO timetableDTO : timetableDTOList) {
 
             Timetable timetable = new Timetable();
@@ -180,7 +181,10 @@ public class UniversityService {
             timetable.setSubjectId(timetableDTO.getSubjectId());
             timetable.setSubjectName(timetableDTO.getSubjectName());
             timetable.setExamDate(timetableDTO.getExamDate());
-            timetable.setCompleted(false);
+            timetable.setCompleted(false);//temporary....
+            timetable.setBatchId(batchId);
+
+
 
             savedTimetables.add(timetableRepo.save(timetable));
         }
@@ -190,10 +194,14 @@ public class UniversityService {
         response.put("message", "Time table generated successfully");
         response.put("count", savedTimetables.size());
         response.put("data", savedTimetables);
+        response.put("batchId",batchId);
 
         return ResponseEntity.ok(response);
     }
 
 
+    public List<Timetable> getTimetable(String batchId) {
+        return timetableRepo.findByBatchId(batchId);
+    }
 
 }
