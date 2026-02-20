@@ -66,9 +66,9 @@ public class CollegeService {
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
-        student.setCollegeId(helper.getCollegeIdByUserId());
+        student.setCollegeId(helper.getCollegeIdByUserId());//fetch collegeid from jwt cookie
         BeanUtils.copyProperties(dto, student);
-        // 4. Save to Database
+        // Save to Database
         studentRepo.save(student);
         //email service
 //        msgService.sendRegistrationEvent(
