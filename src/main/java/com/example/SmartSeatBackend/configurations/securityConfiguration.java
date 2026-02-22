@@ -9,6 +9,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableMethodSecurity
@@ -18,13 +19,16 @@ public class securityConfiguration {
 
     private final forbiddenHandler myForbiddenHandler;
     private final JwtFilter jFiler;
+    private final CorsConfiguration corsConfiguration;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .cors(cors -> cors.configurationSource(request -> {
+                    // This links to your CorsConfiguration bean
+                    return corsConfiguration;}))
                 // Disable CSRF for JWT/Stateless use
                 .csrf(csrf -> csrf.disable())
-
                 // Enable CORS with the bean defined below
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 

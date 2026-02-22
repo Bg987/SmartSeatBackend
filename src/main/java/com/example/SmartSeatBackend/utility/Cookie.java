@@ -9,13 +9,11 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class Cookie {
 
-
     private JwtUtil jwt;
 
     public jakarta.servlet.http.Cookie setCookie(Long id, String role){
 
             return cookieSetting("AUTH_JWT",jwt.generateToken(id,role),(24*60*60*10));
-
     }
     public jakarta.servlet.http.Cookie delCookie(String cookieName){
 
@@ -24,15 +22,15 @@ public class Cookie {
     }
     public jakarta.servlet.http.Cookie cookieSetting(String cookieName, String cookieData, int age) {
         jakarta.servlet.http.Cookie cookie = new jakarta.servlet.http.Cookie(cookieName, cookieData);
+
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(age);
-
-        // Detect if we are on localhost or a production server
-        // You can also use a @Value from application.properties here
-        boolean isLocalhost = true;
-        cookie.setSecure(!isLocalhost);
-
+        cookie.setSecure(false);
+            // 'Lax' is usually fine for local, but some older browsers
+            // prefer no SameSite attribute on plain HTTP
+        //cookie.setSecure(true);
+        //cookie.setAttribute("SameSite", "None"); // CRITICAL for Chrome/Safari
         return cookie;
     }
 }

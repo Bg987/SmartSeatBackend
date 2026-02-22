@@ -71,11 +71,11 @@ public class CollegeService {
         // Save to Database
         studentRepo.save(student);
         //email service
-//        msgService.sendRegistrationEvent(
-//                dto.getEmail(),
-//                rawPassword,
-//                dto.getName(),
-//                String.valueOf(dto.getCollegeId()));
+        msgService.sendRegistrationEvent(
+                dto.getEmail(),
+                rawPassword,
+                dto.getName(),
+                String.valueOf(student.getCollegeId()));
 
         student.setCollegeId(helper.getCollegeIdByUserId());
 
