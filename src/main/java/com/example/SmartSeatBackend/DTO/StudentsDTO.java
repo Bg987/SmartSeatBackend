@@ -36,8 +36,5 @@ public class StudentsDTO {
 
     private boolean hasBacklog;
 
-    private String imgUrl;
 
-
-    private Long collegeId;
 }

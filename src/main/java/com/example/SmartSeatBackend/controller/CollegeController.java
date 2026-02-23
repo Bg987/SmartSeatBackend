@@ -85,6 +85,7 @@ public class CollegeController {
     public ResponseEntity<?> addRooms(@Valid @RequestBody RoomsDTO roomsDTO) {
         try {
             // Service returns RoomsDTO
+            System.out.println(roomsDTO.getBlock());
             RoomsDTO response = colService.addRooms(roomsDTO);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);

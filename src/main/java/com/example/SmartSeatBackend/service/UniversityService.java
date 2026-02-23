@@ -118,12 +118,12 @@ public class UniversityService {
 
         //email service
         //collegeID set to null so function identify data either student or college so send data based on it to kafka
-//         msgService.sendRegistrationEvent(
-//                 collegeData.getEmail(),
-//                 rawPassword,
-//                 collegeData.getCollegeName(),
-//                 null
-//         );
+         msgService.sendRegistrationEvent(
+                 collegeData.getEmail(),
+                 rawPassword,
+                 collegeData.getCollegeName(),
+                 null
+         );
 
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }

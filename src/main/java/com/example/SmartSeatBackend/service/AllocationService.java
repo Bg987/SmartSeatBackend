@@ -30,45 +30,56 @@ public class AllocationService {
             return "No students or rooms found for allocation.";
         }
 
-        // 🔹 Clear previous allocation
-//        seatRepo.deleteByCollegeId(collegeId);
+        // 🔹 Check total seat capacity
+        int totalSeats = rooms.stream()
+                .mapToInt(Rooms::getCapacity)
+                .sum();
 
-        // 🔹 Branch-wise grouping
+        if (students.size() > totalSeats) {
+            return "Not enough seats available for all students.";
+        }
+
+        // 🔹 Delete previous allocation
+        seatRepo.deleteByCollegeId(collegeId);
+
+        // 🔹 Branch grouping
         Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
-
         for (Students s : students) {
             branchMap
                     .computeIfAbsent(s.getBranch(), k -> new LinkedList<>())
                     .add(s);
         }
 
-        boolean singleBranchWarning = false;
+        boolean singleBranchWarning = branchMap.size() < 2;
 
-        if (branchMap.size() < 2) {
-            singleBranchWarning = true;
-            System.out.println("Warning: Only one branch available. Mixing not possible.");
-        }
-
-        List<String> branches = new ArrayList<>(branchMap.keySet());
-        int branchIndex = 0;
+        List<SeatAllocation> allocations = new ArrayList<>();
 
         for (Rooms room : rooms) {
 
             int capacity = room.getCapacity();
+
             int rows = (int) Math.sqrt(capacity);
-            int cols = capacity / rows;
+            int cols = (int) Math.ceil((double) capacity / rows);
 
             Students[][] grid = new Students[rows][cols];
-            Set<String> usedBranches = new HashSet<>();
+
+            List<String> branches = new ArrayList<>(branchMap.keySet());
+            int branchIndex = 0;
 
             for (int r = 0; r < rows; r++) {
                 for (int c = 0; c < cols; c++) {
 
-                    int attempts = 0;
-                    boolean allocated = false;
+                    if (branchMap.isEmpty())
+                        break;
 
-                    // 🔹 Try safe round-robin allocation
+                    Students allocatedStudent = null;
+
+                    int attempts = 0;
+
                     while (attempts < branches.size()) {
+
+                        if (branches.isEmpty())
+                            break;
 
                         String branch = branches.get(branchIndex);
                         branchIndex = (branchIndex + 1) % branches.size();
@@ -76,60 +87,56 @@ public class AllocationService {
                         Queue<Students> queue = branchMap.get(branch);
 
                         if (queue == null || queue.isEmpty()) {
-                            attempts++;
+                            branchMap.remove(branch);
+                            branches.remove(branch);
                             continue;
                         }
 
                         Students student = queue.peek();
 
                         if (isSafe(grid, r, c, student)) {
-
-                            grid[r][c] = queue.poll();
-                            usedBranches.add(student.getBranch());
-
-                            saveSeat(room, student, r, c, collegeId);
-                            allocated = true;
+                            allocatedStudent = queue.poll();
                             break;
                         }
 
                         attempts++;
                     }
 
-                    //  Fallback allocation (no empty seats)
-                    if (!allocated) {
-                        for (String branch : branches) {
+                    // 🔹 Fallback allocation
+                    if (allocatedStudent == null) {
+                        for (String branch : new ArrayList<>(branches)) {
 
                             Queue<Students> queue = branchMap.get(branch);
 
                             if (queue != null && !queue.isEmpty()) {
-
-                                Students student = queue.poll();
-                                grid[r][c] = student;
-                                usedBranches.add(student.getBranch());
-
-                                saveSeat(room, student, r, c, collegeId);
+                                allocatedStudent = queue.poll();
                                 break;
+                            } else {
+                                branchMap.remove(branch);
+                                branches.remove(branch);
                             }
                         }
                     }
+
+                    if (allocatedStudent != null) {
+
+                        grid[r][c] = allocatedStudent;
+
+                        SeatAllocation seat = new SeatAllocation();
+                        seat.setRoom(room);
+                        seat.setStudent(allocatedStudent);
+                        seat.setRowNo(r);
+                        seat.setColNo(c);
+                        seat.setCollegeId(collegeId);
+
+                        allocations.add(seat);
+                    }
                 }
             }
-
-            // 🔹 Smart mixing validation
-            long remainingBranches =
-                    branchMap.values()
-                            .stream()
-                            .filter(q -> !q.isEmpty())
-                            .count();
-
-            if (usedBranches.size() < 2 && remainingBranches >= 1) {
-                System.out.println(
-                        "Limited branch mixing in room "
-                                + room.getRoomNumber()
-                                + " (Uneven distribution)"
-                );
-            }
         }
+
+        // 🔹 Bulk Save (Performance Optimized)
+        seatRepo.saveAll(allocations);
 
         if (singleBranchWarning) {
             return "Allocation completed with warning: Only one branch present. Proper mixing not possible.";
@@ -138,41 +145,35 @@ public class AllocationService {
         return "Seat allocation completed successfully.";
     }
 
-    // 🔹 Safety check (Left & Top)
-    private boolean isSafe(Students[][] grid,
-                           int r,
-                           int c,
-                           Students s) {
+    // 🔹 Full adjacency safety check
+    private boolean isSafe(Students[][] grid, int r, int c, Students s) {
 
-        // Left seat check
+        String branch = s.getBranch();
+
+        // Left
         if (c - 1 >= 0 &&
                 grid[r][c - 1] != null &&
-                grid[r][c - 1].getBranch().equals(s.getBranch()))
+                grid[r][c - 1].getBranch().equals(branch))
             return false;
 
-        // Top seat check
+        // Top
         if (r - 1 >= 0 &&
                 grid[r - 1][c] != null &&
-                grid[r - 1][c].getBranch().equals(s.getBranch()))
+                grid[r - 1][c].getBranch().equals(branch))
+            return false;
+
+        // Right
+        if (c + 1 < grid[0].length &&
+                grid[r][c + 1] != null &&
+                grid[r][c + 1].getBranch().equals(branch))
+            return false;
+
+        // Bottom
+        if (r + 1 < grid.length &&
+                grid[r + 1][c] != null &&
+                grid[r + 1][c].getBranch().equals(branch))
             return false;
 
         return true;
-    }
-
-    private void saveSeat(Rooms room,
-                          Students student,
-                          int row,
-                          int col,
-                          Long collegeId) {
-
-        SeatAllocation seat = new SeatAllocation();
-
-        seat.setRoom(room);
-        seat.setStudent(student);
-        seat.setRowNo(row);
-        seat.setColNo(col);
-        seat.setCollegeId(collegeId);
-
-        seatRepo.save(seat);
     }
 }

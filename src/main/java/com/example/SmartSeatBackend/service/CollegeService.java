@@ -53,7 +53,7 @@ public class CollegeService {
     private final MessageService msgService;
     private final HelperMethods helper;
 
-
+    
     public String addStudent(StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
@@ -62,32 +62,25 @@ public class CollegeService {
 
         Students student = new Students();
 
-        //  Basic Mapping
-        student.setEnrollmentNo(dto.getEnrollmentNo());
-        student.setName(dto.getName());
-        student.setMobileNumber(dto.getMobileNumber());
-        student.setEmail(dto.getEmail());
-        student.setBranch(dto.getBranch());
-        student.setSpecialization(dto.getSpecialization());
-        student.setSemester(dto.getSemester());
-        student.setHasBacklog(dto.isHasBacklog());
-        student.setImgUrl(dto.getImgUrl());
-
-        //  College ID from logged-in user (secure)
-        student.setCollegeId(helper.getCollegeIdByUserId());
-
-
-        System.out.println(student.getCollegeId());
-
-        //  Subjects (ElementCollection)
-        student.setSubjects(dto.getSubjects());
-
-        //  Generate Random Password
+        // Generate Random Password
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         String encodedPassword = passwordEncoder.encode(rawPassword);
         student.setPassword(encodedPassword);
+        student.setCollegeId(helper.getCollegeIdByUserId());//fetch collegeid from jwt cookie
+        BeanUtils.copyProperties(dto, student);
+        // Save to Database
+        studentRepo.save(student);
+        //email service
+        msgService.sendRegistrationEvent(
+                dto.getEmail(),
+                rawPassword,
+                dto.getName(),
+                String.valueOf(student.getCollegeId()));
 
-        // ️ Save
+        student.setCollegeId(helper.getCollegeIdByUserId());
+
+        BeanUtils.copyProperties(dto, student);
+
         studentRepo.save(student);
 
         return "Student saved successfully with enrollment: "
@@ -95,69 +88,6 @@ public class CollegeService {
                 + " | Temporary Password: "
                 + rawPassword;
     }
-
-    public RoomsDTO addRooms(RoomsDTO dto) {
-
-        College college = collegeRepo.findById(helper.getCollegeIdByUserId())
-                .orElseThrow(() -> new RuntimeException("College not found"));
-
-        Rooms room = new Rooms();
-        room.setRoomNumber(dto.getRoomNumber());
-        room.setCapacity(dto.getCapacity());
-
-
-        room.setCollege(college);
-
-        Rooms saved = roomsRepo.save(room);
-
-        RoomsDTO response = new RoomsDTO();
-        response.setRoomNumber(saved.getRoomNumber());
-        response.setBlock(saved.getBlock());
-        response.setCapacity(saved.getCapacity());
-
-        room.setBlock(dto.getBlock());
-        room.setCollege(college);
-        return dto;
-    }
-
-    public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException {
-
-        List<String> responses = new ArrayList<>();
-
-        try (
-                Reader reader = new BufferedReader(
-                        new InputStreamReader(file.getInputStream()));
-                CSVParser csvParser = new CSVParser(
-                        reader,
-                        CSVFormat.DEFAULT
-                                .withFirstRecordAsHeader()
-                                .withIgnoreHeaderCase()
-                                .withTrim())
-        ) {
-
-            for (CSVRecord record : csvParser) {
-
-                RoomsDTO room = new RoomsDTO();
-
-                room.setRoomNumber(Integer.parseInt(record.get("roomNumber")));
-                room.setCapacity(Integer.parseInt(record.get("capacity")));
-                room.setBlock(record.get("block"));
-
-                Set<ConstraintViolation<RoomsDTO>> violations =
-                        validator.validate(room);
-
-                if (!violations.isEmpty()) {
-                    throw new ConstraintViolationException(violations);
-                }
-
-                RoomsDTO response = addRooms(room);
-                responses.add("Room " + response.getRoomNumber() + " saved successfully");
-            }
-        }
-
-        return responses;
-    }
-
 
     public List<String> saveStudentsFromCSV(MultipartFile file) throws IOException {
 
@@ -202,7 +132,66 @@ public class CollegeService {
                 responses.add(res);
             }
         }
-
         return responses;
+    }
+
+    public RoomsDTO addRooms(RoomsDTO dto) {
+
+        College college = collegeRepo.findById(helper.getCollegeIdByUserId())
+                .orElseThrow(() -> new RuntimeException("College not found"));
+
+        Rooms room = new Rooms();
+        room.setRoomNumber(dto.getRoomNumber());
+        room.setCapacity(dto.getCapacity());
+        room.setCollege(college);
+        room.setBlock(dto.getBlock());
+        Rooms saved = roomsRepo.save(room);
+
+        RoomsDTO response = new RoomsDTO();
+        response.setRoomNumber(saved.getRoomNumber());
+        response.setBlock(saved.getBlock());
+        response.setCapacity(saved.getCapacity());
+        return dto;
+    }
+
+    public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException {
+        College college = collegeRepo.findById(helper.getCollegeIdByUserId())
+                .orElseThrow(() -> new RuntimeException("College not found"));
+
+        List<Rooms> roomsToSave = new ArrayList<>(); // Use your Entity class here
+        List<String> logs = new ArrayList<>();
+
+        try (
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(reader,
+                        CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim())
+        ) {
+            for (CSVRecord record : csvParser) {
+                RoomsDTO dto = new RoomsDTO();
+                dto.setRoomNumber(Integer.parseInt(record.get("roomNumber")));
+                dto.setCapacity(Integer.parseInt(record.get("capacity")));
+                dto.setBlock(record.get("block"));
+
+                // 1. Validate the DTO
+                Set<ConstraintViolation<RoomsDTO>> violations = validator.validate(dto);
+                if (!violations.isEmpty()) {
+                    throw new ConstraintViolationException(violations);
+                }
+
+                // 2. Map DTO to Entity (Assuming you have a mapper or manual conversion)
+                Rooms roomEntity = new Rooms();
+                        BeanUtils.copyProperties(dto,roomEntity);
+                roomEntity.setCollege(college); // Link to the college
+
+                roomsToSave.add(roomEntity);
+                logs.add("Room " + dto.getRoomNumber() + " prepared");
+            }
+        }
+
+        // 3. Single Batch Insert
+        // This happens only if NO errors occurred in the loop above
+        roomsRepo.saveAll(roomsToSave);
+
+        return List.of("Successfully saved " + roomsToSave.size() + " rooms in batch.");
     }
 }
