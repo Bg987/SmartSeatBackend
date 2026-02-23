@@ -6,6 +6,7 @@ import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
+import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
 import jakarta.validation.Valid;
@@ -28,6 +29,7 @@ import java.util.List;
 public class UniversityController {
 
     private final UniversityService uniservice;
+    private final AllocationService Seatservice;
 
 
     //only single college
@@ -140,5 +142,17 @@ public class UniversityController {
         List<Timetable>timeTable = uniservice.getTimetable(batchId);
 
         return ResponseEntity.ok(timeTable);
+    }
+
+
+    @PreAuthorize("hasRole('university')")
+        @PostMapping("/allocate/{collegeId}")
+        public String allocate(
+                @PathVariable Long collegeId) {
+
+            Seatservice.allocateByCollege(collegeId);
+
+            return "Seat allocation completed!";
+
     }
 }
