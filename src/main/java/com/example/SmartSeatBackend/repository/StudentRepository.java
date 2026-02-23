@@ -37,4 +37,6 @@ public interface StudentRepository extends JpaRepository<Students, String> {
     @Query("SELECT s.studentId FROM Students s WHERE s.enrollmentNo = :stuEnId AND s.collegeId = :collId")
     Optional<Long> findStudentIdByEnrollmentAndCollege(@Param("stuEnId") String stuEnId, @Param("collId") Long collId);
 
+ Long countByCollegeId(Long collegeId);
+
 }

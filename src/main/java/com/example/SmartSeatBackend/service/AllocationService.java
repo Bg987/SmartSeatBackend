@@ -184,7 +184,7 @@ public class AllocationService {
 
     public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(Long collegeId) {
 
-        List<SeatAllocation> seats = seatRepo.findByCollege_Id(collegeId);
+        List<SeatAllocation> seats = seatRepo.findBycollegeId(collegeId);
 
         if (seats.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -198,6 +198,7 @@ public class AllocationService {
                         .semester(seat.getStudent().getSemester())
                         .row(seat.getRowNo())
                         .column(seat.getColNo())
+                        .room_id(seat.getRoom().getRoomNumber())
                         .build())
                 .toList();
 

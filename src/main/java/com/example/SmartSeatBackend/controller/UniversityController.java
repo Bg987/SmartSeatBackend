@@ -4,6 +4,7 @@ import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
+import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
@@ -164,5 +165,28 @@ public class UniversityController {
     {
         return Seatservice.getSeatingPlan(collegeId);
 
+    }
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/showCollegeDetail/{userId}")
+
+    public College showCollegeDetails(@PathVariable Long userId)
+    {
+        return uniservice.getCollegeByUser(userId);
+    }
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getCountOfStudents/{collegeId}")
+
+    public Long countOfStudents(@PathVariable Long collegeId)
+    {
+        return uniservice.getCountOfStudents(collegeId);
+    }
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getCountOfRooms/{collegeId}")
+    public Long countOfRooms(@PathVariable Long collegeId)
+    {
+        return uniservice.getCountofRooms(collegeId);
     }
 }

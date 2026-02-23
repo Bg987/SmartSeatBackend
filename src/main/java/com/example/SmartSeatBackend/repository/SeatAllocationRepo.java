@@ -11,6 +11,6 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
 
         @Transactional
         void deleteByCollegeId(Long collegeId);
-        List<SeatAllocation> findByCollege_Id(Long collegeId);
+        List<SeatAllocation> findBycollegeId(Long collegeId);
 
 }

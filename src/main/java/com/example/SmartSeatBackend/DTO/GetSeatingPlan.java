@@ -18,9 +18,9 @@ public class GetSeatingPlan {
         private String name;
         private String branch;
         private Integer semester;
+        private Integer room_id;
         private Integer row;
         private Integer column;
-
 
 
 
