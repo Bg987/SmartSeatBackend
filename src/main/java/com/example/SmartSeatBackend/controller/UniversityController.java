@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.controller;
 
+import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
@@ -153,6 +154,15 @@ public class UniversityController {
             Seatservice.allocateByCollege(collegeId);
 
             return "Seat allocation completed!";
+
+    }
+
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getSeattingPlan/{collegeId}")
+    public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(@PathVariable Long collegeId)
+    {
+        return Seatservice.getSeatingPlan(collegeId);
 
     }
 }

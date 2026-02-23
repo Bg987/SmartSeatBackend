@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.SeatAllocation;
 import com.example.SmartSeatBackend.entity.Students;
@@ -8,6 +9,8 @@ import com.example.SmartSeatBackend.repository.SeatAllocationRepo;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -175,5 +178,29 @@ public class AllocationService {
             return false;
 
         return true;
+    }
+
+
+
+    public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(Long collegeId) {
+
+        List<SeatAllocation> seats = seatRepo.findByCollege_Id(collegeId);
+
+        if (seats.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<GetSeatingPlan> response = seats.stream()
+                .map(seat -> GetSeatingPlan.builder()
+                        .enrollmentNo(seat.getStudent().getEnrollmentNo())
+                        .name(seat.getStudent().getName())
+                        .branch(seat.getStudent().getBranch())
+                        .semester(seat.getStudent().getSemester())
+                        .row(seat.getRowNo())
+                        .column(seat.getColNo())
+                        .build())
+                .toList();
+
+        return ResponseEntity.ok(response);
     }
 }
