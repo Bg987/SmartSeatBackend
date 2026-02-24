@@ -17,4 +17,6 @@ public interface RoomsRepository extends JpaRepository<Rooms,Integer> {
     List<Rooms> findByCollegeCollegeId(Long collegeId);
     Page<Rooms> findByCollegeCollegeId(Long collegeId, Pageable pageble);
 
+    Long countByCollege_CollegeId(Long collegeId);
+
 }
