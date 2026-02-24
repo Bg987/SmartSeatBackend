@@ -72,9 +72,6 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String role = auth.getAuthorities().toString();
-        System.out.println(role);
         return uniservice.getAllColleges();
     }
 

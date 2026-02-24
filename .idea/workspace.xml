@@ -5,13 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/jarRepositories.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/corsConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/corsConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/CollegeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/CollegeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/CollegeDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/PasswordDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/RoomsDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/StudentsDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/SubjectDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/TempCollegeDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/TimetableDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/UserDTO.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/Cookie.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/Cookie.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -115,7 +122,10 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="SmartSeatBackend (1)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+    <configuration name="SmartSeatBackend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="GEMINI_API_KEY" value="AIzaSyC7uTPz9rQf9Tbyj7yJ1J3givBvkDa09_U" />
+      </envs>
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
       <module name="SmartSeatBackend" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.SmartSeatBackend.SmartSeatBackend" />
@@ -131,7 +141,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Spring Boot.SmartSeatBackend (1)" />
+        <item itemvalue="Spring Boot.SmartSeatBackend" />
       </list>
     </recent_temporary>
   </component>
