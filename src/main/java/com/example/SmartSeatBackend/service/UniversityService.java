@@ -7,10 +7,7 @@ import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.entity.College;
-import com.example.SmartSeatBackend.repository.CollegeRepository;
-import com.example.SmartSeatBackend.repository.SubjectRepository;
-import com.example.SmartSeatBackend.repository.TimetableRepo;
-import com.example.SmartSeatBackend.repository.UserRepository;
+import com.example.SmartSeatBackend.repository.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -40,7 +37,8 @@ public class UniversityService {
     private final Validator validator;
     private final MessageService msgService;
     private final TimetableRepo timetableRepo;
-
+    private final StudentRepository studentRepo;
+    private final RoomsRepository roomRepo;
     //  Get All Subjects
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
@@ -128,8 +126,15 @@ public class UniversityService {
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
-    //  Upload Colleges CSV
+    public College getCollegeByUser(Long userId) {
 
+        return collegeRepo.findByUser_userId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("College not found with userId: " + userId)
+                );
+    }
+
+    //  Upload Colleges CSV
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
 
@@ -202,6 +207,16 @@ public class UniversityService {
 
     public List<Timetable> getTimetable(String batchId) {
         return timetableRepo.findByBatchId(batchId);
+    }
+
+    public Long getCountOfStudents(Long collegeId)
+    {
+        return studentRepo.countByCollegeId(collegeId);
+    }
+
+    public Long getCountofRooms(Long collegeId)
+    {
+        return roomRepo.countByCollege_CollegeId(collegeId);
     }
 
 }

@@ -166,7 +166,6 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/showCollegeDetail/{userId}")
-
     public College showCollegeDetails(@PathVariable Long userId)
     {
         return uniservice.getCollegeByUser(userId);
