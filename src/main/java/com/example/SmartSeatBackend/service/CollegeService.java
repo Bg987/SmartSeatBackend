@@ -4,13 +4,11 @@ import com.example.SmartSeatBackend.DTO.CollegeDTO;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
-import com.example.SmartSeatBackend.entity.College;
-import com.example.SmartSeatBackend.entity.Rooms;
-import com.example.SmartSeatBackend.entity.Students;
-import com.example.SmartSeatBackend.entity.Subject;
+import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
 
+import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import org.springframework.beans.BeanUtils;
 
@@ -50,6 +48,7 @@ public class CollegeService {
     private final CollegeRepository collegeRepo;
     private final RoomsRepository roomsRepo;
     private final StudentRepository studentRepo;
+    public final TimetableRepo timetableRepo;
 //    private final MessageService msgService;
     private final HelperMethods helper;
 
@@ -222,4 +221,15 @@ public class CollegeService {
 
         return List.of("Successfully saved " + roomsToSave.size() + " rooms in batch.");
     }
+
+
+
+    public List<Timetable> getTimetable(String branch,Integer semester)
+    {
+        Boolean completed=false;
+        List<Timetable> timeTable= timetableRepo.findBybranchAndSemesterAndCompleted(branch,semester,completed);
+
+        return timeTable;
+    }
+
 }

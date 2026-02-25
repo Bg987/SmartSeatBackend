@@ -32,4 +32,10 @@ public class Timetable {
 
     @Column(name="batchid")
     private String batchId;
+
+    @Column(name="branch")
+    private String branch;
+
+    @Column(name="semester")
+    private Integer semester;
 }

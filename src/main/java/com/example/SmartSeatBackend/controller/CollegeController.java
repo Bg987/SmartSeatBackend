@@ -3,8 +3,10 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
+import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
+import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.service.CollegeService;
@@ -155,5 +157,18 @@ public class CollegeController {
 
 
 
+
+    //Get time table for specific branch and semester----------
+
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getTimetable/{branch}/{semester}")
+
+
+    public ResponseEntity<List<Timetable>> getTimetable(@PathVariable String branch,@PathVariable Integer semester) {
+
+        List<Timetable>timeTable = colService.getTimetable(branch,semester);
+
+        return ResponseEntity.ok(timeTable);
+    }
 
 }

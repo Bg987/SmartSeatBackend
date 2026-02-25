@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.repository.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -184,11 +185,28 @@ public class UniversityService {
         return responses;
     }
 
+    @Transactional
     public ResponseEntity<Map<String, Object>> generateTimetable(List<TimetableDTO> timetableDTOList) {
 
         List<Timetable> savedTimetables = new ArrayList<>();
 
+        if (timetableDTOList == null || timetableDTOList.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", false,
+                    "message", "Timetable list is empty"
+            ));
+        }
+
+        // 🔹 Get branch & semester from first DTO
+        String branch = timetableDTOList.get(0).getBranch();
+        Integer semester = timetableDTOList.get(0).getSemester();
+
+        // 🔹 Mark old timetables completed
+        timetableRepo.markOldTimetablesCompleted(branch, semester);
+
+        // 🔹 Generate new batch id
         String batchId = UUID.randomUUID().toString();
+
         for (TimetableDTO timetableDTO : timetableDTOList) {
 
             Timetable timetable = new Timetable();
@@ -196,10 +214,10 @@ public class UniversityService {
             timetable.setSubjectId(timetableDTO.getSubjectId());
             timetable.setSubjectName(timetableDTO.getSubjectName());
             timetable.setExamDate(timetableDTO.getExamDate());
-            timetable.setCompleted(false);//temporary....
+            timetable.setCompleted(false); // new batch always active
             timetable.setBatchId(batchId);
-
-
+            timetable.setBranch(timetableDTO.getBranch());
+            timetable.setSemester(timetableDTO.getSemester());
 
             savedTimetables.add(timetableRepo.save(timetable));
         }
@@ -209,7 +227,7 @@ public class UniversityService {
         response.put("message", "Time table generated successfully");
         response.put("count", savedTimetables.size());
         response.put("data", savedTimetables);
-        response.put("batchId",batchId);
+        response.put("batchId", batchId);
 
         return ResponseEntity.ok(response);
     }
