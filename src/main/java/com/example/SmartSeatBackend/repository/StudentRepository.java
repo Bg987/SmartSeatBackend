@@ -20,8 +20,15 @@ public interface StudentRepository extends JpaRepository<Students, String> {
 
     List<Students>findByCollegeId(Long collegeId);
 
-
-
+    @Query("""
+SELECT s FROM Students s
+WHERE s.collegeId = :collegeId
+AND :subject NOT MEMBER OF s.backlogSubjects
+""")
+    List<Students> findStudentsWithoutBacklog(
+            @Param("collegeId") Long collegeId,
+            @Param("subject") String subject
+    );
     Optional<Students> findByEmail(String mail);
 
     @Modifying //for update/delete queries

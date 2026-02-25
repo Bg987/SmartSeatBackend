@@ -4,10 +4,7 @@ import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
-import com.example.SmartSeatBackend.entity.College;
-import com.example.SmartSeatBackend.entity.Subject;
-import com.example.SmartSeatBackend.entity.Timetable;
-import com.example.SmartSeatBackend.entity.User;
+import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
@@ -148,11 +145,11 @@ public class UniversityController {
 
 
     @PreAuthorize("hasRole('university')")
-        @PostMapping("/allocate/{collegeId}")
+        @PostMapping("/allocate/{collegeId}/{subjectCode}")
         public String allocate(
-                @PathVariable Long collegeId) {
+                @PathVariable Long collegeId,@PathVariable String subjectCode) {
 
-            Seatservice.allocateByCollege(collegeId);
+            Seatservice.allocateByCollege(collegeId,subjectCode);
 
             return "Seat allocation completed!";
 
@@ -188,5 +185,15 @@ public class UniversityController {
     public Long countOfRooms(@PathVariable Long collegeId)
     {
         return uniservice.getCountofRooms(collegeId);
+    }
+
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/subjects/filter")
+    public List<Subject> getSubjectsByDepartmentBranchSemester(
+            @RequestBody SubjectDTO subjectFilterDTO)
+    {
+        List<Subject>Subjects=uniservice.getSubjectsDepartmentBranchSemester(subjectFilterDTO.getDepartment(),subjectFilterDTO.getBranch(),subjectFilterDTO.getSemester());
+        return Subjects;
+
     }
 }

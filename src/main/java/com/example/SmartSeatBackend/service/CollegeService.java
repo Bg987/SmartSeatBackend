@@ -50,10 +50,10 @@ public class CollegeService {
     private final CollegeRepository collegeRepo;
     private final RoomsRepository roomsRepo;
     private final StudentRepository studentRepo;
-    private final MessageService msgService;
+//    private final MessageService msgService;
     private final HelperMethods helper;
 
-    
+
     public String addStudent(StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
@@ -62,33 +62,41 @@ public class CollegeService {
 
         Students student = new Students();
 
+        // Copy properties first
+        BeanUtils.copyProperties(dto, student);
+
+        // Backlog validation
+        if (student.isHasBacklog()) {
+            if (student.getBacklogSubjects() == null || student.getBacklogSubjects().isEmpty()) {
+                return "Error: Backlog subjects required when hasBacklog is true!";
+            }
+        } else {
+            student.setBacklogSubjects(null);
+        }
+
         // Generate Random Password
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        String encodedPassword = passwordEncoder.encode(rawPassword);
-        student.setPassword(encodedPassword);
-        student.setCollegeId(helper.getCollegeIdByUserId());//fetch collegeid from jwt cookie
-        BeanUtils.copyProperties(dto, student);
-        // Save to Database
-        studentRepo.save(student);
-        //email service
-        msgService.sendRegistrationEvent(
-                dto.getEmail(),
-                rawPassword,
-                dto.getName(),
-                String.valueOf(student.getCollegeId()));
+        student.setPassword(passwordEncoder.encode(rawPassword));
 
+        // Set college id
         student.setCollegeId(helper.getCollegeIdByUserId());
 
-        BeanUtils.copyProperties(dto, student);
-
+        // Save once
         studentRepo.save(student);
+
+        // Send email
+//        msgService.sendRegistrationEvent(
+//                dto.getEmail(),
+//                rawPassword,
+//                dto.getName(),
+//                String.valueOf(student.getCollegeId())
+//        );
 
         return "Student saved successfully with enrollment: "
                 + student.getEnrollmentNo()
                 + " | Temporary Password: "
                 + rawPassword;
     }
-
     public List<String> saveStudentsFromCSV(MultipartFile file) throws IOException {
 
         List<String> responses = new ArrayList<>();
@@ -118,6 +126,26 @@ public class CollegeService {
                 String subjectsRaw = record.get("subjects");
                 List<String> subjects = List.of(subjectsRaw.split("\\|"));
                 student.setSubjects(subjects);
+
+
+                boolean hasBacklog = Boolean.parseBoolean(record.get("hasBacklog"));
+                student.setHasBacklog(hasBacklog);
+
+                // Backlog Subjects
+                String backlogRaw = record.get("backlogSubjects");
+
+                if (hasBacklog) {
+                    if (backlogRaw == null || backlogRaw.isEmpty()) {
+                        responses.add("Error for Enrollment "
+                                + student.getEnrollmentNo()
+                                + ": Backlog subjects required when hasBacklog is true.");
+                        continue; // Skip this record
+                    }
+                    student.setBacklogSubjects(List.of(backlogRaw.split("\\|")));
+                } else {
+                    student.setBacklogSubjects(null);
+                }
+
 
                 // Validation
                 Set<ConstraintViolation<StudentsDTO>> violations =

@@ -31,4 +31,7 @@ public class TempCollegeDTO {
 
     @NotBlank(message = "Address is required")
     private String address;
+
+    @NotBlank(message="Department is required")
+    private String department;
 }

@@ -50,6 +50,9 @@ public class UniversityService {
         Subject subject = new Subject();
         subject.setSubjectName(subjectdto.getSubjectName());
         subject.setSubjectId(subjectdto.getSubjectId());
+        subject.setDepartment(subjectdto.getDepartment());
+        subject.setBranch(subjectdto.getBranch());
+        subject.setSemester(subjectdto.getSemester());
 
         subRepo.save(subject);
 
@@ -77,6 +80,10 @@ public class UniversityService {
                 SubjectDTO sub = new SubjectDTO();
                 sub.setSubjectId(record.get("subjectId"));
                 sub.setSubjectName(record.get("subjectName"));
+                sub.setDepartment(record.get("department"));
+                sub.setBranch(record.get("branch"));
+                sub.setSemester(Integer.parseInt(record.get("semester").toString()));
+
 
                 ResponseEntity<String> response = addSubject(sub);
                 responses.add("SUCCESS: " + response.getBody());
@@ -102,6 +109,7 @@ public class UniversityService {
         userCollege.setMobileNumber(collegeData.getContactNumber());
         userCollege.setRole(User.Role.college);
 
+
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         userCollege.setPassword(passwordEncoder.encode(rawPassword));
 
@@ -110,18 +118,19 @@ public class UniversityService {
         College college = new College();
         college.setName(collegeData.getCollegeName());
         college.setAddress(collegeData.getAddress());
+        college.setDepartment(collegeData.getDepartment());
         college.setUser(savedUser);
 
         collegeRepo.save(college);
 
         //email service
         //collegeID set to null so function identify data either student or college so send data based on it to kafka
-         msgService.sendRegistrationEvent(
-                 collegeData.getEmail(),
-                 rawPassword,
-                 collegeData.getCollegeName(),
-                 null
-         );
+//         msgService.sendRegistrationEvent(
+//                 collegeData.getEmail(),
+//                 rawPassword,
+//                 collegeData.getCollegeName(),
+//                 null
+//         );
 
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
@@ -151,6 +160,7 @@ public class UniversityService {
                 tempCollege.setAddress(record.get("address"));
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
+                tempCollege.setDepartment(record.get("department"));
 
                 Set<ConstraintViolation<TempCollegeDTO>> violations =
                         validator.validate(tempCollege);
@@ -218,5 +228,10 @@ public class UniversityService {
     public Long getCountofRooms(Long collegeId)
     {
         return roomRepo.countByCollege_CollegeId(collegeId);
+    }
+
+    public List<Subject>getSubjectsDepartmentBranchSemester(String department,String branch,Integer semester)
+    {
+        return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 }
