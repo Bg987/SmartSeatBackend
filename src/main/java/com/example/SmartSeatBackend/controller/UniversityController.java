@@ -73,9 +73,6 @@ public class UniversityController {
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
     public ResponseEntity<List<User>> getAllColleges() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String role = auth.getAuthorities().toString();
-        System.out.println(role);
         return uniservice.getAllColleges();
     }
 
@@ -166,7 +163,6 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/showCollegeDetail/{userId}")
-
     public College showCollegeDetails(@PathVariable Long userId)
     {
         return uniservice.getCollegeByUser(userId);

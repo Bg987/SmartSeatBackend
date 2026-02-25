@@ -3,9 +3,17 @@ server:
   tomcat:
     max-swallow-size: 10MB
 spring:
+  ai:
+    gemini:
+      api-key: ${GEMINI_API_KEY}
+      chat:
+        options:
+          model: gemini-2.0-flash
+          temperature: 0.7
   servlet:
     multipart:
-      max-file-size: 6MB
+      max-file-size: 20MB
+      max-request-size: 20MB
   datasource:
     hikari:
       maximum-pool-size: 2
@@ -39,3 +47,10 @@ spring:
 app:
   cloudinary:
     url: cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies
+logging:
+  level:
+    # Disable PDFBox and Fontbox warnings to keep the console clean
+    org.apache.pdfbox: OFF
+    org.apache.fontbox: OFF
+    # Optional: Log the exact HTTP requests to Ollama
+    org.springframework.ai.ollama: DEBUG

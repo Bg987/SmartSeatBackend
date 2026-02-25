@@ -135,8 +135,15 @@ public class UniversityService {
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
-    //  Upload Colleges CSV
+    public College getCollegeByUser(Long userId) {
 
+        return collegeRepo.findByUser_userId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("College not found with userId: " + userId)
+                );
+    }
+
+    //  Upload Colleges CSV
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
 
@@ -212,14 +219,6 @@ public class UniversityService {
         return timetableRepo.findByBatchId(batchId);
     }
 
-    public College getCollegeByUser(Long userId) {
-
-        return collegeRepo.findByUser_userId(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("College not found with userId: " + userId)
-                );
-    }
-
     public Long getCountOfStudents(Long collegeId)
     {
         return studentRepo.countByCollegeId(collegeId);
@@ -234,4 +233,5 @@ public class UniversityService {
     {
         return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
+
 }
