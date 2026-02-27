@@ -16,9 +16,9 @@ spring:
       max-request-size: 20MB
   datasource:
     hikari:
-      maximum-pool-size: 5
-      minimum-idle: 2
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
+      maximum-pool-size: 3
+      minimum-idle: 1
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require&prepareThreshold=0
     username: postgres.axxwxwxnqteramwkrwrn
     password: 39UknJkH1SsVc16v
     driver-class-name: org.postgresql.Driver
@@ -40,6 +40,8 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
