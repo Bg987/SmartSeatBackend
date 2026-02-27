@@ -16,4 +16,15 @@ public class Subject {
 
     @Column(name = "subject_name", nullable = false, length = 50)
     private String subjectName;
+
+
+    @Column(name="department")
+    private String department;
+
+    @Column(name="branch")
+    private String branch;
+
+    @Column(name="semester")
+    private Integer semester;
+
 }

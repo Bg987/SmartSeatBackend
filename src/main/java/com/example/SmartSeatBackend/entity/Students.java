@@ -52,6 +52,13 @@ public class Students {
     @Column(name = "has_backlog")
     private boolean hasBacklog = false;
 
+    @ElementCollection
+    @CollectionTable(
+            name = "back_subjects",
+            joinColumns = @JoinColumn(name = "enrollment_no")
+    )
+
+    private List<String> backlogSubjects;
     @Column(name = "img_url")
     private String imgUrl;
 

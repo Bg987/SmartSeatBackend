@@ -24,9 +24,9 @@ public class AllocationService {
     private final SeatAllocationRepo seatRepo;
 
     @Transactional
-    public String allocateByCollege(Long collegeId) {
+    public String allocateByCollege(Long collegeId,String subjectCode) {
 
-        List<Students> students = studentRepo.findByCollegeId(collegeId);
+        List<Students> students = studentRepo.findStudentsWithoutBacklog(collegeId,subjectCode);
         List<Rooms> rooms = roomRepo.findByCollegeCollegeId(collegeId);
 
         if (students.isEmpty() || rooms.isEmpty()) {

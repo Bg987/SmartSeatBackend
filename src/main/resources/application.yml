@@ -16,11 +16,11 @@ spring:
       max-request-size: 20MB
   datasource:
     hikari:
-      maximum-pool-size: 3
+      maximum-pool-size: 2
       minimum-idle: 1
-    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require&prepareThreshold=0
+    url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
     username: postgres.axxwxwxnqteramwkrwrn
-    password: 39UknJkH1SsVc16v
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   kafka:
@@ -40,15 +40,13 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        temp:
-          use_jdbc_metadata_defaults: false
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 app:
   cloudinary:
-    url: cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies
+    url: ${CLOUDINARY_URL}
 logging:
   level:
     # Disable PDFBox and Fontbox warnings to keep the console clean

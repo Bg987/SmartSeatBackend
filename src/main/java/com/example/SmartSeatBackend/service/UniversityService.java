@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.repository.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
@@ -50,6 +51,9 @@ public class UniversityService {
         Subject subject = new Subject();
         subject.setSubjectName(subjectdto.getSubjectName());
         subject.setSubjectId(subjectdto.getSubjectId());
+        subject.setDepartment(subjectdto.getDepartment());
+        subject.setBranch(subjectdto.getBranch());
+        subject.setSemester(subjectdto.getSemester());
 
         subRepo.save(subject);
 
@@ -77,6 +81,10 @@ public class UniversityService {
                 SubjectDTO sub = new SubjectDTO();
                 sub.setSubjectId(record.get("subjectId"));
                 sub.setSubjectName(record.get("subjectName"));
+                sub.setDepartment(record.get("department"));
+                sub.setBranch(record.get("branch"));
+                sub.setSemester(Integer.parseInt(record.get("semester").toString()));
+
 
                 ResponseEntity<String> response = addSubject(sub);
                 responses.add("SUCCESS: " + response.getBody());
@@ -102,6 +110,7 @@ public class UniversityService {
         userCollege.setMobileNumber(collegeData.getContactNumber());
         userCollege.setRole(User.Role.college);
 
+
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         userCollege.setPassword(passwordEncoder.encode(rawPassword));
 
@@ -110,18 +119,19 @@ public class UniversityService {
         College college = new College();
         college.setName(collegeData.getCollegeName());
         college.setAddress(collegeData.getAddress());
+        college.setDepartment(collegeData.getDepartment());
         college.setUser(savedUser);
 
         collegeRepo.save(college);
 
         //email service
         //collegeID set to null so function identify data either student or college so send data based on it to kafka
-         msgService.sendRegistrationEvent(
-                 collegeData.getEmail(),
-                 rawPassword,
-                 collegeData.getCollegeName(),
-                 null
-         );
+//         msgService.sendRegistrationEvent(
+//                 collegeData.getEmail(),
+//                 rawPassword,
+//                 collegeData.getCollegeName(),
+//                 null
+//         );
 
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
@@ -158,6 +168,7 @@ public class UniversityService {
                 tempCollege.setAddress(record.get("address"));
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
+                tempCollege.setDepartment(record.get("department"));
 
                 Set<ConstraintViolation<TempCollegeDTO>> violations =
                         validator.validate(tempCollege);
@@ -174,11 +185,28 @@ public class UniversityService {
         return responses;
     }
 
+    @Transactional
     public ResponseEntity<Map<String, Object>> generateTimetable(List<TimetableDTO> timetableDTOList) {
 
         List<Timetable> savedTimetables = new ArrayList<>();
 
+        if (timetableDTOList == null || timetableDTOList.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", false,
+                    "message", "Timetable list is empty"
+            ));
+        }
+
+        // 🔹 Get branch & semester from first DTO
+        String branch = timetableDTOList.get(0).getBranch();
+        Integer semester = timetableDTOList.get(0).getSemester();
+
+        // 🔹 Mark old timetables completed
+        timetableRepo.markOldTimetablesCompleted(branch, semester);
+
+        // 🔹 Generate new batch id
         String batchId = UUID.randomUUID().toString();
+
         for (TimetableDTO timetableDTO : timetableDTOList) {
 
             Timetable timetable = new Timetable();
@@ -186,10 +214,10 @@ public class UniversityService {
             timetable.setSubjectId(timetableDTO.getSubjectId());
             timetable.setSubjectName(timetableDTO.getSubjectName());
             timetable.setExamDate(timetableDTO.getExamDate());
-            timetable.setCompleted(false);//temporary....
+            timetable.setCompleted(false); // new batch always active
             timetable.setBatchId(batchId);
-
-
+            timetable.setBranch(timetableDTO.getBranch());
+            timetable.setSemester(timetableDTO.getSemester());
 
             savedTimetables.add(timetableRepo.save(timetable));
         }
@@ -199,7 +227,7 @@ public class UniversityService {
         response.put("message", "Time table generated successfully");
         response.put("count", savedTimetables.size());
         response.put("data", savedTimetables);
-        response.put("batchId",batchId);
+        response.put("batchId", batchId);
 
         return ResponseEntity.ok(response);
     }
@@ -217,6 +245,11 @@ public class UniversityService {
     public Long getCountofRooms(Long collegeId)
     {
         return roomRepo.countByCollege_CollegeId(collegeId);
+    }
+
+    public List<Subject>getSubjectsDepartmentBranchSemester(String department,String branch,Integer semester)
+    {
+        return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 
 }
