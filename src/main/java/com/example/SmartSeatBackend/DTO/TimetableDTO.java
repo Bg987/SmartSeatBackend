@@ -27,6 +27,8 @@ public class TimetableDTO {
     private String batchId;//for conserving single time table...
 
     private String branch;
+
+    @NotNull(message = "Exam semester is required")
     private Integer semester;
 
     @AssertTrue(message = "Exam date must be at least 1 month from today and not in the past")

@@ -24,105 +24,107 @@ public class AllocationService {
     private final SeatAllocationRepo seatRepo;
 
     @Transactional
-    public String allocateByCollege(Long collegeId,String subjectCode) {
-
-        List<Students> students = studentRepo.findStudentsWithoutBacklog(collegeId,subjectCode);
-        List<Rooms> rooms = roomRepo.findByCollegeCollegeId(collegeId);
-
-        if (students.isEmpty() || rooms.isEmpty()) {
-            return "No students or rooms found for allocation.";
+    public String allocateByGroupedMap(Map<String, List<String>> collegeToEnrMap) {
+        if (collegeToEnrMap == null || collegeToEnrMap.isEmpty()) {
+            return "No data provided for allocation.";
         }
 
-        // 🔹 Check total seat capacity
-        int totalSeats = rooms.stream()
-                .mapToInt(Rooms::getCapacity)
-                .sum();
+        List<SeatAllocation> allAllocations = new ArrayList<>();
+        StringBuilder statusReport = new StringBuilder();
 
-        if (students.size() > totalSeats) {
-            return "Not enough seats available for all students.";
+        // Iterate over each college group
+        for (Map.Entry<String, List<String>> entry : collegeToEnrMap.entrySet()) {
+            Long collegeId = Long.parseLong(entry.getKey());
+            List<String> enrList = entry.getValue();
+
+            // 1. Fetch Students and Rooms for this specific college
+            List<Students> students = studentRepo.findAllByEnrollmentNoIn(enrList);
+            List<Rooms> rooms = roomRepo.findByCollegeCollegeId(collegeId);
+
+            if (students.isEmpty() || rooms.isEmpty()) {
+                statusReport.append("College ").append(collegeId).append(": Skipped (No rooms/students). ");
+                continue;
+            }
+
+            // 2. Capacity Check
+            int totalSeats = rooms.stream().mapToInt(Rooms::getCapacity).sum();
+            if (students.size() > totalSeats) {
+                statusReport.append("College ").append(collegeId).append(": Error (Insufficient Seats). ");
+                continue;
+            }
+
+            // 3. Clear previous data for this college
+            seatRepo.deleteByCollegeId(collegeId);
+
+            // 4. Group by Branch for the "isSafe" logic
+            Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
+            for (Students s : students) {
+                branchMap.computeIfAbsent(s.getBranch(), k -> new LinkedList<>()).add(s);
+            }
+
+            // 5. Run the Grid Allocation Logic
+            List<SeatAllocation> collegeResults = runGridLogic(rooms, branchMap, collegeId);
+            allAllocations.addAll(collegeResults);
+
+            statusReport.append("College ").append(collegeId).append(": Success. ");
         }
 
-        // 🔹 Delete previous allocation
-        seatRepo.deleteByCollegeId(collegeId);
+        // 6. Bulk Save for performance
+        seatRepo.saveAll(allAllocations);
 
-        // 🔹 Branch grouping
-        Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
-        for (Students s : students) {
-            branchMap
-                    .computeIfAbsent(s.getBranch(), k -> new LinkedList<>())
-                    .add(s);
-        }
+        return "Process Finished: " + statusReport.toString();
+    }
 
-        boolean singleBranchWarning = branchMap.size() < 2;
-
+    private List<SeatAllocation> runGridLogic(List<Rooms> rooms, Map<String, Queue<Students>> branchMap, Long collegeId) {
         List<SeatAllocation> allocations = new ArrayList<>();
+        List<String> branches = new ArrayList<>(branchMap.keySet());
+        int branchIndex = 0;
 
         for (Rooms room : rooms) {
-
             int capacity = room.getCapacity();
-
             int rows = (int) Math.sqrt(capacity);
             int cols = (int) Math.ceil((double) capacity / rows);
-
             Students[][] grid = new Students[rows][cols];
-
-            List<String> branches = new ArrayList<>(branchMap.keySet());
-            int branchIndex = 0;
 
             for (int r = 0; r < rows; r++) {
                 for (int c = 0; c < cols; c++) {
-
-                    if (branchMap.isEmpty())
-                        break;
+                    if (branchMap.isEmpty()) break;
 
                     Students allocatedStudent = null;
-
                     int attempts = 0;
 
                     while (attempts < branches.size()) {
-
-                        if (branches.isEmpty())
-                            break;
+                        if (branches.isEmpty()) break;
 
                         String branch = branches.get(branchIndex);
                         branchIndex = (branchIndex + 1) % branches.size();
 
                         Queue<Students> queue = branchMap.get(branch);
-
                         if (queue == null || queue.isEmpty()) {
                             branchMap.remove(branch);
                             branches.remove(branch);
                             continue;
                         }
 
-                        Students student = queue.peek();
-
-                        if (isSafe(grid, r, c, student)) {
+                        if (isSafe(grid, r, c, queue.peek())) {
                             allocatedStudent = queue.poll();
                             break;
                         }
-
                         attempts++;
                     }
 
-                    // 🔹 Fallback allocation
+                    // Fallback: If no "safe" student found, take whoever is next
                     if (allocatedStudent == null) {
-                        for (String branch : new ArrayList<>(branches)) {
-
-                            Queue<Students> queue = branchMap.get(branch);
-
-                            if (queue != null && !queue.isEmpty()) {
-                                allocatedStudent = queue.poll();
+                        for (String b : new ArrayList<>(branches)) {
+                            Queue<Students> q = branchMap.get(b);
+                            if (q != null && !q.isEmpty()) {
+                                allocatedStudent = q.poll();
                                 break;
-                            } else {
-                                branchMap.remove(branch);
-                                branches.remove(branch);
                             }
                         }
                     }
 
                     if (allocatedStudent != null) {
-
                         grid[r][c] = allocatedStudent;
 
                         SeatAllocation seat = new SeatAllocation();
@@ -131,77 +133,19 @@ public class AllocationService {
                         seat.setRowNo(r);
                         seat.setColNo(c);
                         seat.setCollegeId(collegeId);
-
                         allocations.add(seat);
                     }
                 }
             }
         }
-
-        // 🔹 Bulk Save (Performance Optimized)
-        seatRepo.saveAll(allocations);
-
-        if (singleBranchWarning) {
-            return "Allocation completed with warning: Only one branch present. Proper mixing not possible.";
-        }
-
-        return "Seat allocation completed successfully.";
+        return allocations;
     }
 
-    // 🔹 Full adjacency safety check
     private boolean isSafe(Students[][] grid, int r, int c, Students s) {
-
         String branch = s.getBranch();
-
-        // Left
-        if (c - 1 >= 0 &&
-                grid[r][c - 1] != null &&
-                grid[r][c - 1].getBranch().equals(branch))
-            return false;
-
-        // Top
-        if (r - 1 >= 0 &&
-                grid[r - 1][c] != null &&
-                grid[r - 1][c].getBranch().equals(branch))
-            return false;
-
-        // Right
-        if (c + 1 < grid[0].length &&
-                grid[r][c + 1] != null &&
-                grid[r][c + 1].getBranch().equals(branch))
-            return false;
-
-        // Bottom
-        if (r + 1 < grid.length &&
-                grid[r + 1][c] != null &&
-                grid[r + 1][c].getBranch().equals(branch))
-            return false;
-
+        if (c - 1 >= 0 && grid[r][c - 1] != null && grid[r][c - 1].getBranch().equals(branch)) return false;
+        if (r - 1 >= 0 && grid[r - 1][c] != null && grid[r - 1][c].getBranch().equals(branch)) return false;
+        // Optimization: Usually checking left and top is enough for sequential filling
         return true;
-    }
-
-
-
-    public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(Long collegeId) {
-
-        List<SeatAllocation> seats = seatRepo.findBycollegeId(collegeId);
-
-        if (seats.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        List<GetSeatingPlan> response = seats.stream()
-                .map(seat -> GetSeatingPlan.builder()
-                        .enrollmentNo(seat.getStudent().getEnrollmentNo())
-                        .name(seat.getStudent().getName())
-                        .branch(seat.getStudent().getBranch())
-                        .semester(seat.getStudent().getSemester())
-                        .row(seat.getRowNo())
-                        .column(seat.getColNo())
-                        .room_id(seat.getRoom().getRoomNumber())
-                        .build())
-                .toList();
-
-        return ResponseEntity.ok(response);
     }
 }

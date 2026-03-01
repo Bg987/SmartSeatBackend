@@ -1,12 +1,10 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.StudentEnrollmentDTO;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
-import com.example.SmartSeatBackend.entity.Subject;
-import com.example.SmartSeatBackend.entity.Timetable;
-import com.example.SmartSeatBackend.entity.User;
-import com.example.SmartSeatBackend.entity.College;
+import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
@@ -26,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -40,6 +39,8 @@ public class UniversityService {
     private final TimetableRepo timetableRepo;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
+    private final AllocationService allocationService;
+    private final SubjectStudentRepository subjectRepo;
     //  Get All Subjects
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
@@ -252,4 +253,25 @@ public class UniversityService {
         return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 
+
+    public void mainWork(Long ExamId){
+
+        String subjectCode = timetableRepo.findsubjectIdById(ExamId);
+        Integer semester = timetableRepo.findSemesterById(ExamId);
+        List<StudentEnrollmentDTO> students = studentRepo.findStudentsForExam(subjectCode,semester);
+        System.out.println("subject = "+subjectCode);
+
+        //map students enrolment number list to their collegeIds
+        Map<String, List<String>> collegeToEnrMap= students.stream()
+                .collect(Collectors.groupingBy(
+                        StudentEnrollmentDTO::getCollegeId, // Key of the map
+                        Collectors.mapping(
+                                StudentEnrollmentDTO::getEnrollmentNo, // Value inside the list
+                                Collectors.toList()
+                        )
+                ));
+        String finalStatus = allocationService.allocateByGroupedMap(collegeToEnrMap);
+
+        System.out.println(finalStatus);
+    }
 }

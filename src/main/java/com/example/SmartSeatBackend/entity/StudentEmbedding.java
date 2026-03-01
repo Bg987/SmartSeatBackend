@@ -2,8 +2,7 @@ package com.example.SmartSeatBackend.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+
 
 @Data
 @Entity
@@ -18,6 +17,6 @@ public class StudentEmbedding {
     private Long studentId;
 
 
-    @Column(name = "face_embedding", columnDefinition = "vector(128)")
+    @Column(name = "face_embedding", columnDefinition = "vector(512)")
     private float[] faceEmbedding;
 }

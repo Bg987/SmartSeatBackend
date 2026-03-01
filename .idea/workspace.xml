@@ -6,8 +6,14 @@
   <component name="ChangeListManager">
     <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+<<<<<<< HEAD
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
+=======
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/StudentRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/StudentRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" afterDir="false" />
+>>>>>>> aea00f2e3daf5c597a6dd36a90f41dddefbc96cd
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,8 +29,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Interface" />
         <option value="Class" />
+        <option value="Interface" />
       </list>
     </option>
   </component>
@@ -70,7 +76,10 @@
     &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
     &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+<<<<<<< HEAD
     &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+=======
+>>>>>>> aea00f2e3daf5c597a6dd36a90f41dddefbc96cd
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -109,7 +118,11 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="SmartSeatBackend (1)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+    <configuration name="SmartSeatBackend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <envs>
+        <env name="CLOUDINARY_URL" value="cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies" />
+        <env name="DB_PASSWORD" value="39UknJkH1SsVc16v" />
+      </envs>
       <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
       <module name="SmartSeatBackend" />
       <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.SmartSeatBackend.SmartSeatBackend" />
@@ -123,6 +136,11 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.SmartSeatBackend" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
