@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     List<Timetable> findByBatchId(String batchId);
@@ -17,6 +18,11 @@ public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     void markOldTimetablesCompleted(@Param("branch") String branch,
                                     @Param("semester") Integer semester);
 
-
     List<Timetable> findBybranchAndSemesterAndCompleted(String branch,Integer semester,Boolean completed);
+
+    @Query("SELECT t.semester FROM Timetable t WHERE t.id = :id")
+    Integer findSemesterById(@Param("id") Long id);
+
+    @Query("SELECT t.subjectId FROM Timetable t WHERE t.id = :id")
+    String findsubjectIdById(@Param("id") Long id);
 }

@@ -192,4 +192,13 @@ public class UniversityController {
         return Subjects;
 
     }
+
+    //@PreAuthorize("hasRole('university')")
+    @PostMapping("/main/{examId}")
+    public String mainWork(@PathVariable Long examId)
+    {
+        uniservice.mainWork(examId);
+
+        return "done working in background";
+    }
 }

@@ -3,10 +3,7 @@ package com.example.SmartSeatBackend.service;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
-import com.example.SmartSeatBackend.entity.Subject;
-import com.example.SmartSeatBackend.entity.Timetable;
-import com.example.SmartSeatBackend.entity.User;
-import com.example.SmartSeatBackend.entity.College;
+import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
@@ -40,6 +37,7 @@ public class UniversityService {
     private final TimetableRepo timetableRepo;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
+    private final SubjectStudentRepository subjectRepo;
     //  Get All Subjects
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
@@ -252,4 +250,15 @@ public class UniversityService {
         return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 
+
+    public void mainWork(Long ExamId){
+
+        String subjectCode = timetableRepo.findsubjectIdById(ExamId);
+        Integer semester = timetableRepo.findSemesterById(ExamId);
+        List<String> allStudents = studentRepo.findEnrollmentNumbersSpecial(subjectCode,semester);
+
+        System.out.println("subject = "+subjectCode);
+        System.out.println(allStudents.size());
+        System.out.println("Total students for " + subjectCode + ": " + allStudents.size());
+    }
 }
