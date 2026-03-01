@@ -153,10 +153,14 @@ public class UniversityController {
     }
 
 
-    @PreAuthorize("hasRole('university')")
-    @GetMapping("/getSeattingPlan/{collegeId}")
+    @PreAuthorize("hasAnyRole('university','college')")
+    @GetMapping({"/getSeattingPlan/{collegeId}","getSeatBYCollege/{collegeId}"})
     public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(@PathVariable Long collegeId)
     {
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("Authorities: " + auth.getAuthorities());
+
         return Seatservice.getSeatingPlan(collegeId);
 
     }

@@ -16,8 +16,8 @@ spring:
       max-request-size: 20MB
   datasource:
     hikari:
-      maximum-pool-size: 2
-      minimum-idle: 1
+      maximum-pool-size: 4
+      minimum-idle: 2
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres?sslmode=require
     username: postgres.axxwxwxnqteramwkrwrn
     password: 39UknJkH1SsVc16v
