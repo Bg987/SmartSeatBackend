@@ -48,6 +48,7 @@ public class CollegeController {
 
 
     //Returns students information college vise----
+    @PreAuthorize("hasRole('college')")
     @GetMapping("/students")
     public List<Students> getStudentsByCollege() {
         Long collegeId = helper.getCollegeIdByUserId();

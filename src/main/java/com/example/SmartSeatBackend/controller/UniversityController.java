@@ -1,9 +1,6 @@
 package com.example.SmartSeatBackend.controller;
 
-import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
-import com.example.SmartSeatBackend.DTO.SubjectDTO;
-import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
-import com.example.SmartSeatBackend.DTO.TimetableDTO;
+import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.Timetable;
@@ -119,7 +116,7 @@ public class UniversityController {
         return ResponseEntity.ok(uniservice.getTimetable(batchId));
     }
 
-    // ✅ Seat Allocation
+    //  Seat Allocation
     @PreAuthorize("hasRole('university')")
     @PostMapping("/allocate/{collegeId}/{subjectCode}")
     public ResponseEntity<String> allocate(
@@ -171,5 +168,18 @@ public class UniversityController {
     public ResponseEntity<String> mainWork(@PathVariable Long examId) {
         uniservice.mainWork(examId);
         return ResponseEntity.ok("Done working in background");
+    }
+
+
+
+    @GetMapping("/getSeatBYCollege/{college_id}/{exam_id}")
+    public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
+            @PathVariable Long college_id,
+            @PathVariable Long exam_id) {
+
+        List<GetSeatByCollege> seats =
+                uniservice.getSeatBYCollege(college_id, exam_id);
+
+        return ResponseEntity.ok(seats);
     }
 }

@@ -27,4 +27,8 @@ public class SeatAllocation {
 
     @Column(name = "college_id")
     private Long collegeId;
+
+    @ManyToOne
+    @JoinColumn(name = "timetable_id")
+    private Timetable timetable;
 }
