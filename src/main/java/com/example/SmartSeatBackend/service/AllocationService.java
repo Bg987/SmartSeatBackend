@@ -1,6 +1,5 @@
 package com.example.SmartSeatBackend.service;
 
-import com.example.SmartSeatBackend.DTO.GetSeatingPlan;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.SeatAllocation;
 import com.example.SmartSeatBackend.entity.Students;
@@ -9,8 +8,6 @@ import com.example.SmartSeatBackend.repository.SeatAllocationRepo;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

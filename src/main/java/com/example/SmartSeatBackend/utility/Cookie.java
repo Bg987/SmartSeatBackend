@@ -1,7 +1,6 @@
 package com.example.SmartSeatBackend.utility;
 
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 

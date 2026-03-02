@@ -1,6 +1,5 @@
 package com.example.SmartSeatBackend.service;
 
-import com.example.SmartSeatBackend.entity.StudentEmbedding;
 import com.example.SmartSeatBackend.repository.StudentEmbeddingRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
@@ -18,7 +17,7 @@ import java.util.Map;
 public class FaceApiService {
 
     private  final StudentEmbeddingRepository embeddingRepository; // Inject the new repository
-    // Replace this with the Ngrok URL printed in your Colab console
+    // ngrok url for python api call
     private final String COLAB_URL = "https://nonswimming-nonseriously-lester.ngrok-free.dev/get-embedding";
 
     public float[] getEmbeddingFromColabAndStore(MultipartFile file,Long studentID) throws Exception {

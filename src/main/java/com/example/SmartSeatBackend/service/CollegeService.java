@@ -1,9 +1,7 @@
 package com.example.SmartSeatBackend.service;
 
-import com.example.SmartSeatBackend.DTO.CollegeDTO;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
-import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
@@ -21,11 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
