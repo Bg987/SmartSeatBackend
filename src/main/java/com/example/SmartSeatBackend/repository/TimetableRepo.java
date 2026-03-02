@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     List<Timetable> findByBatchId(String batchId);
@@ -20,9 +19,22 @@ public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
 
     List<Timetable> findBybranchAndSemesterAndCompleted(String branch,Integer semester,Boolean completed);
 
+
+    //fetch incomplete exams
+    List<Timetable> findByAllocatedFalse();
+
+
     @Query("SELECT t.semester FROM Timetable t WHERE t.id = :id")
     Integer findSemesterById(@Param("id") Long id);
 
     @Query("SELECT t.subjectId FROM Timetable t WHERE t.id = :id")
     String findsubjectIdById(@Param("id") Long id);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Timetable t SET t.allocated = true WHERE t.id = :examId")
+    void markAsAllocated(@Param("examId") Long examId);
+
+    @Query("SELECT t.allocated FROM Timetable t WHERE t.id = :id")
+    Boolean findAllocationStatusById(@Param("id") Long id);
 }

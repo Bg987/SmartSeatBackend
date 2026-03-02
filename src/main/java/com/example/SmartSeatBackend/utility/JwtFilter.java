@@ -34,8 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
         if (path.startsWith("/api/auth/login") ||
                 path.startsWith("/api/auth/logout") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs")||
-                path.startsWith("/api/university/main")) {
+                path.startsWith("/v3/api-docs")) {
             System.out.println("filter ignord");
             filterChain.doFilter(request, response);
             return;

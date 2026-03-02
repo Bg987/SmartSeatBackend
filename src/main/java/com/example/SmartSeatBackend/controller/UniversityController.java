@@ -1,10 +1,17 @@
 package com.example.SmartSeatBackend.controller;
 
+<<<<<<< HEAD
 import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Subject;
 import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.entity.User;
+
+import com.example.SmartSeatBackend.DTO.SubjectDTO;
+import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
+import com.example.SmartSeatBackend.DTO.TimetableDTO;
+import com.example.SmartSeatBackend.entity.*;
+
 import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.StringProcess;
@@ -128,12 +135,12 @@ public class UniversityController {
     }
 
     //  Seating Plan API (Production Ready)
- @PreAuthorize("hasRole('university')")
- @GetMapping("/getSeattingPlan/{collegeId}")
- public String getSeatingPlan(@PathVariable Long collegeId)
- { return "currently unavailable";
-     //return Seatservice.getSeatingPlan(collegeId);
-      }
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getSeattingPlan/{collegeId}")
+    public String getSeatingPlan(@PathVariable Long collegeId) {
+        return "currently unavailable";
+        //return Seatservice.getSeatingPlan(collegeId);
+    }
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/showCollegeDetail/{userId}")
@@ -164,12 +171,12 @@ public class UniversityController {
                 subjectFilterDTO.getSemester());
     }
 
+
     @PostMapping("/main/{examId}")
     public ResponseEntity<String> mainWork(@PathVariable Long examId) {
         uniservice.mainWork(examId);
         return ResponseEntity.ok("Done working in background");
     }
-
 
 
     @GetMapping("/getSeatBYCollege/{college_id}/{exam_id}")
@@ -182,4 +189,20 @@ public class UniversityController {
 
         return ResponseEntity.ok(seats);
     }
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getIncompleteExam")
+    public ResponseEntity<?> getIncompleteExam() {
+        try {
+            List<Timetable> unallocatedExams = uniservice.getIncompleteExams();
+            if (unallocatedExams.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body("No unallocated subjects found.");
+            }
+            return ResponseEntity.ok(unallocatedExams);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving data: " + e.getMessage());
+        }
+    }
+
 }

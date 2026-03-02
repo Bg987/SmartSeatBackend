@@ -1,8 +1,6 @@
 package com.example.SmartSeatBackend.utility;
 
 
-
-
 public class ApiResponse {
     private Boolean success;
     private String message;

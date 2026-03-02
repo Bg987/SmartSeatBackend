@@ -3,7 +3,6 @@ package com.example.SmartSeatBackend.controller;
 
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
-import com.example.SmartSeatBackend.DTO.TimetableDTO;
 import com.example.SmartSeatBackend.entity.Rooms;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Timetable;
@@ -13,12 +12,6 @@ import com.example.SmartSeatBackend.service.CollegeService;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,11 +19,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +43,7 @@ public class CollegeController {
     @GetMapping("/students")
     public List<Students> getStudentsByCollege() {
         Long collegeId = helper.getCollegeIdByUserId();
+        System.out.println(collegeId);;
         return studentRepo.findByCollegeId(collegeId);
     }
 

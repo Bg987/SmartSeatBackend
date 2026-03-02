@@ -258,8 +258,11 @@ public class UniversityService {
 
     public void mainWork(Long examId){
 
+
         String subjectCode = timetableRepo.findsubjectIdById(examId);
         Integer semester = timetableRepo.findSemesterById(examId);
+
+
 
         List<StudentEnrollmentDTO> students =
                 studentRepo.findStudentsForExam(subjectCode, semester);
@@ -274,12 +277,23 @@ public class UniversityService {
                                 Collectors.toList()
                         )
                 ));
-
         //  timetableId pass karo
         String finalStatus =
                 allocationService.allocateByGroupedMap(collegeToEnrMap, examId);
 
+
+
         System.out.println(finalStatus);
+        //to prevent multiple times allocation for particuler college
+        timetableRepo.markAsAllocated(examId);
+    }
+
+    public List<Timetable> getIncompleteExams(){
+        return timetableRepo.findByAllocatedFalse();
+    }
+
+    public Boolean checkAllocationStatus(Long ExamID){
+        return timetableRepo.findAllocationStatusById(ExamID);
     }
 
 

@@ -22,7 +22,7 @@ public class TimetableDTO {
     @NotNull(message = "Exam date is required")
     private LocalDate examDate;
 
-    private boolean completed;
+    private boolean completed = false;
 
     private String batchId;//for conserving single time table...
 
