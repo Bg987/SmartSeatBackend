@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.repository.RoomsRepository;
 
 import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.utility.HelperMethods;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 
 import com.example.SmartSeatBackend.repository.StudentRepository;
@@ -46,7 +47,7 @@ public class CollegeService {
     private final HelperMethods helper;
 
 
-    public String addStudent(StudentsDTO dto) {
+    public String addStudent(@NotNull StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
             return "Error: Enrollment number " + dto.getEnrollmentNo() + " already exists!";

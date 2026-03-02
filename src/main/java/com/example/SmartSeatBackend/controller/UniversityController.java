@@ -1,6 +1,5 @@
 package com.example.SmartSeatBackend.controller;
 
-<<<<<<< HEAD
 import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Subject;
