@@ -146,7 +146,7 @@ public class UniversityController {
         public String allocate(
                 @PathVariable Long collegeId,@PathVariable String subjectCode) {
 
-            Seatservice.allocateByCollege(collegeId,subjectCode);
+            //Seatservice.allocateByCollege(collegeId,subjectCode);
 
             return "Seat allocation completed!";
 
@@ -155,9 +155,10 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getSeattingPlan/{collegeId}")
-    public ResponseEntity<List<GetSeatingPlan>> getSeatingPlan(@PathVariable Long collegeId)
+    public String getSeatingPlan(@PathVariable Long collegeId)
     {
-        return Seatservice.getSeatingPlan(collegeId);
+        return "currently unavailable";
+        //return Seatservice.getSeatingPlan(collegeId);
 
     }
 
