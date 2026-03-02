@@ -37,7 +37,7 @@ public class securityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         // Public routes
-                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/v3/api-docs/**", "/swagger-ui/**","/api/university/main/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/logout", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         // Everything else under /api requires authentication for @PreAuthorize to work
                         .requestMatchers("/api/**").authenticated()
 //                        //.anyRequest().authenticated()

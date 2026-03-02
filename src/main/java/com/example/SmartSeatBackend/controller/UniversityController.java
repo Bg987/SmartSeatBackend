@@ -191,12 +191,32 @@ public class UniversityController {
 
     }
 
-    //@PreAuthorize("hasRole('university')")
-    @PostMapping("/main/{examId}")
-    public String mainWork(@PathVariable Long examId)
-    {
-        uniservice.mainWork(examId);
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getIncompleteExam")
+    public ResponseEntity<?> getIncompleteExam(){
+        try{
+            List<Timetable> unallocatedExams = uniservice.getIncompleteExams();
+            if(unallocatedExams.isEmpty()){
+                return ResponseEntity.status(HttpStatus.OK).body("No unallocated subjects found.");
+            }
+            return ResponseEntity.ok(unallocatedExams);
+        }
+        catch(Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving data: " + e.getMessage());
+        }
+    }
 
-        return "done working in background";
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/main/{examId}")
+    public ResponseEntity<?> mainWork(@PathVariable Long examId)
+    {
+        if(uniservice.checkAllocationStatus(examId)){
+            return ResponseEntity.ok("Already allocated for this exam");
+        }
+
+        //uniservice.mainWork(examId);
+
+        return ResponseEntity.ok("Allocation started in background");
     }
 }

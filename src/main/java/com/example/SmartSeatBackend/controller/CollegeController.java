@@ -42,6 +42,7 @@ public class CollegeController {
     @GetMapping("/students")
     public List<Students> getStudentsByCollege() {
         Long collegeId = helper.getCollegeIdByUserId();
+        System.out.println(collegeId);;
         return studentRepo.findByCollegeId(collegeId);
     }
 

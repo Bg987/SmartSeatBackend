@@ -13,7 +13,7 @@ public class BacklogStudent {
     // Your screenshot shows "ID" in uppercase
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "\"ID\"")
+    @Column(name = "id")
     private Long id;
 
     @Column(name = "enrollment_no", nullable = false)

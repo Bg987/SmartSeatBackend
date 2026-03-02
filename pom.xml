@@ -126,6 +126,11 @@
 		</dependency>
 
 		<dependency>
+			<groupId>ai.timefold.solver</groupId>
+			<artifactId>timefold-solver-spring-boot-starter</artifactId>
+			<version>1.10.0</version>
+		</dependency>
+		<dependency>
 			<groupId>ai.djl</groupId>
 			<artifactId>api</artifactId>
 		</dependency>

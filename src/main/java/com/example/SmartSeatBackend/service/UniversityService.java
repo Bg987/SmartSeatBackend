@@ -258,6 +258,7 @@ public class UniversityService {
 
         String subjectCode = timetableRepo.findsubjectIdById(ExamId);
         Integer semester = timetableRepo.findSemesterById(ExamId);
+        //fetch regular and backlog studnets for across all colleges
         List<StudentEnrollmentDTO> students = studentRepo.findStudentsForExam(subjectCode,semester);
         System.out.println("subject = "+subjectCode);
 
@@ -270,8 +271,19 @@ public class UniversityService {
                                 Collectors.toList()
                         )
                 ));
+        //allocate collegeID->{list of enrolmnetnumber} for all the colleges
         String finalStatus = allocationService.allocateByGroupedMap(collegeToEnrMap);
 
         System.out.println(finalStatus);
+        //to prevent multiple times allocation for particuler college
+        timetableRepo.markAsAllocated(ExamId);
+    }
+
+    public List<Timetable> getIncompleteExams(){
+        return timetableRepo.findByAllocatedFalse();
+    }
+
+    public Boolean checkAllocationStatus(Long ExamID){
+        return timetableRepo.findAllocationStatusById(ExamID);
     }
 }

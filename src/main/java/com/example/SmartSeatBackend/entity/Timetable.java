@@ -38,4 +38,7 @@ public class Timetable {
 
     @Column(name="semester")
     private Integer semester;
+
+    @Column(name = "is_allocated", nullable = false, columnDefinition = "boolean default false")
+    private boolean allocated = false;
 }
