@@ -164,4 +164,21 @@ public class CollegeController {
         return ResponseEntity.ok(timeTable);
     }
 
+
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getRoomInfo/{collegeId}/{roomId}")
+    public Map<String, Object>  getRoomNumberAndCapacity(@PathVariable Long collegeId,@PathVariable Long roomId)
+    {
+        return roomRepo.findCapacityAndRoomnumber(collegeId,roomId);
+    }
+
+  //Get Exam name via exam id(timetableId)------
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getExamName/{timeTableId}")
+    public String getExamName(@PathVariable Long timeTableId) {
+
+        return timetableRepo.getExamNameByTimetable(timeTableId);
+    }
+
+
 }
