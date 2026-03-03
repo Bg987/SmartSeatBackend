@@ -41,4 +41,7 @@ public class Timetable {
 
     @Column(name = "is_allocated", nullable = false, columnDefinition = "boolean default false")
     private boolean allocated = false;
+
+    @Column(name = "is_QuestionGenrated", nullable = false, columnDefinition = "boolean default false")
+    private boolean QuestionGenrated = false;
 }

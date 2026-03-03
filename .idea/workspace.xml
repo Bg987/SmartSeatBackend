@@ -4,15 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="">
+    <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="Merge branch 'Authentication' of https://github.com/Bg987/SmartSeatBackend into Authentication&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/SeatAllocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/SeatAllocation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/SeatAllocationRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/SeatAllocationRepo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/CollegeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/CollegeController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/Timetable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/Timetable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/RoomsRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/RoomsRepository.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/TimetableRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/TimetableRepo.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/CollegeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/CollegeService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,6 +47,9 @@
     &quot;accountId&quot;: &quot;fde57961-5a83-430e-876e-f3ca9ca83579&quot;
   }
 }</component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -66,12 +68,15 @@
   <component name="PropertiesComponent">{
   &quot;keyToString&quot;: {
     &quot;Application.SmartSeatBackend.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.SmartSeatBackend [mvn,spring-boot:run].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.SmartSeatBackend [spring-boot:run].executor&quot;: &quot;Run&quot;,
     &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
     &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
     &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
     &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
     &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
     &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
@@ -110,37 +115,62 @@
     </key>
   </component>
   <component name="RunManager">
-    <configuration name="SmartSeatBackend" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
-      <envs>
-        <env name="CLOUDINARY_URL" value="cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies" />
-        <env name="DB_PASSWORD" value="39UknJkH1SsVc16v" />
-      </envs>
-      <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UnknownPolicyInFreeMode" />
-      <module name="SmartSeatBackend" />
-      <option name="SPRING_BOOT_MAIN_CLASS" value="com.example.SmartSeatBackend.SmartSeatBackend" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.example.SmartSeatBackend.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
+    <configuration name="SmartSeatBackend [spring-boot:run]" type="MavenRunConfiguration" factoryName="Maven" nameIsGenerated="true">
+      <MavenSettings>
+        <option name="myGeneralSettings" />
+        <option name="myRunnerSettings">
+          <MavenRunnerSettings>
+            <option name="delegateBuildToMaven" value="false" />
+            <option name="environmentProperties">
+              <map>
+                <entry key="CLOUDINARY_URL" value="cloudinary://256262724346839:hpi0rJYiMi7jP9h9mjCmeWWgSS0@ddlyq5ies" />
+                <entry key="DB_PASSWORD" value="39UknJkH1SsVc16v" />
+              </map>
+            </option>
+            <option name="jreName" value="#USE_PROJECT_JDK" />
+            <option name="mavenProperties">
+              <map />
+            </option>
+            <option name="passParentEnv" value="true" />
+            <option name="skipTests" value="false" />
+            <option name="vmOptions" value="" />
+          </MavenRunnerSettings>
+        </option>
+        <option name="myRunnerParameters">
+          <MavenRunnerParameters>
+            <option name="cmdOptions" />
+            <option name="profiles">
+              <set />
+            </option>
+            <option name="goals">
+              <list>
+                <option value="spring-boot:run" />
+              </list>
+            </option>
+            <option name="multimoduleDir" />
+            <option name="pomFileName" />
+            <option name="profilesMap">
+              <map />
+            </option>
+            <option name="projectsCmdOptionValues">
+              <list />
+            </option>
+            <option name="resolveToWorkspace" value="false" />
+            <option name="workingDirPath" value="$PROJECT_DIR$" />
+          </MavenRunnerParameters>
+        </option>
+      </MavenSettings>
+      <method v="2" />
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Spring Boot.SmartSeatBackend" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+        <option value="jdk-19.0.2-corretto-19.0.2-4caba194b151-48ba4555" />
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="" />
@@ -180,6 +210,15 @@
       <workItem from="1771230839810" duration="642000" />
       <workItem from="1771231523002" duration="145000" />
     </task>
+    <task id="LOCAL-00001" summary="Merge branch 'Authentication' of https://github.com/Bg987/SmartSeatBackend into Authentication&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
+      <option name="closed" value="true" />
+      <created>1772530637155</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1772530637155</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -223,6 +262,11 @@
           <url>file://$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/StudentService.java</url>
           <line>40</line>
           <option name="timeStamp" value="2" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java</url>
+          <line>43</line>
+          <option name="timeStamp" value="3" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

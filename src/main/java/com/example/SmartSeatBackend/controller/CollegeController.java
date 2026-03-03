@@ -8,6 +8,7 @@ import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.Timetable;
 import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
+import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.service.CollegeService;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,8 @@ public class CollegeController {
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
     private final HelperMethods helper;
-
+    private final RoomsRepository roomsRepository;
+    private final TimetableRepo timetableRepo;
 
     //Returns students information college vise----
     @PreAuthorize("hasRole('college')")
