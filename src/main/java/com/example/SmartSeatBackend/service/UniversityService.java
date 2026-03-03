@@ -259,16 +259,15 @@ public class UniversityService {
     public void mainWork(Long examId){
 
 
+        //fetch semester and subject of exam
         String subjectCode = timetableRepo.findsubjectIdById(examId);
         Integer semester = timetableRepo.findSemesterById(examId);
 
-
-
+        //fetch reguler and backlog stunets for exam
         List<StudentEnrollmentDTO> students =
                 studentRepo.findStudentsForExam(subjectCode, semester);
 
-        System.out.println("subject = " + subjectCode);
-
+        //group enr numbers which map to collegeID
         Map<String, List<String>> collegeToEnrMap = students.stream()
                 .collect(Collectors.groupingBy(
                         StudentEnrollmentDTO::getCollegeId,
@@ -277,10 +276,10 @@ public class UniversityService {
                                 Collectors.toList()
                         )
                 ));
-        //  timetableId pass karo
+
+        // allocation
         String finalStatus =
                 allocationService.allocateByGroupedMap(collegeToEnrMap, examId);
-
 
 
         System.out.println(finalStatus);
@@ -288,8 +287,19 @@ public class UniversityService {
         timetableRepo.markAsAllocated(examId);
     }
 
+    //find collegeId's whose students appear for particuler exam
+    public List<College> getCollegeDetailsForExam(Long TimetableId){
+        return seatAllocationRepo.findCollegesByTimetableId(TimetableId);
+    }
+
+
+
     public List<Timetable> getIncompleteExams(){
         return timetableRepo.findByAllocatedFalse();
+    }
+
+    public List<Timetable> getCompleteExams(){
+        return timetableRepo.findByAllocatedTrue();
     }
 
     public Boolean checkAllocationStatus(Long ExamID){

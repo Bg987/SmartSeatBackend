@@ -1,6 +1,5 @@
 package com.example.SmartSeatBackend.controller;
 
-<<<<<<< HEAD
 import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Subject;
@@ -174,7 +173,7 @@ public class UniversityController {
 
     @PostMapping("/main/{examId}")
     public ResponseEntity<String> mainWork(@PathVariable Long examId) {
-        uniservice.mainWork(examId);
+        //uniservice.mainWork(examId);
         return ResponseEntity.ok("Done working in background");
     }
 
@@ -190,6 +189,19 @@ public class UniversityController {
         return ResponseEntity.ok(seats);
     }
 
+    //fetch college details whose stundent's appear for particuler exam
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("getCollegeDetailsForExam/{ExamId}")
+    public ResponseEntity<?> getCollegeDetailsForExam(@PathVariable Long ExamId) {
+        List<College> res = uniservice.getCollegeDetailsForExam(ExamId);
+        if(res.size()==0){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found colleges for this exam");
+        }
+        return ResponseEntity.ok(res);
+    }
+
+
+    //fetch exam which is remaining for allocation
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getIncompleteExam")
     public ResponseEntity<?> getIncompleteExam() {
@@ -205,4 +217,19 @@ public class UniversityController {
         }
     }
 
+    //fetch exams whose seat allocation is done
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getCompleteExam")
+    public ResponseEntity<?> getCompleteExam() {
+        try {
+            List<Timetable> allocatedExams = uniservice.getCompleteExams();
+            if (allocatedExams.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.OK).body("Not found");
+            }
+            return ResponseEntity.ok(allocatedExams);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving data: " + e.getMessage());
+        }
+    }
 }

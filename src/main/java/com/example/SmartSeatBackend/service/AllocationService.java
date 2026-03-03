@@ -1,13 +1,7 @@
 package com.example.SmartSeatBackend.service;
 
-import com.example.SmartSeatBackend.entity.Rooms;
-import com.example.SmartSeatBackend.entity.SeatAllocation;
-import com.example.SmartSeatBackend.entity.Students;
-import com.example.SmartSeatBackend.entity.Timetable;
-import com.example.SmartSeatBackend.repository.RoomsRepository;
-import com.example.SmartSeatBackend.repository.SeatAllocationRepo;
-import com.example.SmartSeatBackend.repository.StudentRepository;
-import com.example.SmartSeatBackend.repository.TimetableRepo;
+import com.example.SmartSeatBackend.entity.*;
+import com.example.SmartSeatBackend.repository.*;
 
 
 import jakarta.transaction.Transactional;
@@ -22,6 +16,7 @@ public class AllocationService {
 
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
+    private final CollegeRepository collegeRepo;
     private final SeatAllocationRepo seatRepo;
     private final TimetableRepo timetableRepo;
 
@@ -96,6 +91,8 @@ public class AllocationService {
                                               Map<String, Queue<Students>> branchMap,
                                               Long collegeId,
                                               Timetable timetable) {
+        College college = collegeRepo.findById(collegeId)
+                .orElseThrow(() -> new RuntimeException("College not found"));
 
         List<SeatAllocation> allocations = new ArrayList<>();
         List<String> branches = new ArrayList<>(branchMap.keySet());
@@ -159,7 +156,7 @@ public class AllocationService {
                         seat.setStudent(allocatedStudent);
                         seat.setRowNo(r);
                         seat.setColNo(c);
-                        seat.setCollegeId(collegeId);
+                        seat.setCollege(college);
                   seat.setTimetable(timetable);
 
                         allocations.add(seat);

@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.repository;
 
 import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
+import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.SeatAllocation;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,11 +13,14 @@ import java.util.List;
 
 public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> {
 
-        @Transactional
-//        void deleteByCollegeIdAndTimetableId(Long collegeId, Long timetableId);
-        List<SeatAllocation> findBycollegeId(Long collegeId);
+         //void deleteByCollegeIdAndTimetableId(Long collegeId, Long timetableId);
 
+        //fetch college details whose studnets appears in particuler exam
+        @Query("SELECT DISTINCT s.college FROM SeatAllocation s WHERE s.timetable.id = :timetableId")
+        List<College> findCollegesByTimetableId(@Param("timetableId") Long timetableId);
 
+        // 2. If using Method Names: Use the Underscore to specify college.collegeId
+        //List<SeatAllocation> findByCollege_CollegeId(Long collegeId);
 
         @Query("""
        SELECT new com.example.SmartSeatBackend.DTO.GetSeatByCollege(
@@ -26,7 +30,7 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
            s.colNo
        )
        FROM SeatAllocation s
-       WHERE s.collegeId = :collegeId
+       WHERE s.college.collegeId = :collegeId
        AND s.timetable.id = :examId
        """)
         List<GetSeatByCollege> findSeatData(

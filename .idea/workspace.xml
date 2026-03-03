@@ -6,14 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/TimetableDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/DTO/TimetableDTO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/CollegeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/CollegeController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/BacklogStudent.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/BacklogStudent.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/Timetable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/Timetable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/SeatAllocation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/entity/SeatAllocation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/SeatAllocationRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/SeatAllocationRepo.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/TimetableRepo.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/TimetableRepo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" afterDir="false" />
     </list>

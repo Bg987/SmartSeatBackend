@@ -35,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 path.startsWith("/api/auth/logout") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs")) {
-            System.out.println("filter ignord");
+
             filterChain.doFilter(request, response);
             return;
         }

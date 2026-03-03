@@ -25,10 +25,14 @@ public class SeatAllocation {
     @JoinColumn(name = "enrollment_no")
     private Students student;
 
-    @Column(name = "college_id")
-    private Long collegeId;
+    // REMOVED: private Long collegeId;  <-- This was causing the conflict
 
     @ManyToOne
     @JoinColumn(name = "timetable_id")
     private Timetable timetable;
+
+    @ManyToOne
+    @JoinColumn(name = "college_id") // The name of the FK column in seat_allocation table
+    private College college;
+
 }

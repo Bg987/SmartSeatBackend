@@ -20,9 +20,11 @@ public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     List<Timetable> findBybranchAndSemesterAndCompleted(String branch,Integer semester,Boolean completed);
 
 
-    //fetch incomplete exams
+    //fetch exams which remaining for seat allocation
     List<Timetable> findByAllocatedFalse();
 
+    //fetch allocated exam for seating view
+    List<Timetable> findByAllocatedTrue();
 
     @Query("SELECT t.semester FROM Timetable t WHERE t.id = :id")
     Integer findSemesterById(@Param("id") Long id);
