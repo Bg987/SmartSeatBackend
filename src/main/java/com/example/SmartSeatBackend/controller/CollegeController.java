@@ -23,7 +23,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,21 +52,20 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
-     public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO)
-     {
-     try {
+     public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
+        try {
 
-         String response = colService.addStudent(studentDTO);
+            String response = colService.addStudent(studentDTO);
 
-         return new ResponseEntity<>(response, HttpStatus.CREATED);
-     } catch (RuntimeException e) {
-         return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-     } catch (Exception e) {
-         return new ResponseEntity<>("Something went wrong: " + e.getMessage(),
-                 HttpStatus.INTERNAL_SERVER_ERROR);
-     }
- }
-
+            return new ResponseEntity<>(response, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Something went wrong: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PreAuthorize("hasRole('college')")
     @GetMapping("/rooms")
     public Page<Rooms> getRoomsByCollege(
             @RequestParam(defaultValue = "0") int page,
@@ -101,6 +99,7 @@ public class CollegeController {
         }
     }
 
+    @PreAuthorize("hasRole('college')")
    @PostMapping("/uploadRooms")
    public ResponseEntity<?> addRooms(@RequestParam("file") MultipartFile file)
    {
@@ -126,7 +125,7 @@ public class CollegeController {
    }
 
 
-
+    @PreAuthorize("hasRole('college')")
     @PostMapping("/uploadStudents")
     public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file)
     {
@@ -151,10 +150,6 @@ public class CollegeController {
         }
     }
 
-
-
-
-    //Get time table for specific branch and semester----------
 
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getTimetable/{branch}/{semester}")

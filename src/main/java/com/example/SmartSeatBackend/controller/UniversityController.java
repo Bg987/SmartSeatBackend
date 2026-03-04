@@ -9,7 +9,6 @@ import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
-import com.example.SmartSeatBackend.entity.*;
 
 import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.UniversityService;
