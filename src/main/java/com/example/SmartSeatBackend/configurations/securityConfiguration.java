@@ -55,12 +55,12 @@ public class securityConfiguration {
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
         config.setAllowCredentials(true); // CRITICAL: Allows cookies to be sent
-        config.setAllowedOrigins(java.util.List.of("http://localhost:4200")); // Your Angular URL
+        config.setAllowedOrigins(java.util.List.of("http://localhost:4200","https://smart-seat-frontend-three.vercel.app")); // Your Angular URL
         config.setAllowedHeaders(java.util.List.of("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return source;
+        return source;dd .
     }
 }
