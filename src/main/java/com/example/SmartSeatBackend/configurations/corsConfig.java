@@ -16,7 +16,7 @@ public class corsConfig {
 
         config.setAllowCredentials(true);
         // Add your Vercel and Localhost origins
-        config.addAllowedOrigin("https://smartseat-theta.vercel.app");
+        config.addAllowedOrigin("https://smart-seat-frontend-three.vercel.app/");
         config.addAllowedOrigin("http://localhost:4200");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
