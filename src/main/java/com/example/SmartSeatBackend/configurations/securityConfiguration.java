@@ -17,57 +17,47 @@ import org.springframework.web.cors.CorsConfiguration;
 @RequiredArgsConstructor
 public class securityConfiguration {
 
-
     private final forbiddenHandler myForbiddenHandler;
     private final JwtFilter jFiler;
-    private final CorsConfiguration corsConfiguration;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(request -> {
-                    // This links to your CorsConfiguration bean
-                    return corsConfiguration;}))
-                // Disable CSRF for JWT/Stateless use
-                .csrf(csrf -> csrf.disable())
-                // Enable CORS with the bean defined below
+                .csrf(csrf -> csrf.disable()) // Disable CSRF for JWT
+                // Link directly to the bean defined below
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                // Set session to stateless (we don't want JSESSIONID)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        // Public routes
                         .requestMatchers("/api/auth/login", "/api/auth/logout", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
-                        // Everything else under /api requires authentication for @PreAuthorize to work
                         .requestMatchers("/api/**").authenticated()
                 )
-                //Register your custom JWT Filter before the standard one
+
                 .addFilterBefore(jFiler, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(exception -> exception.accessDeniedHandler(myForbiddenHandler));
 
         return http.build();
     }
 
-    // 5. CORS Bean: This is what allows your Angular app to talk to Spring with cookies
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
 
         config.setAllowCredentials(true);
 
-        // REMOVED trailing slash from the Vercel URL
+        // Combined all your origins here (NO trailing slashes)
         config.setAllowedOrigins(java.util.List.of(
                 "http://localhost:4200",
-                "https://smart-seat-frontend-three.vercel.app"
+                "https://smart-seat-frontend-three.vercel.app",
+                "https://exam-portal-smart-seat-frontend.vercel.app"
         ));
 
-        config.setAllowedHeaders(java.util.List.of("Origin", "Content-Type", "Accept", "Authorization"));
+        config.setAllowedHeaders(java.util.List.of("Origin", "Content-Type", "Accept", "Authorization", "Set-Cookie"));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-
-        // ADDED: This allows your Angular app to read the JWT from the header
-        config.setExposedHeaders(java.util.List.of("Authorization"));
+        config.setExposedHeaders(java.util.List.of("Authorization", "Set-Cookie"));
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
