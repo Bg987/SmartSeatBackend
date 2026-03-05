@@ -1,13 +1,13 @@
-# Stage 1: Build the JAR using Maven
-FROM maven:3.8.5-openjdk-17 AS build
+# Stage 1: Build the JAR using Maven with OpenJDK 21
+FROM maven:3.9.5-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY . .
 RUN mvn clean package -DskipTests
 
-# Stage 2: Run the JAR using Eclipse Temurin (The fix for your error)
-FROM eclipse-temurin:17-jre-alpine
+# Stage 2: Run the JAR using Eclipse Temurin 21 (Modern & Stable)
+FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-# Note: Render usually puts the jar in /app/target/
+# Copies the generated jar from the build stage
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
