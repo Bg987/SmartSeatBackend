@@ -25,11 +25,13 @@ public class Cookie {
         cookie.setPath("/");
         cookie.setHttpOnly(true);
         cookie.setMaxAge(age);
-        cookie.setSecure(false);
-            // 'Lax' is usually fine for local, but some older browsers
-            // prefer no SameSite attribute on plain HTTP
-        //cookie.setSecure(true);
-        //cookie.setAttribute("SameSite", "None"); // CRITICAL for Chrome/Safari
+
+        // REQUIRED for Render -> Vercel communication
+        cookie.setSecure(true);
+
+        // REQUIRED for Cross-Site cookie persistence
+        cookie.setAttribute("SameSite", "None");
+
         return cookie;
     }
 }

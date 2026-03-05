@@ -17,14 +17,14 @@ public class NotificationService {
         // Create emitter with a timeout (e.g., 60 seconds)
         SseEmitter emitter = new SseEmitter(60_000L);
 
-        // Cleanup logic
+        // Cleanup old data before new connection of userId not all user data
         emitter.onCompletion(() -> emitters.remove(userId));
         emitter.onTimeout(() -> emitters.remove(userId));
         emitter.onError((e) -> emitters.remove(userId));
 
         emitters.put(userId, emitter);
 
-        // Send an initial "connected" event to prevent immediate timeout
+        // Send an initial "connected" event
         try {
             emitter.send(SseEmitter.event().name("INIT").data("Connected"));
         } catch (IOException e) {
@@ -40,7 +40,7 @@ public class NotificationService {
             try {
                 // "event-complete" is the custom name Angular will listen for
                 emitter.send(SseEmitter.event()
-                        .name("event-complete")
+                        .name("Allocation_Done_Event")
                         .data(data));
             } catch (IOException e) {
                 emitters.remove(userId);
