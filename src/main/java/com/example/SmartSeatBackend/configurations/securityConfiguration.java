@@ -61,6 +61,6 @@ public class securityConfiguration {
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-        return source;dd .
+        return source;
     }
 }
