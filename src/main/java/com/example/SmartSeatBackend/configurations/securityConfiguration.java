@@ -54,10 +54,20 @@ public class securityConfiguration {
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
-        config.setAllowCredentials(true); // CRITICAL: Allows cookies to be sent
-        config.setAllowedOrigins(java.util.List.of("http://localhost:4200","https://smart-seat-frontend-three.vercel.app")); // Your Angular URL
+
+        config.setAllowCredentials(true);
+
+        // REMOVED trailing slash from the Vercel URL
+        config.setAllowedOrigins(java.util.List.of(
+                "http://localhost:4200",
+                "https://smart-seat-frontend-three.vercel.app"
+        ));
+
         config.setAllowedHeaders(java.util.List.of("Origin", "Content-Type", "Accept", "Authorization"));
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // ADDED: This allows your Angular app to read the JWT from the header
+        config.setExposedHeaders(java.util.List.of("Authorization"));
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
