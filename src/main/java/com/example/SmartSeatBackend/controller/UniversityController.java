@@ -172,7 +172,7 @@ public class UniversityController {
 
     @PostMapping("/main/{examId}")
     public ResponseEntity<String> mainWork(@PathVariable Long examId) {
-        //uniservice.mainWork(examId);
+        uniservice.mainWork(examId);
         return ResponseEntity.ok("Done working in background");
     }
 

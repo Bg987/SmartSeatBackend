@@ -12,9 +12,13 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,6 +41,7 @@ public class UniversityService {
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
     private final AllocationService allocationService;
+    private final NotificationService notificationService;
     private final SubjectStudentRepository subjectRepo;
     private final SeatAllocationRepo seatAllocationRepo;
     //  Get All Subjects
@@ -283,6 +288,14 @@ public class UniversityService {
 
 
         System.out.println(finalStatus);
+
+        //to send real time notification to client
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        //fetch userid from auth context
+        String userId = auth.getPrincipal().toString();
+        //IOT - Sem 4 - CS301 - 2026-03-28 - payload example
+        String payload= timetableRepo.getExamNameByTimetable(examId);
+        notificationService.sendNotification(userId,finalStatus);
         //to prevent multiple times allocation for particuler college
         timetableRepo.markAsAllocated(examId);
     }
@@ -312,4 +325,12 @@ public class UniversityService {
         return seatAllocationRepo.findSeatData(college_id, exam_id);
     }
 
+
+    public void processWithQuickDelay(String userId) {
+        CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
+            System.out.println("call");
+            notificationService.sendNotification(userId,"data = "+userId);
+            processWithQuickDelay(userId);
+        });
+    }
 }

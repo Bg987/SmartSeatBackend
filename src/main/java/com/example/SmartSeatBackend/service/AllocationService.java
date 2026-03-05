@@ -25,7 +25,7 @@ public class AllocationService {
                                        Long timetableId) {
 
         if (collegeToEnrMap == null || collegeToEnrMap.isEmpty()) {
-            return "No data provided for allocation.";
+            return timetableRepo.getExamNameByTimetable(timetableId)+" no students for this exam";
         }
 
         //  Fetch timetable properly from DB
@@ -83,7 +83,7 @@ public class AllocationService {
 
         seatRepo.saveAll(allAllocations);
 
-        return "Process Finished: " + statusReport;
+        return timetableRepo.getExamNameByTimetable(timetableId)+" allocation done";
     }
 
 
