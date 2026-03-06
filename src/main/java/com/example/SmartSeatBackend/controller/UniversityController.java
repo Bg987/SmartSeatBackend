@@ -12,6 +12,7 @@ import com.example.SmartSeatBackend.DTO.TimetableDTO;
 
 import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.UniversityService;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import com.example.SmartSeatBackend.utility.StringProcess;
 
 import jakarta.validation.Valid;
@@ -33,7 +34,7 @@ public class UniversityController {
 
     private final UniversityService uniservice;
     private final AllocationService seatService;
-
+    private final HelperMethods helper;
     // Add Single College
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
@@ -177,11 +178,13 @@ public class UniversityController {
     }
 
 
-    @GetMapping("/getSeatBYCollege/{college_id}/{exam_id}")
+    //fetch seating allocation of particuler exam for loggd in college
+    @GetMapping("/getSeatBYCollege/{exam_id}")
     public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
-            @PathVariable Long college_id,
             @PathVariable Long exam_id) {
 
+        //fetch college if based on userid stored in jwt cookie
+        Long college_id= helper.getCollegeIdByUserId();
         List<GetSeatByCollege> seats =
                 uniservice.getSeatBYCollege(college_id, exam_id);
 

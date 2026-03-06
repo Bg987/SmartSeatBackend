@@ -34,4 +34,8 @@ public interface RoomsRepository extends JpaRepository<Rooms,Integer> {
             @Param("roomId") Long roomId
     );
 
+    //fetch room details for particuler data
+    @Query("SELECT r FROM Rooms r WHERE r.college.collegeId = :collegeId")
+    List<Rooms> findByCollegeId(@Param("collegeId") Long collegeId);
+
 }

@@ -39,7 +39,6 @@ public class CollegeController {
     private final HelperMethods helper;
     private final RoomsRepository roomsRepository;
     private final TimetableRepo timetableRepo;
-
     //Returns students information college vise----
     @PreAuthorize("hasRole('college')")
     @GetMapping("/students")
@@ -164,19 +163,35 @@ public class CollegeController {
 
 
     @PreAuthorize("hasRole('college')")
-    @GetMapping("/getRoomInfo/{collegeId}/{roomId}")
-    public Map<String, Object>  getRoomNumberAndCapacity(@PathVariable Long collegeId,@PathVariable Long roomId)
+    @GetMapping("/getRoomInfo/{roomId}")
+    public Map<String, Object>  getRoomNumberAndCapacity(@PathVariable Long roomId)
     {
+        Long collegeId = helper.getCollegeIdByUserId();
         return roomRepo.findCapacityAndRoomnumber(collegeId,roomId);
     }
 
-  //Get Exam name via exam id(timetableId)------
+  //get details of exam for particuler college whose students appear in it which is incomplete
     @PreAuthorize("hasRole('college')")
-    @GetMapping("/getExamName/{timeTableId}")
-    public String getExamName(@PathVariable Long timeTableId) {
+    @GetMapping("/getExamDetails")
+    public ResponseEntity<List<Map<String, Object>>> getExamDetails() {
 
-        return timetableRepo.getExamNameByTimetable(timeTableId);
+        Long collegeId = helper.getCollegeIdByUserId();
+        List<Map<String, Object>> result = timetableRepo.findActiveExamNamesByCollege(collegeId);
+        if (result.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Returns 204 if no exams found
+        }
+        return ResponseEntity.ok(result);
     }
 
-
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getRoomInfoOfCollege")
+    public ResponseEntity<?>  getRoomInfoOfCollege()
+    {
+        Long collegeId = helper.getCollegeIdByUserId();
+        List<Rooms> response = roomRepo.findByCollegeId(collegeId);
+        if(response.isEmpty()){
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(response);
+    }
 }

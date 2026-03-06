@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     List<Timetable> findByBatchId(String batchId);
@@ -40,6 +41,8 @@ public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     @Query("SELECT t.allocated FROM Timetable t WHERE t.id = :id")
     Boolean findAllocationStatusById(@Param("id") Long id);
 
+
+    //get examName based on examId
     @Query("""
 SELECT CONCAT(t.branch, ' - Sem ', t.semester, 
               ' - ', t.subjectId, 
@@ -48,4 +51,17 @@ FROM Timetable t
 WHERE t.id = :timeTableId
 """)
     String getExamNameByTimetable(@Param("timeTableId") Long timeTableId);
+
+    //get details of exam for particuler college whose students appear in it
+    @Query("""
+    SELECT DISTINCT t.id as id, 
+           CONCAT(t.branch, ' - Sem ', t.semester, ' - ', t.subjectId, ' - ', t.examDate) as examName
+    FROM SeatAllocation s 
+    JOIN s.timetable t
+    WHERE s.college.id = :collegeId 
+      AND t.allocated = true 
+      AND t.completed = false
+    """)
+    List<Map<String, Object>> findActiveExamNamesByCollege(@Param("collegeId") Long collegeId);
+
 }
