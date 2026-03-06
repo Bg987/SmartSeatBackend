@@ -51,7 +51,7 @@ public class securityConfiguration {
         // Combined all your origins here (NO trailing slashes)
         config.setAllowedOrigins(java.util.List.of(
                 "http://localhost:4200",
-                "https://smart-seat-frontend-three.vercel.app",
+                "https://smart-seat-frontend-three.vercel.app", // Your main Vercel URL
                 "https://exam-portal-smart-seat-frontend.vercel.app"
         ));
 
