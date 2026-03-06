@@ -16,7 +16,7 @@ import java.io.IOException;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api1/student")
+@RequestMapping("/api/student")
 public class StudentController {
 
 

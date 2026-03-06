@@ -28,7 +28,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api1/university")
+@RequestMapping("/api/university")
 public class UniversityController {
 
     private final UniversityService uniservice;

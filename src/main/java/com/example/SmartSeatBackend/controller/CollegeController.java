@@ -29,7 +29,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api1/colleges")
+@RequestMapping("/api/colleges")
 public class CollegeController {
 
 
