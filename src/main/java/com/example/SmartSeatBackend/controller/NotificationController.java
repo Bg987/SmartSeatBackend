@@ -15,7 +15,7 @@ import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/notifications")
+@RequestMapping("/api1/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
