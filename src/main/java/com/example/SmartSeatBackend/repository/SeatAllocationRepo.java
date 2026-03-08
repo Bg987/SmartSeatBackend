@@ -18,13 +18,12 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
         @Query("SELECT DISTINCT s.college FROM SeatAllocation s WHERE s.timetable.id = :timetableId")
         List<College> findCollegesByTimetableId(@Param("timetableId") Long timetableId);
 
-        // 2. If using Method Names: Use the Underscore to specify college.collegeId
-        //List<SeatAllocation> findByCollege_CollegeId(Long collegeId);
-
         @Query("""
        SELECT new com.example.SmartSeatBackend.DTO.GetSeatByCollege(
            s.student.enrollmentNo,
            s.room.id,
+           s.room.roomNumber,
+           s.room.block,
            s.rowNo,
            s.colNo
        )

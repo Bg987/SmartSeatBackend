@@ -1,17 +1,14 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
 import com.example.SmartSeatBackend.entity.*;
-import com.example.SmartSeatBackend.repository.CollegeRepository;
-import com.example.SmartSeatBackend.repository.RoomsRepository;
+import com.example.SmartSeatBackend.repository.*;
 
-import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
-
-import com.example.SmartSeatBackend.repository.StudentRepository;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -43,6 +40,7 @@ public class CollegeService {
     private final RoomsRepository roomsRepo;
     private final StudentRepository studentRepo;
     public final TimetableRepo timetableRepo;
+    private final SeatAllocationRepo seatAllocationRepo;
 //    private final MessageService msgService;
     private final HelperMethods helper;
 
@@ -216,7 +214,9 @@ public class CollegeService {
         return List.of("Successfully saved " + roomsToSave.size() + " rooms in batch.");
     }
 
-
+    public List<GetSeatByCollege> getSeatBYCollege(Long college_id, Long exam_id) {
+        return seatAllocationRepo.findSeatData(college_id, exam_id);
+    }
 
     public List<Timetable> getTimetable(String branch,Integer semester)
     {

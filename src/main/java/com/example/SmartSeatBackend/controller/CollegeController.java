@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 
 
+import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
 import com.example.SmartSeatBackend.entity.Rooms;
@@ -193,5 +194,19 @@ public class CollegeController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(response);
+    }
+
+    //fetch seating allocation of particuler exam of logged in college
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getSeatBYCollege/{exam_id}")
+    public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
+            @PathVariable Long exam_id) {
+
+        //fetch college id based on userid stored in jwt cookie
+        Long college_id= helper.getCollegeIdByUserId();
+        List<GetSeatByCollege> seats =
+                colService.getSeatBYCollege(college_id, exam_id);
+
+        return ResponseEntity.ok(seats);
     }
 }

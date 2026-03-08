@@ -11,6 +11,7 @@ import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
 
 import com.example.SmartSeatBackend.service.AllocationService;
+import com.example.SmartSeatBackend.service.CollegeService;
 import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import com.example.SmartSeatBackend.utility.StringProcess;
@@ -33,6 +34,7 @@ import java.util.List;
 public class UniversityController {
 
     private final UniversityService uniservice;
+    private final CollegeService colService;
     private final AllocationService seatService;
     private final HelperMethods helper;
     // Add Single College
@@ -178,18 +180,8 @@ public class UniversityController {
     }
 
 
-    //fetch seating allocation of particuler exam for loggd in college
-    @GetMapping("/getSeatBYCollege/{exam_id}")
-    public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
-            @PathVariable Long exam_id) {
 
-        //fetch college if based on userid stored in jwt cookie
-        Long college_id= helper.getCollegeIdByUserId();
-        List<GetSeatByCollege> seats =
-                uniservice.getSeatBYCollege(college_id, exam_id);
 
-        return ResponseEntity.ok(seats);
-    }
 
     //fetch college details whose stundent's appear for particuler exam
     @PreAuthorize("hasRole('university')")
@@ -233,5 +225,20 @@ public class UniversityController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error retrieving data: " + e.getMessage());
         }
+    }
+
+
+
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getSeatBYCollege/{exam_id}/{college_id}")
+    public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
+            @PathVariable Long exam_id,
+            @PathVariable Long college_id) {
+
+
+        List<GetSeatByCollege> seats =
+                colService.getSeatBYCollege(college_id, exam_id);
+
+        return ResponseEntity.ok(seats);
     }
 }

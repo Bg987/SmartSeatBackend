@@ -320,12 +320,6 @@ public class UniversityService {
     }
 
 
-
-    public List<GetSeatByCollege> getSeatBYCollege(Long college_id, Long exam_id) {
-        return seatAllocationRepo.findSeatData(college_id, exam_id);
-    }
-
-
     public void processWithQuickDelay(String userId) {
         CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
             System.out.println("call");
