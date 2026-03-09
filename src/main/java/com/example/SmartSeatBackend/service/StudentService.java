@@ -1,11 +1,14 @@
 package com.example.SmartSeatBackend.service;
 
 import com.cloudinary.utils.ObjectUtils;
+import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.AllArgsConstructor;
 import com.cloudinary.Cloudinary; // THIS is the correct one
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +27,12 @@ public class StudentService {
     private FaceApiService faceApiService; // The service we created earlier
 
 
+    public Students fetchStudent(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // 2. Extract the Principal (which is "752" in your case)
+        String userId = auth.getPrincipal().toString();
+        return studentRepo.findByStudentId(Long.valueOf(userId));
+    }
     //insert url into databse
     public ResponseEntity<?> insertStudentImage(MultipartFile file, Long StudentId) throws  IOException{
         try{

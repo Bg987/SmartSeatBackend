@@ -13,4 +13,6 @@ public interface  CollegeRepository  extends JpaRepository<College,Long> {
 
     Optional<College> findByUser_userId(Long userId);
 
+    Optional<College> findByCollegeId(Long collegeId);
+
 }

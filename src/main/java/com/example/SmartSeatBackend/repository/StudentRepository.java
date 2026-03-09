@@ -17,6 +17,9 @@ public interface StudentRepository extends JpaRepository<Students, String> {
 
     List<Students>findByCollegeId(Long collegeId);
 
+    Students findByStudentId(Long Id);
+
+
     @Query("""
         SELECT s FROM Students s
         WHERE s.collegeId = :collegeId
@@ -43,6 +46,9 @@ public interface StudentRepository extends JpaRepository<Students, String> {
     Optional<Long> findStudentIdByEnrollmentAndCollege(@Param("stuEnId") String stuEnId, @Param("collId") Long collId);
 
     Long countByCollegeId(Long collegeId);
+
+
+    //fetch regular and backlog stundents for particuler exam subject
     @Query(value =
             "SELECT st.enrollment_no AS enrollmentNo, st.college_id AS collegeId FROM students st " +
                     "LEFT JOIN subject_student ss ON st.enrollment_no = ss.enrollment_no " +

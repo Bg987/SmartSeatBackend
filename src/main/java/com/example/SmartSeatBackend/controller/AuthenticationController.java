@@ -9,9 +9,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,11 +24,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthenticationController {
 
     private final AuthenticationService AuthService;
-
+    private final PasswordEncoder pass;
     private final MessageService msgService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){
+
         try{
             if(user.getRole().equals("student")){
                 return  AuthService.verifyStudent(user,response);
@@ -41,10 +47,10 @@ public class AuthenticationController {
         return AuthService.logout(response);
     }
 
-    //@PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PatchMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, @AuthenticationPrincipal String Id){
+    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, Authentication authentication){
 
-        return AuthService.passwordchange(passworddata,Id);
+        return AuthService.passwordchange(passworddata,authentication);
     }
 }

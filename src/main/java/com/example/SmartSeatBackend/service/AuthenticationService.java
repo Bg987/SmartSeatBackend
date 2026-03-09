@@ -2,6 +2,7 @@ package com.example.SmartSeatBackend.service;
 
 import com.example.SmartSeatBackend.DTO.PasswordDTO;
 import com.example.SmartSeatBackend.DTO.UserDTO;
+import com.example.SmartSeatBackend.controller.StudentController;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.entity.User;
 import com.example.SmartSeatBackend.repository.StudentRepository;
@@ -11,10 +12,12 @@ import com.example.SmartSeatBackend.utility.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -25,7 +28,9 @@ public class AuthenticationService {
 
     private final UserRepository userRepository;
     private final Cookie Cookie;
+    private final StudentService stuser;
     private final StudentRepository studentRepo;
+    private final StudentController stu;
     private final PasswordEncoder passwordEncoder;
 
     //for university and colleges
@@ -114,20 +119,46 @@ public class AuthenticationService {
         return ResponseEntity.status(200).body("logout successfully");
     }
 
-    public ResponseEntity<?> passwordchange(PasswordDTO data,@AuthenticationPrincipal String userId){
-        Long id = Long.parseLong(userId);
-        User u = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("not found"));
-
-        if (!passwordEncoder.matches(data.getOldPassword(), u.getPassword())) {
-            return ResponseEntity.status(400)
-                    .body(new ApiResponse(false, "Old password is wrong", null));
+    public ResponseEntity<?> passwordchange(PasswordDTO data, Authentication authentication){
+        Long userId = Long.valueOf(authentication.getName()); // username / userId
+        String role = authentication.getAuthorities()
+                .stream()
+                .findFirst()
+                .map(a -> a.getAuthority())
+                .orElse(null);
+        if(role==null){
+            new RuntimeException("role not found");
         }
-        String encodedPassword = passwordEncoder.encode(data.getNewPassword());
-        u.setPassword(encodedPassword);
+        else if(role.equals("ROLE_student")){
+            System.out.println(userId);
 
-        //Save
-        userRepository.save(u);
+            Students student = studentRepo.findByStudentId(userId);
+            if (!passwordEncoder.matches(data.getOldPassword(), student.getPassword())) {
+                return ResponseEntity.status(400)
+                        .body(new ApiResponse(false, "Old password is wrong", null));
+            }
+
+            String encodedPassword = passwordEncoder.encode(data.getNewPassword());
+            student.setPassword(encodedPassword);
+
+            // Save
+            studentRepo.save(student);
+        }
+        else{
+
+            User u = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("not found"));
+            if (!passwordEncoder.matches(data.getOldPassword(), u.getPassword())) {
+                return ResponseEntity.status(400)
+                        .body(new ApiResponse(false, "Old password is wrong", null));
+            }
+            String encodedPassword = passwordEncoder.encode(data.getNewPassword());
+            u.setPassword(encodedPassword);
+
+            //Save
+            userRepository.save(u);
+        }
+
         return ResponseEntity.ok(
                 new ApiResponse(true, "password changed successfully",data));
     }

@@ -25,10 +25,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -45,6 +42,10 @@ public class CollegeService {
     private final HelperMethods helper;
 
 
+
+    public Optional<College> getCollege(Long collegeId){
+        return  collegeRepo.findByCollegeId(collegeId);
+    }
     public String addStudent(@NotNull StudentsDTO dto) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
