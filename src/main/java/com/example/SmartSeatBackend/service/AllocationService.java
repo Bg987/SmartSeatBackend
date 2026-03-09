@@ -62,7 +62,7 @@ public class AllocationService {
             }
 
             // Clear previous allocation for this college + timetable
-//            seatRepo.deleteByCollegeIdAndTimetableId(collegeId, timetableId);
+            //seatRepo.deleteByCollegeIdAndTimetableId(collegeId, timetableId);
 
             Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
             for (Students s : students) {

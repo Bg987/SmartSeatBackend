@@ -81,7 +81,6 @@ public class AuthenticationService {
         }
         Students u = studentRepo.findByEmail(userdata.getMail())
                 .orElse(null);
-
         if (u == null) {
             return ResponseEntity.status(404)
                     .body(new ApiResponse(false, userdata.getRole() + " not found", null));
