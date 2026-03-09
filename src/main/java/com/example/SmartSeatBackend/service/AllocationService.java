@@ -82,7 +82,7 @@ public class AllocationService {
         }
 
         seatRepo.saveAll(allAllocations);
-
+        timetableRepo.markAsAllocated(timetableId);
         return timetableRepo.getExamNameByTimetable(timetableId)+" allocation done";
     }
 

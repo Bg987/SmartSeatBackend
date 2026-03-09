@@ -297,7 +297,6 @@ public class UniversityService {
         String payload= timetableRepo.getExamNameByTimetable(examId);
         notificationService.sendNotification(userId,finalStatus);
         //to prevent multiple times allocation for particuler college
-        timetableRepo.markAsAllocated(examId);
     }
 
     //find collegeId's whose students appear for particuler exam
