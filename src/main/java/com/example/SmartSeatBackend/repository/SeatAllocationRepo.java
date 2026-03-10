@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Map;
 
 
 public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> {
@@ -18,6 +19,8 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
         @Query("SELECT DISTINCT s.college FROM SeatAllocation s WHERE s.timetable.id = :timetableId")
         List<College> findCollegesByTimetableId(@Param("timetableId") Long timetableId);
 
+
+        //fetch allocation details based on college
         @Query("""
        SELECT new com.example.SmartSeatBackend.DTO.GetSeatByCollege(
            s.student.enrollmentNo,
@@ -35,5 +38,16 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
                 @Param("collegeId") Long collegeId,
                 @Param("examId") Long examId
         );
+
+        //fetch exam details for stundent complete or not based on flag
+        @Query("SELECT DISTINCT s.timetable.id as id, " +
+                "CONCAT(s.timetable.branch, ' - Sem ', s.timetable.semester, ' - ', s.timetable.subjectId, ' - ', s.timetable.examDate) as examName, " +
+                "s.timetable.examDate as Date " + // Removed trailing comma, ensured space before FROM
+                "FROM SeatAllocation s " +
+                "WHERE s.student.enrollmentNo = :enrollmentNo " +
+                "AND s.timetable.completed = :status")
+        List<Map<String, Object>> findAllocatedExamsByStatus(
+                @Param("enrollmentNo") String enrollmentNo,
+                @Param("status") boolean status);
 
 }

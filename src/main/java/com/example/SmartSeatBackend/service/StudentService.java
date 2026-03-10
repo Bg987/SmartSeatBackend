@@ -2,7 +2,9 @@ package com.example.SmartSeatBackend.service;
 
 import com.cloudinary.utils.ObjectUtils;
 import com.example.SmartSeatBackend.entity.Students;
+import com.example.SmartSeatBackend.repository.SeatAllocationRepo;
 import com.example.SmartSeatBackend.repository.StudentRepository;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import lombok.AllArgsConstructor;
 import com.cloudinary.Cloudinary; // THIS is the correct one
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -24,6 +27,8 @@ public class StudentService {
     private final Cloudinary cloudinary;
 
     private final StudentRepository studentRepo;
+    private final HelperMethods helper;
+    private final SeatAllocationRepo seatRepo;
     private FaceApiService faceApiService; // The service we created earlier
 
 
@@ -96,12 +101,31 @@ public class StudentService {
         return imageUrl;
     }
 
+
+    //fetch enrolment number from studentId stored in jwt token
+    public String getEnrNumber(){
+        return helper.getEnrNumberIdByUserId();
+    }
+
+
+    //to check for single time image upload policy for student
     public boolean checkIfImageExists(Long id) {
         return studentRepo.existsProfilePic(id);
     }
 
+    //fetch complete or incomplete exam for particuler student
+    public List<Map<String, Object>> getExamList(String EnrNumber,boolean status){
+        return seatRepo.findAllocatedExamsByStatus(EnrNumber,status);
+    }
+
+    //chech whether student belong to this particuler college or not forimage update
     public Long getVerifiedStudentId(String enrollmentNo, Long collegeId) {
         return studentRepo.findStudentIdByEnrollmentAndCollege(enrollmentNo, collegeId)
                 .orElseThrow(() -> new RuntimeException("Student not found or doesn't belong to your college"));
+    }
+
+    public Long getCollegeID(Long stuId){
+        return studentRepo.findCollegeIdByStudentId(stuId)
+                .orElseThrow(() -> new RuntimeException("college not d=found for this student"));
     }
 }

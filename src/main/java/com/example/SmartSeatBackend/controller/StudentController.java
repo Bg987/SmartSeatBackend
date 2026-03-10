@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 //3d973ee5
 
+import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.entity.Students;
 import com.example.SmartSeatBackend.service.CollegeService;
@@ -49,11 +50,50 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
+    //fetch exam details which render in UI in case of show seat allocation for particler exam
+    @PreAuthorize("hasRole('student')")
+    @GetMapping("/getStudentExamDetails/{examId}")
+    public  ResponseEntity<?> getStudentExamDetails(@PathVariable Long examId){
+        if(examId==null){
+            ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("examId not found");
+        }
+
+        String enrNumber = stuService.getEnrNumber();
+        Long stuId = Long.valueOf(helper.getId());
+        Long collegeId = stuService.getCollegeID(stuId);
+        List<GetSeatByCollege> res = collegeService.getSeatBYCollege(collegeId,examId);
+        Map<String, Object> response = new HashMap<>();
+        response.put("enrollmentNo", enrNumber);
+        response.put("seatDetails", res);
+        return ResponseEntity.ok(response);
+    }
+
+
+    //fetch exams whose allocation is done but not complete
+    @PreAuthorize("hasRole('student')")
+    @GetMapping("/getStudentIncomplteExam")
+    public  ResponseEntity<?> getStudentIncomplteExam(){
+
+
+        String enrNumber = stuService.getEnrNumber();
+
+        //fetch exams which is incomplete
+        List<Map<String, Object>> examNameAndId= stuService.getExamList(enrNumber,false);
+        if(examNameAndId.isEmpty()){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("No incomplete exams found for you.");
+        }
+        return ResponseEntity.ok(examNameAndId);
+    }
+
     @PreAuthorize("hasAnyRole('college', 'student')")
     @PostMapping({"/addStudentImage", "/{enrollmentNo}/addStudentImage"})
     public ResponseEntity<?> addStudentImage(
             @PathVariable(required = false) String enrollmentNo, // Changed to String for safety
             @RequestParam("file") MultipartFile file) throws IOException {
+
 
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("Please select a file to upload.");

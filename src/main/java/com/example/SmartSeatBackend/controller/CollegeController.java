@@ -154,7 +154,6 @@ public class CollegeController {
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getTimetable/{branch}/{semester}")
 
-
     public ResponseEntity<List<Timetable>> getTimetable(@PathVariable String branch,@PathVariable Integer semester) {
 
         List<Timetable>timeTable = colService.getTimetable(branch,semester);
