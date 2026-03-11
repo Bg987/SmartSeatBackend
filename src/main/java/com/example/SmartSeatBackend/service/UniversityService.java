@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -44,11 +46,9 @@ public class UniversityService {
     private final NotificationService notificationService;
     private final SubjectStudentRepository subjectRepo;
     private final SeatAllocationRepo seatAllocationRepo;
+
+
     //  Get All Subjects
-
-
-
-
     public List<Subject> getAllSubjects() {
         return subRepo.findAll();
     }
@@ -104,12 +104,15 @@ public class UniversityService {
 
 
     //  Get All Colleges
+    @Cacheable(value = "colleges")
     public ResponseEntity<List<User>> getAllColleges() {
+        System.out.println("call");
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
 
     // Add College
+    @CacheEvict(value = "colleges", allEntries = true)
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
 
         User userCollege = new User();
@@ -144,15 +147,7 @@ public class UniversityService {
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
-    public College getCollegeByUser(Long userId) {
-
-        return collegeRepo.findByUser_userId(userId)
-                .orElseThrow(() ->
-                        new RuntimeException("College not found with userId: " + userId)
-                );
-    }
-
-    //  Upload Colleges CSV
+    @CacheEvict(value = "colleges", allEntries = true)
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
 
@@ -193,6 +188,16 @@ public class UniversityService {
         return responses;
     }
 
+    public College getCollegeByUser(Long userId) {
+
+        return collegeRepo.findByUser_userId(userId)
+                .orElseThrow(() ->
+                        new RuntimeException("College not found with userId: " + userId)
+                );
+    }
+
+    //  Upload Colleges CSV
+
     @Transactional
     public ResponseEntity<Map<String, Object>> generateTimetable(List<TimetableDTO> timetableDTOList) {
 
@@ -209,8 +214,6 @@ public class UniversityService {
         String branch = timetableDTOList.get(0).getBranch();
         Integer semester = timetableDTOList.get(0).getSemester();
 
-        // 🔹 Mark old timetables completed
-        timetableRepo.markOldTimetablesCompleted(branch, semester);
 
         // 🔹 Generate new batch id
         String batchId = UUID.randomUUID().toString();

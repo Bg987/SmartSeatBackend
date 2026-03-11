@@ -5,6 +5,7 @@ import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -34,5 +35,16 @@ public class HelperMethods {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // 2. Extract the Principal (which is "752" in your case)
         return auth.getPrincipal().toString();
+    }
+
+    public String getRole() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        // Spring Security stores roles in the Authorities collection
+        // We find the first authority and return it as a string
+        return auth.getAuthorities().stream()
+                .findFirst()
+                .map(GrantedAuthority::getAuthority)
+                .orElse(null); // Default fallback
     }
 }

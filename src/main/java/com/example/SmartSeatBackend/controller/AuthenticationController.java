@@ -5,6 +5,8 @@ import com.example.SmartSeatBackend.DTO.UserDTO;
 import com.example.SmartSeatBackend.service.AuthenticationService;
 import com.example.SmartSeatBackend.service.MessageService;
 import com.example.SmartSeatBackend.utility.ApiResponse;
+import com.example.SmartSeatBackend.utility.CacheUtil;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,8 @@ public class AuthenticationController {
 
     private final AuthenticationService AuthService;
     private final PasswordEncoder pass;
+    private final HelperMethods helper;
+    private final CacheUtil cache;
     private final MessageService msgService;
 
     @PostMapping("/login")
@@ -42,15 +46,17 @@ public class AuthenticationController {
 
     }
 
+    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PostMapping("/logout")
     public ResponseEntity<String> logout(HttpServletResponse response){
+
+        cache.deleteCache();
         return AuthService.logout(response);
     }
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PatchMapping("/changePassword")
     public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, Authentication authentication){
-
         return AuthService.passwordchange(passworddata,authentication);
     }
 }

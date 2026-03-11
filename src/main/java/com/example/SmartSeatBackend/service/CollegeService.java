@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -42,11 +44,18 @@ public class CollegeService {
     private final HelperMethods helper;
 
 
-
-    public Optional<College> getCollege(Long collegeId){
-        return  collegeRepo.findByCollegeId(collegeId);
+    @Cacheable(value = "studentsByCollege", key = "#collegeId")
+    public List<Students> getStudents(Long collegeId){
+        return studentRepo.findByCollegeId(collegeId);
     }
-    public String addStudent(@NotNull StudentsDTO dto) {
+
+    //fetch college details for collegeid
+    public Optional<College> getCollege(Long collegeId) {
+        return collegeRepo.findByCollegeId(collegeId);
+    }
+
+    @CacheEvict(value = "studentsByCollege", key = "#student.collegeId")
+    public String addStudent(@NotNull StudentsDTO dto,Long collegeID) {
 
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
             return "Error: Enrollment number " + dto.getEnrollmentNo() + " already exists!";
@@ -71,7 +80,7 @@ public class CollegeService {
         student.setPassword(passwordEncoder.encode(rawPassword));
 
         // Set college id
-        student.setCollegeId(helper.getCollegeIdByUserId());
+        student.setCollegeId(collegeID);
 
         // Save once
         studentRepo.save(student);
@@ -89,7 +98,9 @@ public class CollegeService {
                 + " | Temporary Password: "
                 + rawPassword;
     }
-    public List<String> saveStudentsFromCSV(MultipartFile file) throws IOException {
+
+
+    public List<String> saveStudentsFromCSV(MultipartFile file,Long collegeId) throws IOException {
 
         List<String> responses = new ArrayList<>();
 
@@ -148,7 +159,7 @@ public class CollegeService {
                 }
 
                 // Save student
-                String res = addStudent(student);
+                String res = addStudent(student,collegeId);
                 responses.add(res);
             }
         }

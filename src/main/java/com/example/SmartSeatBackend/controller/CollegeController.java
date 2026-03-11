@@ -40,13 +40,15 @@ public class CollegeController {
     private final HelperMethods helper;
     private final RoomsRepository roomsRepository;
     private final TimetableRepo timetableRepo;
+
+
     //Returns students information college vise----
+
     @PreAuthorize("hasRole('college')")
     @GetMapping("/students")
     public List<Students> getStudentsByCollege() {
         Long collegeId = helper.getCollegeIdByUserId();
-        System.out.println(collegeId);;
-        return studentRepo.findByCollegeId(collegeId);
+        return  colService.getStudents(collegeId);
     }
 
 
@@ -54,8 +56,8 @@ public class CollegeController {
     @PostMapping("/addStudents")
      public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
         try {
-
-            String response = colService.addStudent(studentDTO);
+            Long collegeID = helper.getCollegeIdByUserId();
+            String response = colService.addStudent(studentDTO,collegeID);
 
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (RuntimeException e) {
@@ -129,8 +131,9 @@ public class CollegeController {
     @PostMapping("/uploadStudents")
     public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file)
     {
+        Long collegeID = helper.getCollegeIdByUserId();
         try {
-            List<String> responses = colService.saveStudentsFromCSV(file);
+            List<String> responses = colService.saveStudentsFromCSV(file,collegeID);
 
             System.out.println(responses);
             return ResponseEntity.ok(responses);

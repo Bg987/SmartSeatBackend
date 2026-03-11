@@ -130,7 +130,6 @@ public class AuthenticationService {
             new RuntimeException("role not found");
         }
         else if(role.equals("ROLE_student")){
-            System.out.println(userId);
 
             Students student = studentRepo.findByStudentId(userId);
             if (!passwordEncoder.matches(data.getOldPassword(), student.getPassword())) {
