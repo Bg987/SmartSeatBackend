@@ -28,8 +28,8 @@ public class CacheUtil {
 
         }
         else if (role.contains("university")) {
-
             delete("colleges",null);
+            delete("subjects",null);
         }
     }
 

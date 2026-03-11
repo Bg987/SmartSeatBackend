@@ -17,7 +17,6 @@ public class Subject {
     @Column(name = "subject_name", nullable = false, length = 50)
     private String subjectName;
 
-
     @Column(name="department")
     private String department;
 

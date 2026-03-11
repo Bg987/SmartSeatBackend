@@ -19,6 +19,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -49,11 +52,14 @@ public class UniversityService {
 
 
     //  Get All Subjects
+    @Cacheable(value = "subjects")
     public List<Subject> getAllSubjects() {
+        System.out.println("call");
         return subRepo.findAll();
     }
 
     // Add Subject
+    @CacheEvict(value = "subjects", allEntries = true)
     public ResponseEntity<String> addSubject(SubjectDTO subjectdto) {
 
         Subject subject = new Subject();
@@ -111,6 +117,7 @@ public class UniversityService {
         return ResponseEntity.ok(colleges);
     }
 
+
     // Add College
     @CacheEvict(value = "colleges", allEntries = true)
     public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
@@ -147,7 +154,6 @@ public class UniversityService {
         return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
     }
 
-    @CacheEvict(value = "colleges", allEntries = true)
     public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
 
@@ -196,51 +202,45 @@ public class UniversityService {
                 );
     }
 
-    //  Upload Colleges CSV
+    @Transactional // Ensures atomicity: all subjects save, or none do
+    public void saveAllExams(List<TimetableDTO> dtos) {
+        LocalDate minAllowedDate = LocalDate.now().plusDays(25);
+        List<Timetable> entitiesToSave = new ArrayList<>();
 
-    @Transactional
-    public ResponseEntity<Map<String, Object>> generateTimetable(List<TimetableDTO> timetableDTOList) {
+        // 1. Validate and Map
+        for (TimetableDTO dto : dtos) {
+            LocalDate examDate = LocalDate.parse(dto.getExamDate());
 
-        List<Timetable> savedTimetables = new ArrayList<>();
+            // Check: Date must be >=25 days from now
+            if (examDate.isBefore(minAllowedDate)) {
+                throw new IllegalArgumentException(
+                        "Validation failed: Subject " + dto.getSubjectId() +
+                                " is scheduled for " + examDate +
+                                ". Exams must be scheduled at least 25 days in advance (Min: " + minAllowedDate + ")"
+                );
+            }
 
-        if (timetableDTOList == null || timetableDTOList.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "status", false,
-                    "message", "Timetable list is empty"
-            ));
+            // Map DTO to Entity
+            Timetable entity = new Timetable();
+            entity.setSubjectId(dto.getSubjectId());
+            entity.setSubjectName(dto.getSubjectName());
+            entity.setBranch(dto.getBranch());
+            entity.setSemester(dto.getSemester());
+            entity.setExamDate(examDate);
+            entity.setStartTime(LocalTime.parse(dto.getStartTime()));
+            entity.setDurationMinutes(dto.getDuration());
+            System.out.println("semester = "+dto.getSemester());
+            System.out.println("branch = "+dto.getBranch());
+            System.out.println();
+            // Default flags
+            entity.setAllocated(false);
+            entity.setCompleted(false);
+            entity.setQuestionGenrated(false);
+
+            entitiesToSave.add(entity);
         }
-
-        // 🔹 Get branch & semester from first DTO
-        String branch = timetableDTOList.get(0).getBranch();
-        Integer semester = timetableDTOList.get(0).getSemester();
-
-
-        // 🔹 Generate new batch id
-        String batchId = UUID.randomUUID().toString();
-
-        for (TimetableDTO timetableDTO : timetableDTOList) {
-
-            Timetable timetable = new Timetable();
-
-            timetable.setSubjectId(timetableDTO.getSubjectId());
-            timetable.setSubjectName(timetableDTO.getSubjectName());
-            timetable.setExamDate(timetableDTO.getExamDate());
-            timetable.setCompleted(false); // new batch always active
-            timetable.setBatchId(batchId);
-            timetable.setBranch(timetableDTO.getBranch());
-            timetable.setSemester(timetableDTO.getSemester());
-
-            savedTimetables.add(timetableRepo.save(timetable));
-        }
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", true);
-        response.put("message", "Time table generated successfully");
-        response.put("count", savedTimetables.size());
-        response.put("data", savedTimetables);
-        response.put("batchId", batchId);
-
-        return ResponseEntity.ok(response);
+        // 2. Batch Insert
+        timetableRepo.saveAll(entitiesToSave);
     }
 
 

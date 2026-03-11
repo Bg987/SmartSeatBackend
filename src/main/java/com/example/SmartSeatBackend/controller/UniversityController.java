@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @AllArgsConstructor
 @RestController
@@ -37,6 +38,8 @@ public class UniversityController {
     private final CollegeService colService;
     private final AllocationService seatService;
     private final HelperMethods helper;
+
+
     // Add Single College
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
@@ -74,6 +77,7 @@ public class UniversityController {
         return uniservice.getAllColleges();
     }
 
+
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getAllSubjects")
     public ResponseEntity<List<Subject>> getAllSubjects() {
@@ -107,13 +111,18 @@ public class UniversityController {
     }
 
     @PreAuthorize("hasRole('university')")
-    @PostMapping(value = "/generateTimetable",
-            consumes = "application/json",
-            produces = "application/json")
+    @PostMapping("/scheduleExam")
     public ResponseEntity<?> generateTimetable(
-            @Valid @RequestBody List<TimetableDTO> timetableDTOList) {
-
-        return uniservice.generateTimetable(timetableDTOList);
+            @RequestBody List<TimetableDTO> DTOList) {
+        try {
+            uniservice.saveAllExams(DTOList);
+            return ResponseEntity.ok(Map.of("message", "Batch scheduling successful for " + DTOList.size() + " subjects"));
+        } catch (IllegalArgumentException e) {
+            // Returns 400 with the specific subject error
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", "An internal error occurred during batch processing"));
+        }
     }
 
     @PreAuthorize("hasRole('university')")
