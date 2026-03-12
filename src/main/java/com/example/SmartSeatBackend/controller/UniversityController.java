@@ -87,28 +87,34 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @PostMapping("/uploadSubjects")
-    public ResponseEntity<List<String>> uploadSubjects(
+    public ResponseEntity<?> uploadSubjects(
             @RequestParam("file") MultipartFile file) {
 
         try {
-            List<String> responses = uniservice.saveSubjectsFromCSV(file);
-            return ResponseEntity.ok(responses);
+            String response = uniservice.saveSubjectsFromCSV(file);
+            return ResponseEntity.ok(Map.of("message", response));
 
         } catch (DataIntegrityViolationException ex) {
             String response = StringProcess.process(ex.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Duplicate Entry Found: " + response));
+                    .body(Map.of("error", "Duplicate Entry Found: " + response));
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Error processing file: " + e.getMessage()));
+                    .body(Map.of("error","Error processing file: " + e.getMessage()));
         }
     }
 
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addSubject")
     public ResponseEntity<?> addSubject(@Valid @RequestBody SubjectDTO subject) {
-        return uniservice.addSubject(subject);
+        try{
+            return uniservice.addSubject(subject);
+        }
+        catch (IllegalArgumentException e) {
+            // Returns 400 with the specific subject error
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     //schedule exam by university

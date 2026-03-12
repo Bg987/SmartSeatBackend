@@ -1,9 +1,7 @@
 package com.example.SmartSeatBackend.DTO;
 
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,18 +14,20 @@ import lombok.NoArgsConstructor;
 public class SubjectDTO {
 
     @NotBlank(message="Subject code is required")
-    @Size(min=5, max=8, message = "Minimum 5 and maximum 8 characters are required ")
+    @Size(min=5, max=8, message = "subjectCode must be Minimum 5 and maximum 8 characters long")
     private String subjectId;
 
 
     @NotBlank(message = "Subject name is required")
-    @Size(min = 1, max = 50, message = "Name must be between 3 and 100 characters")
+    @Size(min = 3, max = 50, message = "subject Name must be between 3 and 100 characters")
     private String subjectName;
 
     @NotBlank(message = "department can't be empty")
     private String department;
 
-    @NotNull(message = "semester can't be null")
+    @NotNull(message = "Semester can't be null")
+    @Min(value = 1, message = "Semester must be at least 1")
+    @Max(value = 8, message = "Semester must be at most 8")
     private Integer semester;
 
     @NotBlank(message = "Branch can't be empty")

@@ -54,6 +54,7 @@ public class UniversityService {
     //  Get All Subjects
     @Cacheable(value = "subjects")
     public List<Subject> getAllSubjects() {
+        System.out.println("call");
         return subRepo.findAll();
     }
 
@@ -61,6 +62,17 @@ public class UniversityService {
     @CacheEvict(value = "subjects", allEntries = true)
     public ResponseEntity<String> addSubject(SubjectDTO subjectdto) {
 
+        boolean exists = subRepo.existsBySubjectIdAndBranchAndSemester(
+                subjectdto.getSubjectId(),
+                subjectdto.getBranch(),
+                subjectdto.getSemester()
+        );
+
+        if (exists) {
+            throw new IllegalArgumentException("Conflict: " + subjectdto.getSubjectId() + " (" + subjectdto.getSubjectName() +
+                    ") is already registered for " + subjectdto.getBranch() +
+                    " Semester " + subjectdto.getSemester());
+        }
         Subject subject = new Subject();
         subject.setSubjectName(subjectdto.getSubjectName());
         subject.setSubjectId(subjectdto.getSubjectId());
@@ -74,37 +86,98 @@ public class UniversityService {
     }
 
     //  Upload Subjects CSV
-    public List<String> saveSubjectsFromCSV(MultipartFile file) throws IOException {
+    @CacheEvict(value = "subjects", allEntries = true)
+    @Transactional
+    public String saveSubjectsFromCSV(MultipartFile file) throws IOException {
 
-        List<String> responses = new ArrayList<>();
+        List<Subject> subjectsToSave = new ArrayList<>();
+
+        // Track duplicates inside CSV
+        Set<String> internalCheck = new HashSet<>();
+
+        // Load existing subjects from DB once
+        List<Subject> existingSubjects = subRepo.findAll();
+
+        Set<String> existingKeys = existingSubjects.stream()
+                .map(s -> s.getSubjectId() + "-" + s.getBranch() + "-" + s.getSemester())
+                .collect(Collectors.toSet());
 
         try (
-                Reader reader = new BufferedReader(
-                        new InputStreamReader(file.getInputStream()));
-                CSVParser csvParser = new CSVParser(
-                        reader,
-                        CSVFormat.DEFAULT
-                                .withFirstRecordAsHeader()
-                                .withIgnoreHeaderCase()
-                                .withTrim())
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                        .withFirstRecordAsHeader()
+                        .withIgnoreHeaderCase()
+                        .withTrim())
         ) {
 
             for (CSVRecord record : csvParser) {
 
-                SubjectDTO sub = new SubjectDTO();
-                sub.setSubjectId(record.get("subjectId"));
-                sub.setSubjectName(record.get("subjectName"));
-                sub.setDepartment(record.get("department"));
-                sub.setBranch(record.get("branch"));
-                sub.setSemester(Integer.parseInt(record.get("semester").toString()));
+                String temp = "";
 
+                String subjectId = record.get("subjectId");
+                String subjectName = record.get("subjectName");
+                String department = record.get("department");
+                String branch = record.get("branch");
+                Integer semester = Integer.parseInt(record.get("semester"));
 
-                ResponseEntity<String> response = addSubject(sub);
-                responses.add("SUCCESS: " + response.getBody());
+                // Manual validations
+                if (subjectId.length() > 8 || subjectId.length() < 1) {
+                    temp += "subjectCode must be between 1 and 8 characters, ";
+                }
+
+                if (subjectName.length() > 100 || subjectName.length() < 3) {
+                    temp += "subjectName must be between 3 and 100 characters, ";
+                }
+
+                if (semester > 8 || semester < 1) {
+                    temp += "semester must be between 1 and 8";
+                }
+
+                if (!temp.isEmpty()) {
+                    temp += " -> Row: " + subjectId + " " + subjectName;
+                    throw new IllegalArgumentException(temp);
+                }
+
+                // Create subject
+                Subject subject = new Subject();
+                subject.setSubjectId(subjectId);
+                subject.setSubjectName(subjectName);
+                subject.setDepartment(department);
+                subject.setBranch(branch);
+                subject.setSemester(semester);
+
+                // Bean validation
+                Set<ConstraintViolation<Subject>> violations = validator.validate(subject);
+                if (!violations.isEmpty()) {
+                    throw new ConstraintViolationException(
+                            "Validation error in " + subject.getSubjectId(), violations);
+                }
+
+                // Unique key
+                String uniqueKey = subjectId + "-" + branch + "-" + semester;
+
+                // Check duplicate inside CSV
+                if (!internalCheck.add(uniqueKey)) {
+                    throw new IllegalArgumentException(
+                            "Duplicate row found in CSV for: " + uniqueKey);
+                }
+
+                // Check duplicate in DB
+                if (existingKeys.contains(uniqueKey)) {
+                    throw new IllegalArgumentException(
+                            "Conflict: " + subjectId +
+                                    " already exists for Branch " + branch +
+                                    " Sem " + semester);
+                }
+
+                subjectsToSave.add(subject);
             }
         }
 
-        return responses;
+        // Batch insert
+        subRepo.saveAll(subjectsToSave);
+
+        return "Successfully inserted " + subjectsToSave.size() + " subjects.";
     }
 
 
@@ -192,6 +265,7 @@ public class UniversityService {
 
         return responses;
     }
+
 
     public College getCollegeByUser(Long userId) {
 

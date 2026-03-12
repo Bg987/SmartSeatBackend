@@ -40,6 +40,10 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        order_inserts: true
+        generate_statistics: false
+        jdbc:
+          batch_size: 100
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
