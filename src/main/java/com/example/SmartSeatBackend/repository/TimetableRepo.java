@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -63,5 +65,16 @@ WHERE t.id = :timeTableId
       AND t.completed = false
     """)
     List<Map<String, Object>> findActiveExamNamesByCollege(@Param("collegeId") Long collegeId);
+
+    // Check if a Branch/Semester group is already busy on a specific date/time
+    @Query("SELECT t FROM Timetable t WHERE t.branch = :branch " +
+            "AND t.semester = :semester " +
+            "AND t.examDate = :date " +
+            "AND t.startTime = :time " +
+            "AND t.completed = false")
+    List<Timetable> findGroupConflicts(String branch, Integer semester, LocalDate date, LocalTime time);
+
+    // Check if the specific subject is already scheduled and incomplete
+    boolean existsBySubjectIdAndCompletedFalse(String subjectId);
 
 }

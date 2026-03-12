@@ -54,7 +54,6 @@ public class UniversityService {
     //  Get All Subjects
     @Cacheable(value = "subjects")
     public List<Subject> getAllSubjects() {
-        System.out.println("call");
         return subRepo.findAll();
     }
 
@@ -207,9 +206,15 @@ public class UniversityService {
         LocalDate minAllowedDate = LocalDate.now().plusDays(25);
         List<Timetable> entitiesToSave = new ArrayList<>();
 
+
         // 1. Validate and Map
         for (TimetableDTO dto : dtos) {
             LocalDate examDate = LocalDate.parse(dto.getExamDate());
+
+            //check whether same subject incomplete exam already exist or not
+            if (timetableRepo.existsBySubjectIdAndCompletedFalse(dto.getSubjectId())) {
+                throw new IllegalArgumentException("Subject " + dto.getSubjectId() + " is already scheduled in the system.");
+            }
 
             // Check: Date must be >=25 days from now
             if (examDate.isBefore(minAllowedDate)) {
@@ -218,6 +223,16 @@ public class UniversityService {
                                 " is scheduled for " + examDate +
                                 ". Exams must be scheduled at least 25 days in advance (Min: " + minAllowedDate + ")"
                 );
+            }
+
+            //check whether same branch semester have exam on same day and same time or not
+            List<Timetable> conflicts = timetableRepo.findGroupConflicts(
+                    dto.getBranch(), dto.getSemester(), examDate, LocalTime.parse(dto.getStartTime())
+            );
+
+            if (!conflicts.isEmpty()) {
+                throw new IllegalArgumentException("Conflict: " +" Branch "+ dto.getBranch() + " Semester " + dto.getSemester() +
+                        " already has an exam on " + examDate + " at " + dto.getStartTime());
             }
 
             // Map DTO to Entity
@@ -229,9 +244,6 @@ public class UniversityService {
             entity.setExamDate(examDate);
             entity.setStartTime(LocalTime.parse(dto.getStartTime()));
             entity.setDurationMinutes(dto.getDuration());
-            System.out.println("semester = "+dto.getSemester());
-            System.out.println("branch = "+dto.getBranch());
-            System.out.println();
             // Default flags
             entity.setAllocated(false);
             entity.setCompleted(false);

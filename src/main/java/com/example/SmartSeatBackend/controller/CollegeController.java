@@ -179,7 +179,7 @@ public class CollegeController {
     public ResponseEntity<List<Map<String, Object>>> getExamDetails() {
 
         Long collegeId = helper.getCollegeIdByUserId();
-        System.out.println("vnfhjd "+collegeId);
+
         List<Map<String, Object>> result = timetableRepo.findActiveExamNamesByCollege(collegeId);
         if (result.isEmpty()) {
             return ResponseEntity.noContent().build(); // Returns 204 if no exams found

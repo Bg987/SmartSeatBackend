@@ -10,6 +10,7 @@ import com.example.SmartSeatBackend.DTO.SubjectDTO;
 import com.example.SmartSeatBackend.DTO.TempCollegeDTO;
 import com.example.SmartSeatBackend.DTO.TimetableDTO;
 
+import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.service.AllocationService;
 import com.example.SmartSeatBackend.service.CollegeService;
 import com.example.SmartSeatBackend.service.UniversityService;
@@ -26,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -38,7 +40,7 @@ public class UniversityController {
     private final CollegeService colService;
     private final AllocationService seatService;
     private final HelperMethods helper;
-
+    private final TimetableRepo timetableRepo;
 
     // Add Single College
     @PreAuthorize("hasRole('university')")
@@ -77,7 +79,6 @@ public class UniversityController {
         return uniservice.getAllColleges();
     }
 
-
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getAllSubjects")
     public ResponseEntity<List<Subject>> getAllSubjects() {
@@ -110,10 +111,14 @@ public class UniversityController {
         return uniservice.addSubject(subject);
     }
 
+    //schedule exam by university
     @PreAuthorize("hasRole('university')")
     @PostMapping("/scheduleExam")
     public ResponseEntity<?> generateTimetable(
             @RequestBody List<TimetableDTO> DTOList) {
+        if(DTOList.isEmpty()){
+            return ResponseEntity.ok(Map.of("message", "select atleast one subject"));
+        }
         try {
             uniservice.saveAllExams(DTOList);
             return ResponseEntity.ok(Map.of("message", "Batch scheduling successful for " + DTOList.size() + " subjects"));
@@ -123,6 +128,18 @@ public class UniversityController {
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(Map.of("error", "An internal error occurred during batch processing"));
         }
+    }
+
+    //check whether incomplete exam or not for particuler subject
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/check-scheduled")
+    public ResponseEntity<Map<String, Boolean>> checkSubjects(@RequestBody List<String> subjectIds) {
+        Map<String, Boolean> results = new HashMap<>();
+        for (String id : subjectIds) {
+            // Returns true if an incomplete exam exists
+            results.put(id, timetableRepo.existsBySubjectIdAndCompletedFalse(id));
+        }
+        return ResponseEntity.ok(results);
     }
 
     @PreAuthorize("hasRole('university')")
@@ -144,7 +161,7 @@ public class UniversityController {
         return ResponseEntity.ok("Seat allocation completed successfully!");
     }
 
-    //  Seating Plan API (Production Ready)
+    //  Seating Plan
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getSeattingPlan/{collegeId}")
     public String getSeatingPlan(@PathVariable Long collegeId) {
@@ -190,9 +207,7 @@ public class UniversityController {
 
 
 
-
-
-    //fetch college details whose stundent's appear for particuler exam
+    //fetch college details whose stundents appear for particuler exam
     @PreAuthorize("hasRole('university')")
     @GetMapping("getCollegeDetailsForExam/{ExamId}")
     public ResponseEntity<?> getCollegeDetailsForExam(@PathVariable Long ExamId) {
@@ -202,7 +217,6 @@ public class UniversityController {
         }
         return ResponseEntity.ok(res);
     }
-
 
     //fetch exam which is remaining for allocation
     @PreAuthorize("hasRole('university')")
@@ -235,7 +249,6 @@ public class UniversityController {
                     .body("Error retrieving data: " + e.getMessage());
         }
     }
-
 
 
     @PreAuthorize("hasRole('university')")
