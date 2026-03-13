@@ -110,6 +110,26 @@ public class UniversityService {
                         .withTrim())
         ) {
 
+            //check whether csv file format based on templete or not
+            // 1. Get the parsed headers
+            Map<String, Integer> headerMap = csvParser.getHeaderMap();
+
+
+            // 2. Define the exact fields from your image
+            String[] requiredFields = {"subjectId", "subjectName", "department", "branch", "semester"};
+
+            // 3. Validation Logic
+            if (headerMap == null) {
+                throw new RuntimeException("Error: File is empty or headers are missing.");
+            }
+
+            for (String field : requiredFields) {
+                if (!headerMap.containsKey(field)) {
+                    // This is where you trigger your "format not proper" error
+                    throw new RuntimeException("Error: Format not proper. Missing column: " + field);
+                }
+            }
+
             for (CSVRecord record : csvParser) {
 
                 String temp = "";
