@@ -45,33 +45,39 @@ public class UniversityController {
     // Add Single College
     @PreAuthorize("hasRole('university')")
     @PostMapping("/addCollege")
-    public ResponseEntity<String> addCollege(@Valid @RequestBody TempCollegeDTO collageData) {
+    public ResponseEntity<?> addCollege(@Valid @RequestBody TempCollegeDTO collageData) {
         try {
             return uniservice.addCollege(collageData);
-        } catch (Exception e) {
+
+        }
+        catch(IllegalArgumentException e){
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body("College already exists in database");
+                    .body(e.getMessage());
+        }
+        catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body("College(Mail) already exists in database");
         }
     }
 
     // Upload Colleges via CSV
-    @PreAuthorize("hasRole('university')")
-    @PostMapping("/addColleges")
-    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
-        try {
-            List<String> responses = uniservice.saveCollegesFromCSV(file);
-            return ResponseEntity.ok(responses);
-
-        } catch (DataIntegrityViolationException ex) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(List.of("Duplicate Email Found: "
-                            + ex.getMostSpecificCause().getMessage()));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Error processing file: " + e.getMessage()));
-        }
-    }
+//    @PreAuthorize("hasRole('university')")
+//    @PostMapping("/addColleges")
+//    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
+//        try {
+//            List<String> responses = uniservice.saveCollegesFromCSV(file);
+//            return ResponseEntity.ok(responses);
+//
+//        } catch (DataIntegrityViolationException ex) {
+//            return ResponseEntity.status(HttpStatus.CONFLICT)
+//                    .body(List.of("Duplicate Email Found: "
+//                            + ex.getMostSpecificCause().getMessage()));
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(List.of("Error processing file: " + e.getMessage()));
+//        }
+//    }
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")

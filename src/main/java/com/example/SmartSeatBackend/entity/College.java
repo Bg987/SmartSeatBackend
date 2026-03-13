@@ -21,9 +21,6 @@ public class College {
     @Column(columnDefinition = "TEXT") // Allows longer addresses
     private String address;
 
-    @Column(name="Department")
-    private String department;
-
     @OneToOne
     @JoinColumn(name = "user_id") // This must match the column name in your DB
     private User user;

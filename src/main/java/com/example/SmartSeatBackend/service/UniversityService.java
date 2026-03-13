@@ -212,14 +212,17 @@ public class UniversityService {
 
     // Add College
     @CacheEvict(value = "colleges", allEntries = true)
-    public ResponseEntity<String> addCollege(TempCollegeDTO collegeData) {
+    public ResponseEntity<?> addCollege(TempCollegeDTO collegeData) {
+
+        if(userRepo.existsByMail(collegeData.getEmail())){
+            throw new IllegalArgumentException("college(Email) already exist");
+        }
 
         User userCollege = new User();
         userCollege.setName("Admin of " + collegeData.getCollegeName());
         userCollege.setMail(collegeData.getEmail());
         userCollege.setMobileNumber(collegeData.getContactNumber());
         userCollege.setRole(User.Role.college);
-
 
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         userCollege.setPassword(passwordEncoder.encode(rawPassword));
@@ -229,7 +232,6 @@ public class UniversityService {
         College college = new College();
         college.setName(collegeData.getCollegeName());
         college.setAddress(collegeData.getAddress());
-        college.setDepartment(collegeData.getDepartment());
         college.setUser(savedUser);
 
         collegeRepo.save(college);
@@ -243,13 +245,13 @@ public class UniversityService {
 //                 null
 //         );
 
-        return ResponseEntity.ok("College added successfully. Generated Password: " + rawPassword);
+        return ResponseEntity.ok(Map.of("message","College added successfully."));
     }
 
-    public List<String> saveCollegesFromCSV(MultipartFile file) throws IOException {
+    public List<?> saveCollegesFromCSV(MultipartFile file) throws IOException {
 
 
-        List<String> responses = new ArrayList<>();
+        List<?> responses = new ArrayList<>();
 
         try (
                 Reader reader = new BufferedReader(
@@ -269,7 +271,6 @@ public class UniversityService {
                 tempCollege.setAddress(record.get("address"));
                 tempCollege.setEmail(record.get("mail"));
                 tempCollege.setContactNumber(record.get("contactNumber"));
-                tempCollege.setDepartment(record.get("department"));
 
                 Set<ConstraintViolation<TempCollegeDTO>> violations =
                         validator.validate(tempCollege);
@@ -278,8 +279,8 @@ public class UniversityService {
                     throw new ConstraintViolationException(violations);
                 }
 
-                ResponseEntity<String> response = addCollege(tempCollege);
-                responses.add(response.getBody());
+                ResponseEntity<?> response = addCollege(tempCollege);
+                //responses.add(response.getBody());
             }
         }
 
