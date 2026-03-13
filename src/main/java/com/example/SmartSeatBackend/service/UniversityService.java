@@ -3,6 +3,7 @@ package com.example.SmartSeatBackend.service;
 import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -49,7 +50,7 @@ public class UniversityService {
     private final NotificationService notificationService;
     private final SubjectStudentRepository subjectRepo;
     private final SeatAllocationRepo seatAllocationRepo;
-
+    private final HelperMethods helper;
 
     //  Get All Subjects
     @Cacheable(value = "subjects")
@@ -248,14 +249,17 @@ public class UniversityService {
         return ResponseEntity.ok(Map.of("message","College added successfully."));
     }
 
-    public List<?> saveCollegesFromCSV(MultipartFile file) throws IOException {
+    @Transactional
+    public String saveCollegesFromCSV(MultipartFile file) throws IOException {
+        List<String> requiredHeaders = Arrays.asList("name", "address", "mail", "contactNumber");
 
-
-        List<?> responses = new ArrayList<>();
-
+        // Lists to hold entities for batch saving
+        List<User> usersToSave = new ArrayList<>();
+        List<College> collegesToSave = new ArrayList<>();
+        //use to store temp data for email service
+        List<RegistrationDetail> registrationDetails = new ArrayList<>();
         try (
-                Reader reader = new BufferedReader(
-                        new InputStreamReader(file.getInputStream()));
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
                 CSVParser csvParser = new CSVParser(
                         reader,
                         CSVFormat.DEFAULT
@@ -263,28 +267,73 @@ public class UniversityService {
                                 .withIgnoreHeaderCase()
                                 .withTrim())
         ) {
+            Map<String, Integer> headerMap = csvParser.getHeaderMap();
+
+            if (headerMap == null) throw new RuntimeException("CSV file is empty.");
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new RuntimeException("Error: Format not proper. Missing column: " + header);
+                }
+            }
 
             for (CSVRecord record : csvParser) {
+                TempCollegeDTO collegeData = new TempCollegeDTO();
+                collegeData.setCollegeName(record.get("name"));
+                collegeData.setAddress(record.get("address"));
+                collegeData.setEmail(record.get("mail"));
+                collegeData.setContactNumber(record.get("contactNumber"));
 
-                TempCollegeDTO tempCollege = new TempCollegeDTO();
-                tempCollege.setCollegeName(record.get("name"));
-                tempCollege.setAddress(record.get("address"));
-                tempCollege.setEmail(record.get("mail"));
-                tempCollege.setContactNumber(record.get("contactNumber"));
+                // Validation logic remains the same
+                if (userRepo.existsByMail(collegeData.getEmail())) {
+                    throw new IllegalArgumentException("College Email already exists: " + collegeData.getEmail());
+                }
 
-                Set<ConstraintViolation<TempCollegeDTO>> violations =
-                        validator.validate(tempCollege);
-
+                Set<ConstraintViolation<TempCollegeDTO>> violations = validator.validate(collegeData);
                 if (!violations.isEmpty()) {
                     throw new ConstraintViolationException(violations);
                 }
 
-                ResponseEntity<?> response = addCollege(tempCollege);
-                //responses.add(response.getBody());
-            }
-        }
+                // 1. Prepare User Entity
+                User userCollege = new User();
+                userCollege.setName("Admin of " + collegeData.getCollegeName());
+                userCollege.setMail(collegeData.getEmail());
+                userCollege.setMobileNumber(collegeData.getContactNumber());
+                userCollege.setRole(User.Role.college);
 
-        return responses;
+                String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+                userCollege.setPassword(passwordEncoder.encode(rawPassword));
+
+                // 2. Prepare College Entity
+                College college = new College();
+                college.setName(collegeData.getCollegeName());
+                college.setAddress(collegeData.getAddress());
+
+                // 3. Link them (Hibernate handles the ID mapping during saveAll if configured correctly)
+                college.setUser(userCollege);
+
+                // Add to lists instead of saving now
+                usersToSave.add(userCollege);
+                collegesToSave.add(college);
+                registrationDetails.add(new RegistrationDetail(
+                        collegeData.getEmail(),
+                        rawPassword,
+                        collegeData.getCollegeName()
+                ));
+            }
+
+            // --- BATCH INSERTION ---
+            if (!usersToSave.isEmpty()) {
+                userRepo.saveAll(usersToSave);
+                collegeRepo.saveAll(collegesToSave);
+                //email service
+                //helper.sendRegistrationBatch(registrationDetails);
+            }
+            // E. Optional: Kafka / Email logic (currently commented in your code)
+            //msgService.sendRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName(),null);
+
+
+        }
+        return collegesToSave.size()+" Colleges added successfully.";
     }
 
 
@@ -429,6 +478,10 @@ public class UniversityService {
     }
 
 
+    //used to store temp. data at the time of college csv insertion and the time of betch DB insertion-
+    //use this to get data for email service
+    public record RegistrationDetail(String email, String password, String name) {}
+
     public void processWithQuickDelay(String userId) {
         CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
             System.out.println("call");
@@ -436,4 +489,6 @@ public class UniversityService {
             processWithQuickDelay(userId);
         });
     }
+
+
 }

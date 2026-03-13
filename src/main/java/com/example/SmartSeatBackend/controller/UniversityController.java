@@ -61,23 +61,26 @@ public class UniversityController {
     }
 
     // Upload Colleges via CSV
-//    @PreAuthorize("hasRole('university')")
-//    @PostMapping("/addColleges")
-//    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
-//        try {
-//            List<String> responses = uniservice.saveCollegesFromCSV(file);
-//            return ResponseEntity.ok(responses);
-//
-//        } catch (DataIntegrityViolationException ex) {
-//            return ResponseEntity.status(HttpStatus.CONFLICT)
-//                    .body(List.of("Duplicate Email Found: "
-//                            + ex.getMostSpecificCause().getMessage()));
-//
-//        } catch (Exception e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(List.of("Error processing file: " + e.getMessage()));
-//        }
-//    }
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/addColleges")
+    public ResponseEntity<?> addColleges(@RequestParam("file") MultipartFile file) {
+        try {
+            String response = uniservice.saveCollegesFromCSV(file);
+            // Returns: {"message": "College list added successfully."}
+            return ResponseEntity.ok(Map.of("message", response));
+
+        } catch (DataIntegrityViolationException ex) {
+            // Returns: {"message": "Duplicate Email Found: ..."}
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Database Error: " + ex.getMostSpecificCause().getMessage()));
+
+        } catch (Exception e) {
+            // Returns: {"message": "Error processing file: ..."}
+            // This catches your "Format not proper" and "Missing column" errors
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")

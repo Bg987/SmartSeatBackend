@@ -3,11 +3,15 @@ package com.example.SmartSeatBackend.utility;
 import com.example.SmartSeatBackend.entity.College;
 import com.example.SmartSeatBackend.repository.CollegeRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
+import com.example.SmartSeatBackend.service.MessageService;
+import com.example.SmartSeatBackend.service.UniversityService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 
 @Component
@@ -16,6 +20,7 @@ public class HelperMethods {
 
     private final CollegeRepository collegeRepo;
     private final StudentRepository stuRepo;
+    private final MessageService msgService;
 
     public Long getCollegeIdByUserId() {
         String userId= getId();
@@ -46,5 +51,24 @@ public class HelperMethods {
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
                 .orElse(null); // Default fallback
+    }
+
+
+    //send batch email in the case of csv college upload
+    public void sendRegistrationBatch(List<UniversityService.RegistrationDetail> details) {
+        for (UniversityService.RegistrationDetail detail : details) {
+            try {
+                msgService.sendRegistrationEvent(
+                        detail.email(),
+                        detail.password(),
+                        detail.name(),
+                        null
+                );
+            } catch (Exception e) {
+                // Log the error but don't stop the whole process
+                // since the DB save is already finished.
+                System.err.println("Failed to send event for: " + detail.email());
+            }
+        }
     }
 }
