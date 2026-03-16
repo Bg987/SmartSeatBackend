@@ -11,6 +11,7 @@ import com.example.SmartSeatBackend.repository.RoomsRepository;
 import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.repository.TimetableRepo;
 import com.example.SmartSeatBackend.service.CollegeService;
+import com.example.SmartSeatBackend.service.UniversityService;
 import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ public class CollegeController {
 
 
     private final CollegeService colService;
+    private final UniversityService uniService;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
     private final HelperMethods helper;
@@ -54,19 +57,48 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
-     public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
-        try {
-            Long collegeID = helper.getCollegeIdByUserId();
-            String response = colService.addStudent(studentDTO,collegeID);
+    public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
+        Long collegeID = helper.getCollegeIdByUserId();
 
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (RuntimeException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        // Service handles all logic and throws errors if validation fails
+        String enrollmentNo = colService.addStudent(studentDTO, collegeID);
+
+        return new ResponseEntity<>(
+                "Student registered successfully with enrollment: " + enrollmentNo,
+                HttpStatus.CREATED
+        );
+    }
+
+    @PreAuthorize("hasRole('college')")
+    @PostMapping("/uploadStudents")
+    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
+        Long collegeID = helper.getCollegeIdByUserId();
+        try {
+            // If any row fails, this line throws an exception and nothing below it runs
+            List<String> responses = colService.saveStudentsFromCSV(file, collegeID);
+
+            return ResponseEntity.ok(responses);
+
+        } catch (ResponseStatusException ex) {
+            // This catches your business logic errors (e.g., Duplicate Email, Sem 1 Backlog)
+            // and returns the specific reason you defined in the service.
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .body(List.of(ex.getReason()));
+
+        } catch (DataIntegrityViolationException ex) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body(List.of("Database Constraint Violation: " + ex.getMostSpecificCause().getMessage()));
+
         } catch (Exception e) {
-            return new ResponseEntity<>("Something went wrong: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR);
+            // General fallback for formatting errors or IO issues
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(List.of("Bulk Upload Failed: " + e.getMessage()));
         }
     }
+
     @PreAuthorize("hasRole('college')")
     @GetMapping("/rooms")
     public Page<Rooms> getRoomsByCollege(
@@ -126,34 +158,6 @@ public class CollegeController {
        }
    }
 
-
-    @PreAuthorize("hasRole('college')")
-    @PostMapping("/uploadStudents")
-    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file)
-    {
-        Long collegeID = helper.getCollegeIdByUserId();
-        try {
-            List<String> responses = colService.saveStudentsFromCSV(file,collegeID);
-
-            System.out.println(responses);
-            return ResponseEntity.ok(responses);
-
-        } catch (DataIntegrityViolationException ex) {
-
-            return ResponseEntity
-                    .status(HttpStatus.CONFLICT)
-                    .body(List.of("Duplicate data : " +
-                            ex.getMostSpecificCause().getMessage()));
-
-        } catch (Exception e) {
-
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .body(List.of("Error processing file: " + e.getMessage()));
-        }
-    }
-
-
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getTimetable/{branch}/{semester}")
 
@@ -211,5 +215,12 @@ public class CollegeController {
                 colService.getSeatBYCollege(college_id, exam_id);
 
         return ResponseEntity.ok(seats);
+    }
+
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getBranch")
+    public ResponseEntity<?> getBranch(){
+
+        return ResponseEntity.ok(uniService.getAllSubjects());
     }
 }

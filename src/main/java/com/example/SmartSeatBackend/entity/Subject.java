@@ -17,13 +17,13 @@ public class Subject {
     @Column(name = "subject_name", nullable = false, length = 50)
     private String subjectName;
 
-    @Column(name="department")
+    @Column(name = "department")
     private String department;
 
-    @Column(name="branch")
+    @Column(name = "branch")
     private String branch;
 
-    @Column(name="semester")
+    @Column(name = "semester")
     private Integer semester;
 
 }

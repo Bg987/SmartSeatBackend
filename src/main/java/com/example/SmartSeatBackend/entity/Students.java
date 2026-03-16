@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -51,4 +52,25 @@ public class Students {
 
     @Column(name = "college_id")
     private Long collegeId;
+
+
+    public void addSubjectsFromCodes(List<String> codes) {
+        if (codes == null) return;
+        this.subjects = codes.stream().map(code -> {
+            SubjectStudent back = new SubjectStudent();
+            back.setEnrollmentNo(this.enrollmentNo); // Linking the FK
+            back.setSubjectCode(code);
+            return back;
+        }).collect(Collectors.toList());
+    }
+
+    public void addBacklogSubjectsFromCodes(List<String> codes) {
+        if (codes == null) return;
+        this.backlogSubjects = codes.stream().map(code -> {
+            BacklogStudent back = new BacklogStudent();
+            back.setEnrollmentNo(this.enrollmentNo); // Linking the FK
+            back.setSubjectCode(code);
+            return back;
+        }).collect(Collectors.toList());
+    }
 }

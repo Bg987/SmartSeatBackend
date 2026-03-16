@@ -37,5 +37,4 @@ public class StudentsDTO {
     private boolean hasBacklog;
 
     private List<String>backlogSubjects;
-
 }

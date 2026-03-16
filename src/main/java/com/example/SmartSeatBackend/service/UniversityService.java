@@ -77,8 +77,8 @@ public class UniversityService {
         Subject subject = new Subject();
         subject.setSubjectName(subjectdto.getSubjectName());
         subject.setSubjectId(subjectdto.getSubjectId());
-        subject.setDepartment(subjectdto.getDepartment());
-        subject.setBranch(subjectdto.getBranch());
+        subject.setDepartment(subjectdto.getDepartment().toUpperCase());
+        subject.setBranch(subjectdto.getBranch().toUpperCase());
         subject.setSemester(subjectdto.getSemester());
 
         subRepo.save(subject);
@@ -137,8 +137,8 @@ public class UniversityService {
 
                 String subjectId = record.get("subjectId");
                 String subjectName = record.get("subjectName");
-                String department = record.get("department");
-                String branch = record.get("branch");
+                String department = record.get("department").toUpperCase();
+                String branch = record.get("branch").toUpperCase();
                 Integer semester = Integer.parseInt(record.get("semester"));
 
                 // Manual validations
@@ -205,7 +205,6 @@ public class UniversityService {
     //  Get All Colleges
     @Cacheable(value = "colleges")
     public ResponseEntity<List<User>> getAllColleges() {
-        System.out.println("call");
         List<User> colleges = userRepo.findByRole(User.Role.college);
         return ResponseEntity.ok(colleges);
     }
@@ -326,7 +325,7 @@ public class UniversityService {
                 userRepo.saveAll(usersToSave);
                 collegeRepo.saveAll(collegesToSave);
                 //email service
-                //helper.sendRegistrationBatch(registrationDetails);
+                helper.sendRegistrationBatch(registrationDetails);
             }
             // E. Optional: Kafka / Email logic (currently commented in your code)
             //msgService.sendRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName(),null);

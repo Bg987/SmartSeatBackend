@@ -7,6 +7,7 @@ import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
 
 import com.example.SmartSeatBackend.utility.HelperMethods;
+import jakarta.transaction.Transactional;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 
@@ -19,9 +20,12 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +47,6 @@ public class CollegeService {
 //    private final MessageService msgService;
     private final HelperMethods helper;
 
-
     @Cacheable(value = "studentsByCollege", key = "#collegeId")
     public List<Students> getStudents(Long collegeId){
         return studentRepo.findByCollegeId(collegeId);
@@ -54,117 +57,167 @@ public class CollegeService {
         return collegeRepo.findByCollegeId(collegeId);
     }
 
-    @CacheEvict(value = "studentsByCollege", key = "#student.collegeId")
-    public String addStudent(@NotNull StudentsDTO dto,Long collegeID) {
-
+    @CacheEvict(value = "studentsByCollege", key = "#collegeID")
+    public String addStudent(@NotNull StudentsDTO dto, Long collegeID) {
+        // 1. Validation checks (Throwing exceptions)
         if (studentRepo.existsById(dto.getEnrollmentNo())) {
-            return "Error: Enrollment number " + dto.getEnrollmentNo() + " already exists!";
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Enrollment number " + dto.getEnrollmentNo() + " already exists!");
         }
 
+        if (studentRepo.existsByEmail(dto.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Email " + dto.getEmail() + " is already registered!");
+        }
+
+        if (dto.getSemester() != null && dto.getSemester() == 1 && dto.isHasBacklog()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Semester 1 students cannot have backlogs.");
+        }
+
+        // 2. Mapping DTO to Entity
         Students student = new Students();
-
-        // Copy properties first
         BeanUtils.copyProperties(dto, student);
+        student.setBranch(dto.getBranch().toUpperCase());
+        student.setCollegeId(collegeID);
 
-        // Backlog validation
+        List<SubjectStudent> subjectEntities = dto.getSubjects().stream()
+                .map(code -> {
+                    SubjectStudent back = new SubjectStudent();
+                    back.setEnrollmentNo(dto.getEnrollmentNo());
+                    back.setSubjectCode(code);
+                    return back;
+                }).toList();
+
+        student.setSubjects(subjectEntities);
+        // 3. Handle Backlog Mapping
         if (student.isHasBacklog()) {
-            if (student.getBacklogSubjects() == null || student.getBacklogSubjects().isEmpty()) {
-                return "Error: Backlog subjects required when hasBacklog is true!";
+            if (dto.getBacklogSubjects() == null || dto.getBacklogSubjects().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Backlog subjects list is required when hasBacklog is true.");
             }
+
+            List<BacklogStudent> backlogEntities = dto.getBacklogSubjects().stream()
+                    .map(code -> {
+                        BacklogStudent back = new BacklogStudent();
+                        back.setEnrollmentNo(dto.getEnrollmentNo());
+                        back.setSubjectCode(code);
+                        return back;
+                    }).toList();
+
+            student.setBacklogSubjects(backlogEntities);
         } else {
             student.setBacklogSubjects(null);
         }
 
-        // Generate Random Password
+        // 4. Security & Metadata
         String rawPassword = UUID.randomUUID().toString().substring(0, 8);
         student.setPassword(passwordEncoder.encode(rawPassword));
 
-        // Set college id
-        student.setCollegeId(collegeID);
-
-        // Save once
+        // 5. Save
         studentRepo.save(student);
 
-        // Send email
-//        msgService.sendRegistrationEvent(
-//                dto.getEmail(),
-//                rawPassword,
-//                dto.getName(),
-//                String.valueOf(student.getCollegeId())
-//        );
+        // 6. Logging/Kafka (Commented as requested)
+        System.out.println("Generated Password for " + student.getEmail() + ": " + rawPassword);
 
-        return "Student saved successfully with enrollment: "
-                + student.getEnrollmentNo()
-                + " | Temporary Password: "
-                + rawPassword;
+        return student.getEnrollmentNo(); // Return only the key or a success string
     }
 
 
-    public List<String> saveStudentsFromCSV(MultipartFile file,Long collegeId) throws IOException {
-
-        List<String> responses = new ArrayList<>();
+    @Transactional // Ensures atomicity: if one fails, nothing is saved
+    @CacheEvict(value = "studentsByCollege", key = "#collegeId")
+    public List<String> saveStudentsFromCSV(MultipartFile file, Long collegeId) throws IOException {
+        List<String> logs = new ArrayList<>();
+        List<Students> studentsToSave = new ArrayList<>();
+        List<String> requiredHeaders = Arrays.asList(
+                "enrollmentNo", "name", "email", "mobileNumber",
+                "branch", "specialization", "semester",
+                "subjects", "hasBacklog", "backlogSubjects"
+        );
 
         try (
-                Reader reader = new BufferedReader(
-                        new InputStreamReader(file.getInputStream()));
-                CSVParser csvParser = new CSVParser(
-                        reader,
-                        CSVFormat.DEFAULT
-                                .withFirstRecordAsHeader()
-                                .withIgnoreHeaderCase()
-                                .withTrim())
+                Reader reader = new BufferedReader(new InputStreamReader(file.getInputStream()));
+                CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT
+                        .withFirstRecordAsHeader()
+                        .withIgnoreHeaderCase()
+                        .withTrim())
         ) {
+
+            //csv column name validation
+            Map<String, Integer> headerMap = csvParser.getHeaderMap();
+
+            if (headerMap == null || headerMap.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "CSV file is empty.");
+            }
+
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid CSV format. Missing required column: " + header);
+                }
+            }
 
             for (CSVRecord record : csvParser) {
 
-                StudentsDTO student = new StudentsDTO();
 
-                student.setEnrollmentNo(record.get("enrollmentNo"));
-                student.setName(record.get("name"));
-                student.setEmail(record.get("email"));
-                student.setBranch(record.get("branch"));
-                student.setSemester(Integer.parseInt(record.get("semester")));
+                String enrollment = record.get("enrollmentNo");
 
-                // Subjects split by |
+                // 1. Map CSV Row to DTO
+                StudentsDTO dto = new StudentsDTO();
+                dto.setEnrollmentNo(enrollment);
+                dto.setName(record.get("name"));
+                dto.setEmail(record.get("email"));
+                dto.setMobileNumber(record.get("mobileNumber"));
+                dto.setBranch(record.get("branch"));
+                dto.setSpecialization(record.get("specialization")); // Added this line
+                try {
+                    dto.setSemester(Integer.parseInt(record.get("semester")));
+                } catch (NumberFormatException e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Invalid semester format for enrollment: " + enrollment);
+                }
+
+                // 2. Map Regular Subjects
                 String subjectsRaw = record.get("subjects");
-                List<String> subjects = List.of(subjectsRaw.split("\\|"));
-                student.setSubjects(subjects);
+                dto.setSubjects((subjectsRaw != null && !subjectsRaw.isEmpty())
+                        ? Arrays.asList(subjectsRaw.split("\\|"))
+                        : new ArrayList<>());
 
-
+                // 3. Map Backlog Subjects
                 boolean hasBacklog = Boolean.parseBoolean(record.get("hasBacklog"));
-                student.setHasBacklog(hasBacklog);
-
-                // Backlog Subjects
-                String backlogRaw = record.get("backlogSubjects");
-
+                dto.setHasBacklog(hasBacklog);
                 if (hasBacklog) {
+                    String backlogRaw = record.get("backlogSubjects");
                     if (backlogRaw == null || backlogRaw.isEmpty()) {
-                        responses.add("Error for Enrollment "
-                                + student.getEnrollmentNo()
-                                + ": Backlog subjects required when hasBacklog is true.");
-                        continue; // Skip this record
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                "Backlog subjects required for enrollment: " + enrollment);
                     }
-                    student.setBacklogSubjects(List.of(backlogRaw.split("\\|")));
-                } else {
-                    student.setBacklogSubjects(null);
+                    dto.setBacklogSubjects(Arrays.asList(backlogRaw.split("\\|")));
                 }
 
+                // 4. Run Business Validations
+                // If this fails (duplicate email/enrollment), it throws a ResponseStatusException
+                validateStudentBusinessRules(dto);
 
-                // Validation
-                Set<ConstraintViolation<StudentsDTO>> violations =
-                        validator.validate(student);
+                // 5. Transform DTO to Entity
+                Students student = prepareFullStudentEntity(dto, collegeId);
+                studentsToSave.add(student);
 
-                if (!violations.isEmpty()) {
-                    throw new ConstraintViolationException(violations);
-                }
-
-                // Save student
-                String res = addStudent(student,collegeId);
-                responses.add(res);
+                //logs.add("Validated: " + enrollment);
             }
+
+            // 6. Bulk Save
+            // This only runs if the loop finished without any exceptions
+            studentRepo.saveAll(studentsToSave);
+            logs.add("Bulk upload successful. Total saved: " + studentsToSave.size());
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to read CSV file.");
         }
-        return responses;
+
+        return logs;
     }
+
 
     public RoomsDTO addRooms(RoomsDTO dto) {
 
@@ -236,6 +289,58 @@ public class CollegeService {
         List<Timetable> timeTable= timetableRepo.findBybranchAndSemesterAndCompleted(branch,semester,completed);
 
         return timeTable;
+    }
+
+    private void validateStudentBusinessRules(StudentsDTO dto) {
+        if (studentRepo.existsById(dto.getEnrollmentNo())) {
+            throw new RuntimeException("Enrollment already exists");
+        }
+        if (studentRepo.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email already registered");
+        }
+        if (dto.getSemester() != null && dto.getSemester() == 1 && dto.isHasBacklog()) {
+            throw new RuntimeException("Semester 1 students cannot have backlogs");
+        }
+    }
+
+    private Students prepareFullStudentEntity(StudentsDTO dto, Long collegeId) {
+        Students student = new Students();
+        BeanUtils.copyProperties(dto, student);
+
+        student.setCollegeId(collegeId);
+        student.setBranch(dto.getBranch().toUpperCase());
+        student.setSpecialization(dto.getSpecialization());
+        // Security: Password Generation
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        student.setPassword(passwordEncoder.encode(rawPassword));
+
+        // A. Map Regular Subjects (SubjectStudent)
+        if (dto.getSubjects() != null) {
+            List<SubjectStudent> regularSubjects = dto.getSubjects().stream()
+                    .map(code -> {
+                        SubjectStudent sub = new SubjectStudent();
+                        sub.setEnrollmentNo(dto.getEnrollmentNo());
+                        sub.setSubjectCode(code);
+                        return sub;
+                    }).toList();
+            student.setSubjects(regularSubjects);
+        }
+
+        // B. Map Backlog Subjects (BacklogStudent)
+        if (dto.isHasBacklog() && dto.getBacklogSubjects() != null) {
+            List<BacklogStudent> backlogs = dto.getBacklogSubjects().stream()
+                    .map(code -> {
+                        BacklogStudent bs = new BacklogStudent();
+                        bs.setEnrollmentNo(dto.getEnrollmentNo());
+                        bs.setSubjectCode(code);
+                        return bs;
+                    }).toList();
+            student.setBacklogSubjects(backlogs);
+        } else {
+            student.setBacklogSubjects(null);
+        }
+
+        return student;
     }
 
 }
