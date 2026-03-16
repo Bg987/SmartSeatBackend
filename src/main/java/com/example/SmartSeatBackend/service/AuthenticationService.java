@@ -9,6 +9,7 @@ import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import com.example.SmartSeatBackend.utility.Cookie;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +26,19 @@ import java.util.Set;
 @Service
 public class AuthenticationService {
 
-
     private final UserRepository userRepository;
     private final Cookie Cookie;
     private final StudentService stuser;
     private final StudentRepository studentRepo;
     private final StudentController stu;
     private final PasswordEncoder passwordEncoder;
+    private final MessageService msg;
+
 
     //for university and colleges
     public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
 
+        msg.sendRegistrationEvent("220170116016@vgecg.ac.in","fkjvdkjd","ndvdd",null);
         Set<String> validRoles = Set.of("university", "college", "student");
 
         if (!validRoles.contains(userdata.getRole())) {
