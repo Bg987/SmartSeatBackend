@@ -115,25 +115,35 @@ public class AllocationService {
                     int attempts = 0;
 
                     while (attempts < branches.size()) {
-
                         if (branches.isEmpty()) break;
 
-                        String branch = branches.get(branchIndex);
-                        branchIndex = (branchIndex + 1) % branches.size();
+                        // Safety check: ensure index is still valid after a potential removal
+                        if (branchIndex >= branches.size()) {
+                            branchIndex = 0;
+                        }
 
+                        String branch = branches.get(branchIndex);
                         Queue<Students> queue = branchMap.get(branch);
 
                         if (queue == null || queue.isEmpty()) {
                             branchMap.remove(branch);
-                            branches.remove(branch);
+                            branches.remove(branchIndex); // Remove by index to stay in sync
+                            // Do NOT increment branchIndex here because the next item
+                            // shifted into the current index position
+                            if (branches.isEmpty()) break;
                             continue;
                         }
 
+                        // Try to allocate
                         if (isSafe(grid, r, c, queue.peek())) {
                             allocatedStudent = queue.poll();
+                            // Move to next branch for the next seat
+                            branchIndex = (branchIndex + 1) % branches.size();
                             break;
                         }
 
+                        // If not safe, move to next branch and increment attempts
+                        branchIndex = (branchIndex + 1) % branches.size();
                         attempts++;
                     }
 

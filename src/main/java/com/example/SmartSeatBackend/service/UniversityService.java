@@ -316,7 +316,8 @@ public class UniversityService {
                 registrationDetails.add(new RegistrationDetail(
                         collegeData.getEmail(),
                         rawPassword,
-                        collegeData.getCollegeName()
+                        collegeData.getCollegeName(),
+                        null
                 ));
             }
 
@@ -425,11 +426,11 @@ public class UniversityService {
         //fetch semester and subject of exam
         String subjectCode = timetableRepo.findsubjectIdById(examId);
         Integer semester = timetableRepo.findSemesterById(examId);
-
+        System.out.println(subjectCode+" "+semester);
         //fetch reguler and backlog stunets for exam
         List<StudentEnrollmentDTO> students =
                 studentRepo.findStudentsForExam(subjectCode, semester);
-
+        System.out.println("list studnets"+students.size());
         //group enr numbers which map to collegeID
         Map<String, List<String>> collegeToEnrMap = students.stream()
                 .collect(Collectors.groupingBy(
@@ -478,8 +479,9 @@ public class UniversityService {
 
 
     //used to store temp. data at the time of college csv insertion and the time of betch DB insertion-
-    //use this to get data for email service
-    public record RegistrationDetail(String email, String password, String name) {}
+    //use this to get data for email service for college
+    public record RegistrationDetail(String email, String password, String name,String collegeID) {}
+
 
     public void processWithQuickDelay(String userId) {
         CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {

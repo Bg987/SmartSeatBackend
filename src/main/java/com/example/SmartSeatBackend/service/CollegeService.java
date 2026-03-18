@@ -44,7 +44,7 @@ public class CollegeService {
     private final StudentRepository studentRepo;
     public final TimetableRepo timetableRepo;
     private final SeatAllocationRepo seatAllocationRepo;
-//    private final MessageService msgService;
+    private final MessageService msgService;
     private final HelperMethods helper;
 
     @Cacheable(value = "studentsByCollege", key = "#collegeId")
@@ -117,9 +117,8 @@ public class CollegeService {
         // 5. Save
         studentRepo.save(student);
 
-        // 6. Logging/Kafka (Commented as requested)
-        System.out.println("Generated Password for " + student.getEmail() + ": " + rawPassword);
 
+        msgService.sendRegistrationEvent(dto.getEmail(),rawPassword,dto.getName(), String.valueOf(collegeID));
         return student.getEnrollmentNo(); // Return only the key or a success string
     }
 
@@ -129,6 +128,7 @@ public class CollegeService {
     public List<String> saveStudentsFromCSV(MultipartFile file, Long collegeId) throws IOException {
         List<String> logs = new ArrayList<>();
         List<Students> studentsToSave = new ArrayList<>();
+        List<UniversityService.RegistrationDetail> registrationDetails = new ArrayList<>();
         List<String> requiredHeaders = Arrays.asList(
                 "enrollmentNo", "name", "email", "mobileNumber",
                 "branch", "specialization", "semester",
@@ -158,11 +158,9 @@ public class CollegeService {
             }
 
             for (CSVRecord record : csvParser) {
-
-
                 String enrollment = record.get("enrollmentNo");
 
-                // 1. Map CSV Row to DTO
+                //Map CSV Row to DTO
                 StudentsDTO dto = new StudentsDTO();
                 dto.setEnrollmentNo(enrollment);
                 dto.setName(record.get("name"));
@@ -177,13 +175,13 @@ public class CollegeService {
                             "Invalid semester format for enrollment: " + enrollment);
                 }
 
-                // 2. Map Regular Subjects
+                //Map Regular Subjects
                 String subjectsRaw = record.get("subjects");
                 dto.setSubjects((subjectsRaw != null && !subjectsRaw.isEmpty())
                         ? Arrays.asList(subjectsRaw.split("\\|"))
                         : new ArrayList<>());
 
-                // 3. Map Backlog Subjects
+                // Map Backlog Subjects
                 boolean hasBacklog = Boolean.parseBoolean(record.get("hasBacklog"));
                 dto.setHasBacklog(hasBacklog);
                 if (hasBacklog) {
@@ -195,20 +193,31 @@ public class CollegeService {
                     dto.setBacklogSubjects(Arrays.asList(backlogRaw.split("\\|")));
                 }
 
-                // 4. Run Business Validations
+                //Run Business Validations
                 // If this fails (duplicate email/enrollment), it throws a ResponseStatusException
                 validateStudentBusinessRules(dto);
 
                 // 5. Transform DTO to Entity
                 Students student = prepareFullStudentEntity(dto, collegeId);
+                String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+                student.setPassword(passwordEncoder.encode(rawPassword));
                 studentsToSave.add(student);
 
+                //make list ot temp. data to send email after insrtion done
+                registrationDetails.add(new UniversityService.RegistrationDetail(
+                        dto.getEmail(),
+                        rawPassword,
+                        dto.getName(),
+                        String.valueOf(collegeId)
+                ));
                 //logs.add("Validated: " + enrollment);
             }
 
             // 6. Bulk Save
             // This only runs if the loop finished without any exceptions
             studentRepo.saveAll(studentsToSave);
+            //send studnets data to email service
+            helper.sendRegistrationBatch(registrationDetails);
             logs.add("Bulk upload successful. Total saved: " + studentsToSave.size());
 
         } catch (IOException e) {
@@ -311,8 +320,7 @@ public class CollegeService {
         student.setBranch(dto.getBranch().toUpperCase());
         student.setSpecialization(dto.getSpecialization());
         // Security: Password Generation
-        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        student.setPassword(passwordEncoder.encode(rawPassword));
+
 
         // A. Map Regular Subjects (SubjectStudent)
         if (dto.getSubjects() != null) {

@@ -62,7 +62,7 @@ public class HelperMethods {
                         detail.email(),
                         detail.password(),
                         detail.name(),
-                        null
+                        detail.collegeID()
                 );
             } catch (Exception e) {
                 // Log the error but don't stop the whole process
