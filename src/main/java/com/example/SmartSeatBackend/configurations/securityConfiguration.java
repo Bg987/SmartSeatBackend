@@ -48,16 +48,27 @@ public class securityConfiguration {
 
         config.setAllowCredentials(true);
 
-        // Combined all your origins here (NO trailing slashes)
         config.setAllowedOrigins(java.util.List.of(
                 "http://localhost:4200",
-                "https://smart-seat-frontend-three.vercel.app", // Your main Vercel URL
-                "https://exam-portal-smart-seat-frontend.vercel.app"
+                "https://smart-seat-frontend-three.vercel.app",
+                "https://exam-portal-smart-seat-frontend.vercel.app",
+                "https://proxy-0xaq.onrender.com" // ADD YOUR PROXY HERE
         ));
 
-        config.setAllowedHeaders(java.util.List.of("Origin", "Content-Type", "Accept", "Authorization", "Set-Cookie"));
+        // Add X-Requested-With and the SEB header to allowed headers
+        config.setAllowedHeaders(java.util.List.of(
+                "Origin",
+                "Content-Type",
+                "Accept",
+                "Authorization",
+                "X-Requested-With",
+                "X-SafeExamBrowser-ConfigKeyhash"
+        ));
+
         config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setExposedHeaders(java.util.List.of("Authorization", "Set-Cookie"));
+
+        // Ensure the browser can see these headers in the response
+        config.setExposedHeaders(java.util.List.of("Set-Cookie", "Authorization"));
 
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
