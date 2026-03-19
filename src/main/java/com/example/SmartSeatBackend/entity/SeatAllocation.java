@@ -35,4 +35,11 @@ public class SeatAllocation {
     @JoinColumn(name = "college_id") // The name of the FK column in seat_allocation table
     private College college;
 
+    // Inside SeatAllocation.java
+    @Column(columnDefinition = "boolean default false")
+    private boolean attendance = false;
+
+    @Column(columnDefinition = "boolean default false")
+    private boolean isSubmitted = false; // Useful to prevent re-entry after finishing
+
 }

@@ -30,7 +30,7 @@ public class Cookie {
         cookie.setSecure(true);
         //cookie.setDomain("proxy-0xaq.onrender.com");
         // REQUIRED for Cross-Site cookie persistence
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setAttribute("SameSite", "None");
 
         return cookie;
     }

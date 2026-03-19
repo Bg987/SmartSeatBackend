@@ -52,6 +52,7 @@ public class Timetable {
     @Column(name = "is_QuestionGenrated", nullable = false, columnDefinition = "boolean default false")
     private boolean QuestionGenrated = false;
 
+
     //Allowed to enter 30 mins before startTime
     public boolean isAccessAllowed() {
         LocalDateTime now = LocalDateTime.now();
