@@ -28,7 +28,7 @@ public class Cookie {
 
         // REQUIRED for Render -> Vercel communication
         cookie.setSecure(true);
-        cookie.setDomain("proxy-0xaq.onrender.com");
+        //cookie.setDomain("proxy-0xaq.onrender.com");
         // REQUIRED for Cross-Site cookie persistence
         cookie.setAttribute("SameSite", "Lax");
 
