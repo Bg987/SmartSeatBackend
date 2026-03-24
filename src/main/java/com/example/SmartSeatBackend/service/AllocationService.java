@@ -9,6 +9,9 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Service
@@ -39,6 +42,8 @@ public class AllocationService {
         List<Notification> notifications = new ArrayList<>(); // List to batch save
         List<SeatAllocation> allAllocations = new ArrayList<>();
         StringBuilder statusReport = new StringBuilder();
+        ZonedDateTime istZone = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        LocalDateTime istLocal = istZone.toLocalDateTime();
 
         for (Map.Entry<String, List<String>> entry : collegeToEnrMap.entrySet()) {
 
@@ -83,6 +88,7 @@ public class AllocationService {
                     .type("ALLOCATION_DONE")
                     .msg("Exam allocation completed for " +examName)
                     .isRead(false)
+                    .createdAt(istLocal)
                     .build());
 
             for (SeatAllocation allocation : collegeResults) {
@@ -92,6 +98,7 @@ public class AllocationService {
                         .type("ALLOCATION_DONE")
                         .msg("Your seat for " + examName + " is allocated at " + allocation.getRoom().getBlock()+" "+allocation.getRoom().getRoomNumber())
                         .isRead(false)
+                        .createdAt(istLocal)
                         .build());
             }
 
@@ -101,6 +108,7 @@ public class AllocationService {
                     .type("ALLOCATION_DONE")
                     .msg("Allocation process finished for " + examName)
                     .isRead(false)
+                    .createdAt(istLocal)
                     .build());
 
             notificationRepo.saveAll(notifications); // Batch save for performance
