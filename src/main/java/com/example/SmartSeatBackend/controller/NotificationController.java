@@ -1,16 +1,18 @@
 package com.example.SmartSeatBackend.controller;
 
+import com.example.SmartSeatBackend.entity.Notification;
 import com.example.SmartSeatBackend.service.NotificationService;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.security.Principal;
+import java.util.List;
 
 
 @RestController
@@ -19,23 +21,30 @@ import java.security.Principal;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final HelperMethods helper;
+    private Long x= 1L;
 
+    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    @GetMapping("/unread-count")
+    public Long getUnreadCount() {
+        //return x++;
+        String id = notificationService.getId();
+        return notificationService.unReadCount(id);
+    }
 
-    @PreAuthorize("hasRole('university')")
-    @GetMapping(value = "/subscribe/university", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(Principal principal) {
+    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    @GetMapping("/latest")
+    public ResponseEntity<List<Notification>> getLatestUnread(Authentication auth) {
+        String id = notificationService.getId();
+        return ResponseEntity.ok(notificationService.getNewestUnread(id));
+    }
 
-        // 1. Validation: Ensure the user is actually authenticated
-        if (principal == null) {
-            // If the cookie is missing or invalid, Principal will be null
-            return null;
-        }
+    @PreAuthorize("hasAnyRole('university', 'college', 'student')")
+    @PutMapping("/mark-as-read")
+    public ResponseEntity<Void> markAllRead() {
 
-        // 2. Get the Unique Identifier (Username or ID) from the JWT
-        String userId = principal.getName();
-
-        // 3. Create and return the emitter via our Service
-        // This 'holds' the connection open
-        return notificationService.subscribe(userId);
+        String id = notificationService.getId();
+        notificationService.markUserNotificationsAsRead(id);
+        return ResponseEntity.ok().build();
     }
 }

@@ -1,50 +1,44 @@
 package com.example.SmartSeatBackend.service;
 
 
+import com.example.SmartSeatBackend.entity.Notification;
+import com.example.SmartSeatBackend.repository.NotificationRepository;
+import com.example.SmartSeatBackend.utility.HelperMethods;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
-    // Store emitters by UserID (String). ConcurrentHashMap is thread-safe.
-    private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
+   private final NotificationRepository notificationRepo;
+   private final HelperMethods helper;
 
-    public SseEmitter subscribe(String userId) {
-        // Create emitter with a timeout (e.g., 60 seconds)
-        SseEmitter emitter = new SseEmitter(60_000L);
-
-        // Cleanup old data before new connection of userId not all user data
-        emitter.onCompletion(() -> emitters.remove(userId));
-        emitter.onTimeout(() -> emitters.remove(userId));
-        emitter.onError((e) -> emitters.remove(userId));
-
-        emitters.put(userId, emitter);
-
-        // Send an initial "connected" event
-        try {
-            emitter.send(SseEmitter.event().name("INIT").data("Connected"));
-        } catch (IOException e) {
-            emitters.remove(userId);
-        }
-
-        return emitter;
+    public Long unReadCount(String id){
+        return notificationRepo.countByUserIdAndIsReadFalse(id);
     }
 
-    public void sendNotification(String userId, Object data) {
-        if (emitters.containsKey(userId)) {
-            SseEmitter emitter = emitters.get(userId);
-            try {
-                // "event-complete" is the custom name Angular will listen for
-                emitter.send(SseEmitter.event()
-                        .name("Allocation_Done_Event")
-                        .data(data));
-            } catch (IOException e) {
-                emitters.remove(userId);
-            }
-        }
+    public List<Notification> getNewestUnread(String id) {
+        return notificationRepo.findAllByUserIdAndIsReadFalseOrderByCreatedAtDesc(id);
+    }
+
+    @Transactional
+    public void markUserNotificationsAsRead(String userId) {
+        notificationRepo.markAllAsRead(userId);
+    }
+
+    //fetch id/enrNumber based on role
+    public String getId(){
+        String role = helper.getRole();
+        if(role.equals("ROLE_student"))
+            return helper.getEnrNumberIdByUserId();
+
+        return helper.getId();
     }
 }

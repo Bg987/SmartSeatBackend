@@ -454,7 +454,7 @@ public class UniversityService {
         String userId = auth.getPrincipal().toString();
         //IOT - Sem 4 - CS301 - 2026-03-28 - payload example
         String payload= timetableRepo.getExamNameByTimetable(examId);
-        notificationService.sendNotification(userId,finalStatus);
+        //notificationService.sendNotification(userId,finalStatus);
         //to prevent multiple times allocation for particuler college
     }
 
@@ -483,13 +483,13 @@ public class UniversityService {
     public record RegistrationDetail(String email, String password, String name,String collegeID) {}
 
 
-    public void processWithQuickDelay(String userId) {
-        CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
-            System.out.println("call");
-            notificationService.sendNotification(userId,"data = "+userId);
-            processWithQuickDelay(userId);
-        });
-    }
+//    public void processWithQuickDelay(String userId) {
+//        CompletableFuture.delayedExecutor(10, TimeUnit.SECONDS).execute(() -> {
+//            System.out.println("call");
+//            notificationService.sendNotification(userId,"data = "+userId);
+//            processWithQuickDelay(userId);
+//        });
+//    }
 
 
 }

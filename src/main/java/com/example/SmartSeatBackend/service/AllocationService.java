@@ -4,6 +4,7 @@ import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
 
 
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,11 +15,13 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AllocationService {
 
+    private final HelperMethods helper;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
     private final CollegeRepository collegeRepo;
     private final SeatAllocationRepo seatRepo;
     private final TimetableRepo timetableRepo;
+    private final NotificationRepository notificationRepo; // 1. Inject Repository
 
     @Transactional
     public String allocateByGroupedMap(Map<String, List<String>> collegeToEnrMap,
@@ -32,6 +35,8 @@ public class AllocationService {
         Timetable timetable = timetableRepo.findById(timetableId)
                 .orElseThrow(() -> new RuntimeException("Timetable not found"));
 
+        String examName= timetableRepo.getExamNameByTimetable(timetableId);
+        List<Notification> notifications = new ArrayList<>(); // List to batch save
         List<SeatAllocation> allAllocations = new ArrayList<>();
         StringBuilder statusReport = new StringBuilder();
 
@@ -61,9 +66,6 @@ public class AllocationService {
                 continue;
             }
 
-            // Clear previous allocation for this college + timetable
-            //seatRepo.deleteByCollegeIdAndTimetableId(collegeId, timetableId);
-
             Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
             for (Students s : students) {
                 branchMap
@@ -75,7 +77,33 @@ public class AllocationService {
                     runGridLogic(rooms, branchMap, collegeId, timetable);
 
             allAllocations.addAll(collegeResults);
+            notifications.add(Notification.builder()
+                    .userId(collegeRepo.findUserIdByCollegeId(collegeId))
+                    .role("college")
+                    .type("ALLOCATION_DONE")
+                    .msg("Exam allocation completed for " +examName)
+                    .isRead(false)
+                    .build());
 
+            for (SeatAllocation allocation : collegeResults) {
+                notifications.add(Notification.builder()
+                        .userId(allocation.getStudent().getEnrollmentNo())
+                        .role("student")
+                        .type("ALLOCATION_DONE")
+                        .msg("Your seat for " + examName + " is allocated at " + allocation.getRoom().getBlock()+" "+allocation.getRoom().getRoomNumber())
+                        .isRead(false)
+                        .build());
+            }
+
+            notifications.add(Notification.builder()
+                    .userId(helper.getId()) // Or whatever ID you use for University Admin
+                    .role("university")
+                    .type("ALLOCATION_DONE")
+                    .msg("Allocation process finished for " + examName)
+                    .isRead(false)
+                    .build());
+
+            notificationRepo.saveAll(notifications); // Batch save for performance
             statusReport.append("College ")
                     .append(collegeId)
                     .append(": Success. ");
