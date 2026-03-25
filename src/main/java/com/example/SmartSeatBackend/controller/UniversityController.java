@@ -220,7 +220,7 @@ public class UniversityController {
         Boolean status = uniservice.checkAllocationStatus(examId);
         if (Boolean.TRUE.equals(status)) {
             return ResponseEntity.ok("Already allocated or processing");
-        }main
+        }
 
         timetableRepo.markAsAllocated(examId);
         uniservice.mainWork(examId,helper.getId());
