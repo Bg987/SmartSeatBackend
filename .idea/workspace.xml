@@ -6,11 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="996926c7-8f4d-4be4-b3a9-0bc26e08feb1" name="Changes" comment="Merge branch 'Authentication' of https://github.com/Bg987/SmartSeatBackend into Authentication&#10;&#10;# Conflicts:&#10;#&#9;.idea/workspace.xml">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/NotificationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/NotificationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/CollegeRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/repository/CollegeRepository.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/SmartSeatBackend.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/SmartSeatBackend.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/configurations/securityConfiguration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/controller/UniversityController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AllocationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/NotificationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/NotificationService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AuthenticationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/AuthenticationService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/service/UniversityService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/SmartSeatBackend/utility/JwtFilter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,5 +121,16 @@
       <updated>1772640041712</updated>
     </task>
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
 </project>

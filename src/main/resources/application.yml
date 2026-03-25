@@ -43,8 +43,9 @@ spring:
       max-request-size: 20MB
   datasource:
     hikari:
-      maximum-pool-size: 4
+      maximum-pool-size: 50
       minimum-idle: 2
+      connection-timeout: 5000
     url: jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require&prepareThreshold=0
     username: postgres.axxwxwxnqteramwkrwrn
     password: ${DB_PASSWORD}
@@ -73,3 +74,11 @@ logging:
     org.apache.fontbox: OFF
     # Optional: Log the exact HTTP requests to Ollama
     org.springframework.ai.ollama: DEBUG
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include : health,info,metrics,loggers

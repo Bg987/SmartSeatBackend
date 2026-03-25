@@ -15,6 +15,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -419,11 +420,11 @@ public class UniversityService {
         return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 
-
-    public void mainWork(Long examId){
-
+    @Async
+    public void mainWork(Long examId,String universityId){
 
         //fetch semester and subject of exam
+
         String subjectCode = timetableRepo.findsubjectIdById(examId);
         Integer semester = timetableRepo.findSemesterById(examId);
         System.out.println(subjectCode+" "+semester);
@@ -443,18 +444,13 @@ public class UniversityService {
 
         // allocation
         String finalStatus =
-                allocationService.allocateByGroupedMap(collegeToEnrMap, examId);
+                allocationService.allocateByGroupedMap(collegeToEnrMap, examId,universityId);
 
 
         System.out.println(finalStatus);
 
         //to send real time notification to client
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        //fetch userid from auth context
-        String userId = auth.getPrincipal().toString();
-        //IOT - Sem 4 - CS301 - 2026-03-28 - payload example
-        String payload= timetableRepo.getExamNameByTimetable(examId);
-        //notificationService.sendNotification(userId,finalStatus);
+        //IOT - Sem 4 - CS301 - 2026-03-28 - payload example;
         //to prevent multiple times allocation for particuler college
     }
 

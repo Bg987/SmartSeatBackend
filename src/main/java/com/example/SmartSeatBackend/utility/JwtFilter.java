@@ -38,7 +38,8 @@ public class JwtFilter extends OncePerRequestFilter {
         //  Skip public endpoints
         if (path.startsWith("/api/auth/login") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs")) {
+                path.startsWith("/v3/api-docs")||
+                path.startsWith("/actuator")) {
 
             filterChain.doFilter(request, response);
             return;

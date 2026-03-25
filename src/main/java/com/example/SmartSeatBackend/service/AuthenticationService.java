@@ -38,7 +38,6 @@ public class AuthenticationService {
     //for university and colleges
     public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
 
-        msg.sendRegistrationEvent("220170116016@vgecg.ac.in","fkjvdkjd","ndvdd",null);
         Set<String> validRoles = Set.of("university", "college", "student");
 
         if (!validRoles.contains(userdata.getRole())) {

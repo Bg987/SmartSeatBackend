@@ -28,7 +28,7 @@ public class AllocationService {
 
     @Transactional
     public String allocateByGroupedMap(Map<String, List<String>> collegeToEnrMap,
-                                       Long timetableId) {
+                                       Long timetableId,String universityId) {
 
         if (collegeToEnrMap == null || collegeToEnrMap.isEmpty()) {
             return timetableRepo.getExamNameByTimetable(timetableId)+" no students for this exam";
@@ -103,7 +103,7 @@ public class AllocationService {
             }
 
             notifications.add(Notification.builder()
-                    .userId(helper.getId()) // Or whatever ID you use for University Admin
+                    .userId(universityId)
                     .role("university")
                     .type("ALLOCATION_DONE")
                     .msg("Allocation process finished for " + examName)
@@ -118,7 +118,7 @@ public class AllocationService {
         }
 
         seatRepo.saveAll(allAllocations);
-        timetableRepo.markAsAllocated(timetableId);
+
         return timetableRepo.getExamNameByTimetable(timetableId)+" allocation done";
     }
 

@@ -32,7 +32,7 @@ public class securityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ASYNC).permitAll()
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/auth/login", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                        .requestMatchers("/api/auth/login", "/v3/api-docs/**", "/swagger-ui/**","/actuator/**").permitAll()
                         .requestMatchers("/api/**").authenticated()
                 )
 

@@ -216,9 +216,16 @@ public class UniversityController {
 
     @PostMapping("/main/{examId}")
     public ResponseEntity<String> mainWork(@PathVariable Long examId) {
-        System.out.println("call controller");
-        uniservice.mainWork(examId);
-        return ResponseEntity.ok("Done working in background");
+
+        Boolean status = uniservice.checkAllocationStatus(examId);
+        if (Boolean.TRUE.equals(status)) {
+            return ResponseEntity.ok("Already allocated or processing");
+        }
+
+        timetableRepo.markAsAllocated(examId);
+        uniservice.mainWork(examId,helper.getId());
+
+        return ResponseEntity.ok("Allocation started in background");
     }
 
 
