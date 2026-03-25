@@ -102,23 +102,22 @@ public class AllocationService {
                         .build());
             }
 
-            notifications.add(Notification.builder()
-                    .userId(universityId)
-                    .role("university")
-                    .type("ALLOCATION_DONE")
-                    .msg("Allocation process finished for " + examName)
-                    .isRead(false)
-                    .createdAt(istLocal)
-                    .build());
-
-            notificationRepo.saveAll(notifications); // Batch save for performance
             statusReport.append("College ")
                     .append(collegeId)
                     .append(": Success. ");
         }
 
         seatRepo.saveAll(allAllocations);
+        notifications.add(Notification.builder()
+                .userId(universityId)
+                .role("university")
+                .type("ALLOCATION_DONE")
+                .msg("Allocation process finished for " + examName)
+                .isRead(false)
+                .createdAt(istLocal)
+                .build());
 
+        notificationRepo.saveAll(notifications); // Batch save for performance
         return timetableRepo.getExamNameByTimetable(timetableId)+" allocation done";
     }
 
