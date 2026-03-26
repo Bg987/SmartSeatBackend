@@ -17,6 +17,7 @@ public interface  CollegeRepository  extends JpaRepository<College,Long> {
 
     Optional<College> findByCollegeId(Long collegeId);
 
+    Optional<College> findByUserMail(String mail);
 
     //fetch userid based on collegeId for notification insertion
     @Query("SELECT c.user.userId FROM College c WHERE c.collegeId = :collegeId")

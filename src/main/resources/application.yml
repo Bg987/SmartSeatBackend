@@ -3,6 +3,10 @@ server:
   port: 8080
   tomcat:
     max-swallow-size: 10MB
+telegram:
+  bot:
+    name: ${botName}
+    token: ${botPassword}
 spring:
   kafka:
     bootstrap-servers: smartseat-bhavyagodhaniya2004-2234.k.aivencloud.com:26025
@@ -63,7 +67,6 @@ spring:
         naming:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
 app:
   cloudinary:
     url: ${CLOUDINARY_URL}

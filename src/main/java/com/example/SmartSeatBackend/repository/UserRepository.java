@@ -16,4 +16,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     // 🔹 role based user search
     List<User> findByRole(User.Role role);
+
+    Optional<User> findByMobileNumber(String mobileNumber);
 }

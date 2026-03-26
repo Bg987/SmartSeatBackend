@@ -9,16 +9,14 @@ import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import com.example.SmartSeatBackend.utility.Cookie;
-import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.Map;
-import java.util.Optional;
+import jakarta.persistence.*;
 import java.util.Set;
 
 
@@ -139,11 +137,7 @@ public class AuthenticationService {
                         .body(new ApiResponse(false, "Old password is wrong", null));
             }
 
-            String encodedPassword = passwordEncoder.encode(data.getNewPassword());
-            student.setPassword(encodedPassword);
-
-            // Save
-            studentRepo.save(student);
+            saveEncodedPassword(student, data.getNewPassword(), student::setPassword, studentRepo::save);
         }
         else{
 
@@ -153,14 +147,24 @@ public class AuthenticationService {
                 return ResponseEntity.status(400)
                         .body(new ApiResponse(false, "Old password is wrong", null));
             }
-            String encodedPassword = passwordEncoder.encode(data.getNewPassword());
-            u.setPassword(encodedPassword);
-
-            //Save
-            userRepository.save(u);
+            saveEncodedPassword(u, data.getNewPassword(), u::setPassword, userRepository::save);
         }
 
         return ResponseEntity.ok(
                 new ApiResponse(true, "password changed successfully",data));
+    }
+
+    public <T> void saveEncodedPassword(T entity, String rawPassword,
+                                        java.util.function.Consumer<String> passwordSetter,
+                                        java.util.function.Function<T, T> saveFunction) {
+
+        // 1. Encode
+        String encoded = passwordEncoder.encode(rawPassword);
+
+        // 2. Set password using the setter reference
+        passwordSetter.accept(encoded);
+
+        // 3. Save using the repository reference
+        saveFunction.apply(entity);
     }
 }
