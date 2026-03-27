@@ -72,6 +72,7 @@ public class StudentService {
             try {
                 return faceApiService.getEmbeddingFromColabAndStore(file,studentId);
             } catch (Exception e) {
+                e.printStackTrace();
                 throw new RuntimeException("Embedding extraction failed", e);
             }
         });
@@ -79,6 +80,7 @@ public class StudentService {
         // Task B: Upload to Cloudinary
         CompletableFuture<String> uploadFuture = CompletableFuture.supplyAsync(() -> {
             try {
+                long timestamp = System.currentTimeMillis() / 1000L;
                 Map uploadResult = cloudinary.uploader().upload(fileBytes,
                         ObjectUtils.asMap(
                                 "folder", subFolderPath,

@@ -469,9 +469,14 @@ public class UniversityService {
         return timetableRepo.findByAllocatedTrue();
     }
 
+    public List<Timetable> getExamForGrading(){
+        return timetableRepo.findByCompletedFalse();
+    }
+
     public Boolean checkAllocationStatus(Long ExamID){
         return timetableRepo.findAllocationStatusById(ExamID);
     }
+
 
 
     //used to store temp. data at the time of college csv insertion and the time of betch DB insertion-

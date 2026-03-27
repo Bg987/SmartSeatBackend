@@ -77,4 +77,6 @@ WHERE t.id = :timeTableId
     // Check if the specific subject is already scheduled and incomplete
     boolean existsBySubjectIdAndCompletedFalse(String subjectId);
 
+    //get exams whose grading not done
+    List<Timetable> findByCompletedFalse();
 }

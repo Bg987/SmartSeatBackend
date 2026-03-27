@@ -273,6 +273,19 @@ public class UniversityController {
         }
     }
 
+    @PreAuthorize("hasRole('university')")
+    @GetMapping("/getExamForGrading")
+    public ResponseEntity<?> getExamForGrading() {
+        try {
+            List<Timetable> Exams = uniservice.getExamForGrading();
+            return ResponseEntity.ok(Exams);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error retrieving data: " + e.getMessage());
+        }
+    }
+
+
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getSeatBYCollege/{exam_id}/{college_id}")

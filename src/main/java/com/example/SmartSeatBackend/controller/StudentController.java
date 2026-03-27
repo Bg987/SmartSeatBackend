@@ -69,7 +69,6 @@ public class StudentController {
         return ResponseEntity.ok(response);
     }
 
-
     //fetch exams whose allocation is done but not complete
     @PreAuthorize("hasRole('student')")
     @GetMapping("/getStudentIncomplteExam")
@@ -84,6 +83,24 @@ public class StudentController {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .body("No incomplete exams found for you.");
+        }
+        return ResponseEntity.ok(examNameAndId);
+    }
+
+    //opposite of above api
+    @PreAuthorize("hasRole('student')")
+    @GetMapping("/getStudentComplteExam")
+    public  ResponseEntity<?> getStudentComplteExam(){
+
+
+        String enrNumber = stuService.getEnrNumber();
+
+        //fetch exams which is incomplete
+        List<Map<String, Object>> examNameAndId= stuService.getExamList(enrNumber,true);
+        if(examNameAndId.isEmpty()){
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("No complete exams found for you.");
         }
         return ResponseEntity.ok(examNameAndId);
     }
