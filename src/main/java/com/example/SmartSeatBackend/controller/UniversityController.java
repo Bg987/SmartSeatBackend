@@ -286,7 +286,6 @@ public class UniversityController {
     }
 
 
-
     @PreAuthorize("hasRole('university')")
     @GetMapping("/getSeatBYCollege/{exam_id}/{college_id}")
     public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(

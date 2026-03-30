@@ -7,6 +7,8 @@ import com.example.SmartSeatBackend.utility.BotUtility;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -18,6 +20,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,6 +36,9 @@ public class SmartSeatBot extends TelegramLongPollingBot {
     @Autowired private CollegeService colService;
     @Autowired private TimetableRepo timetableRepo;
     @Autowired private BotUtility botUtil;
+    @Autowired
+    private Executor taskExecutor;
+
     @Value("${telegram.bot.token}") private String botToken;
     @Value("${telegram.bot.name}") private String botName;
 
@@ -48,6 +55,11 @@ public class SmartSeatBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
 
+        taskExecutor.execute(() -> method(update));
+    }
+
+    public void method(Update update){
+        System.out.println("call");
         if (update.hasCallbackQuery()) {
             String callData = update.getCallbackQuery().getData();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
@@ -223,7 +235,10 @@ public class SmartSeatBot extends TelegramLongPollingBot {
         }
 
         else if(text.equalsIgnoreCase("/getSitting")){
-            if(role.equals("university")){
+            if(!role.equalsIgnoreCase("university")){
+                sendMessage(chatId, "❌only for university", false);
+                return;
+            }
                 List<Timetable> exams = uniService.getCompleteExams();
                 if (exams.isEmpty()) {
                     sendMessage(chatId, "📭 No allocated exam sittings found.", false);
@@ -243,7 +258,6 @@ public class SmartSeatBot extends TelegramLongPollingBot {
                         System.out.println("Error sending exam card: " + e.getMessage());
                     }
                 }
-            }
         }
         else if(text.equalsIgnoreCase("/getExamPassword")){
             if(!role.equalsIgnoreCase("college")){
@@ -394,6 +408,7 @@ public class SmartSeatBot extends TelegramLongPollingBot {
             sendMessage(chatId, sb.toString(), true);
         }
     }
+
 
     @PostConstruct
     public void init() { System.out.println("🤖 SmartSeat Bot Online: " + botName); }
