@@ -15,19 +15,17 @@ public class AsyncConfig {
 
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 
-        // Minimum threads always alive
+        // Minimum threads alive at time
         executor.setCorePoolSize(10);
 
-        // Max threads allowed
+        // Max threads
         executor.setMaxPoolSize(20);
 
-        // Queue before creating new threads
         executor.setQueueCapacity(100);
 
-        // Thread naming (VERY useful for debugging)
+        // Thread naming
         executor.setThreadNamePrefix("SmartSeat-Async-");
 
-        // Graceful shutdown
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(30);
 

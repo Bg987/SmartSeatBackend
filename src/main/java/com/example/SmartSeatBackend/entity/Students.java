@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -32,27 +33,26 @@ public class Students {
     private String specialization;
     private Integer semester;
 
-    // FIXED: Now maps to the SubjectStudent entity
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "enrollment_no", referencedColumnName = "enrollment_no")
-    private List<SubjectStudent> subjects;
-
     private String password;
 
     @Column(name = "has_backlog")
     private boolean hasBacklog = false;
 
-    // FIXED: Now maps to the new BacklogStudent entity instead of ElementCollection
+    @JsonIgnore // Add this
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "enrollment_no", referencedColumnName = "enrollment_no")
     private List<BacklogStudent> backlogSubjects;
+
+    @JsonIgnore // Add this
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "enrollment_no", referencedColumnName = "enrollment_no")
+    private List<SubjectStudent> subjects;
 
     @Column(name = "img_url")
     private String imgUrl;
 
     @Column(name = "college_id")
     private Long collegeId;
-
 
     public void addSubjectsFromCodes(List<String> codes) {
         if (codes == null) return;
