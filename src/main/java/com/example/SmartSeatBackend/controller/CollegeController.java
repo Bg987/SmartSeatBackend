@@ -184,7 +184,21 @@ public class CollegeController {
 
         Long collegeId = helper.getCollegeIdByUserId();
 
-        List<Map<String, Object>> result = timetableRepo.findActiveExamNamesByCollege(collegeId);
+        List<Map<String, Object>> result = timetableRepo.findExamNamesByCollegeAndStatus(collegeId,false);
+        if (result.isEmpty()) {
+            return ResponseEntity.noContent().build(); // Returns 204 if no exams found
+        }
+        return ResponseEntity.ok(result);
+    }
+
+    //fetch complete exams for college for analysis
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getCompletedExamDetails")
+    public ResponseEntity<List<Map<String, Object>>> getCompleteExamDetails() {
+
+        Long collegeId = helper.getCollegeIdByUserId();
+
+        List<Map<String, Object>> result = timetableRepo.findExamNamesByCollegeAndStatus(collegeId,true);
         if (result.isEmpty()) {
             return ResponseEntity.noContent().build(); // Returns 204 if no exams found
         }

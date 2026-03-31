@@ -62,9 +62,12 @@ WHERE t.id = :timeTableId
     JOIN s.timetable t
     WHERE s.college.id = :collegeId 
       AND t.allocated = true 
-      AND t.completed = false
+      AND t.completed = :status
     """)
-    List<Map<String, Object>> findActiveExamNamesByCollege(@Param("collegeId") Long collegeId);
+    List<Map<String, Object>> findExamNamesByCollegeAndStatus(
+            @Param("collegeId") Long collegeId,
+            @Param("status") boolean status
+    );
 
     // Check if a Branch/Semester group is already busy on a specific date/time
     @Query("SELECT t FROM Timetable t WHERE t.branch = :branch " +
