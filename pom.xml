@@ -199,7 +199,7 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-maven-plugin</artifactId>
 			<configuration>
-				<mainClass>com.example.SmartSeatBackend.SmartSeatBackend</mainClass>
+				<mainClass>com.example.SmartSeatBackend</mainClass>
 			</configuration>
 		</plugin>
 			<plugin>
