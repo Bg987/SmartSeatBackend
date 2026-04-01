@@ -12,7 +12,7 @@ RUN --mount=type=cache,target=/root/.m2 \
     mvn dependency:go-offline -B
 
 # 3. Copy source code after dependencies are cached
-COPY src ./src
+COPY src ./src1
 
 # 4. Build the package using the same cache mount
 RUN --mount=type=cache,target=/root/.m2 \
