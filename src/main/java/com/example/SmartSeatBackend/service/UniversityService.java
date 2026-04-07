@@ -22,8 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -239,12 +238,12 @@ public class UniversityService {
 
         //email service
         //collegeID set to null so function identify data either student or college so send data based on it to kafka
-//         msgService.sendRegistrationEvent(
-//                 collegeData.getEmail(),
-//                 rawPassword,
-//                 collegeData.getCollegeName(),
-//                 null
-//         );
+         msgService.sendRegistrationEvent(
+                 collegeData.getEmail(),
+                 rawPassword,
+                 collegeData.getCollegeName(),
+                 null
+         );
 
         return ResponseEntity.ok(Map.of("message","College added successfully."));
     }
@@ -329,10 +328,6 @@ public class UniversityService {
                 //email service
                 helper.sendRegistrationBatch(registrationDetails);
             }
-            // E. Optional: Kafka / Email logic (currently commented in your code)
-            //msgService.sendRegistrationEvent(collegeData.getEmail(),rawPassword,collegeData.getCollegeName(),null);
-
-
         }
         return collegesToSave.size()+" Colleges added successfully.";
     }
@@ -469,8 +464,21 @@ public class UniversityService {
         return timetableRepo.findByAllocatedTrue();
     }
 
-    public List<Timetable> getExamForGrading(){
-        return timetableRepo.findByCompletedFalse();
+
+    public List<Timetable> getExamForGrading() {
+        // Explicitly get the current time in India
+        LocalDateTime nowIST = LocalDateTime.now(ZoneId.of("Asia/Kolkata"));
+
+        return timetableRepo.findByCompletedFalse().stream()
+                .filter(t -> {
+                    // Combine Date and Time from DB, add the duration
+                    LocalDateTime examEnd = LocalDateTime.of(t.getExamDate(), t.getStartTime())
+                            .plusMinutes(t.getDurationMinutes());
+
+                    // Return true only if current time is PAST the end time
+                    return nowIST.isAfter(examEnd);
+                })
+                .collect(Collectors.toList());
     }
 
     public Boolean checkAllocationStatus(Long ExamID){

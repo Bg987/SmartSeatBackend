@@ -52,6 +52,7 @@ public class AllocationService {
 
             List<Students> students = studentRepo.findAllByEnrollmentNoIn(enrList);
             List<Rooms> rooms = roomRepo.findByCollegeCollegeId(collegeId);
+            Collections.shuffle(rooms); // Randomizes the list in place
 
             if (students.isEmpty() || rooms.isEmpty()) {
                 statusReport.append("College ")
@@ -117,7 +118,7 @@ public class AllocationService {
                 .createdAt(istLocal)
                 .build());
 
-        notificationRepo.saveAll(notifications); // Batch save for performance
+        notificationRepo.saveAll(notifications); // Batch save of notifications
         return timetableRepo.getExamNameByTimetable(timetableId)+" allocation done";
     }
 
