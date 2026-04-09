@@ -31,6 +31,11 @@ public class AuthenticationController {
     private final CacheUtil cache;
     private final MessageService msgService;
 
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
+
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDTO user, HttpServletResponse response){
 
