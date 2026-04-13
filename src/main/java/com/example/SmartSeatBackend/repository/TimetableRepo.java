@@ -32,6 +32,9 @@ public interface  TimetableRepo extends JpaRepository<Timetable, Long> {
     @Query("SELECT t.semester FROM Timetable t WHERE t.id = :id")
     Integer findSemesterById(@Param("id") Long id);
 
+    @Query("SELECT t.branch FROM Timetable t WHERE t.id = :id")
+    String findBranchById(@Param("id") Long id);
+
     @Query("SELECT t.subjectId FROM Timetable t WHERE t.id = :id")
     String findsubjectIdById(@Param("id") Long id);
 
@@ -82,4 +85,6 @@ WHERE t.id = :timeTableId
 
     //get exams whose grading not done
     List<Timetable> findByCompletedFalse();
+
+    boolean existsBySubjectIdAndBranchAndCompletedFalse(String subjectId, String branch);
 }

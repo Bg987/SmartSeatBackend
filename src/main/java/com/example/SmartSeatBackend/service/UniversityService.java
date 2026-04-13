@@ -4,6 +4,7 @@ import com.example.SmartSeatBackend.DTO.*;
 import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
 import com.example.SmartSeatBackend.utility.HelperMethods;
+import jakarta.annotation.PreDestroy;
 import jakarta.transaction.Transactional;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
@@ -24,6 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import java.io.BufferedReader;
@@ -51,6 +54,7 @@ public class UniversityService {
     private final SubjectStudentRepository subjectRepo;
     private final SeatAllocationRepo seatAllocationRepo;
     private final HelperMethods helper;
+    private final ExecutorService allocationQueue = Executors.newSingleThreadExecutor();
 
     //  Get All Subjects
     @Cacheable(value = "subjects")
@@ -341,41 +345,40 @@ public class UniversityService {
                 );
     }
 
-    @Transactional // Ensures atomicity: all subjects save, or none do
+    @Transactional
     public void saveAllExams(List<TimetableDTO> dtos) {
-        LocalDate minAllowedDate = LocalDate.now().plusDays(25);
+
+        System.out.println("calll");
+        LocalDate minAllowedDate = LocalDate.now().plusDays(25); //
         List<Timetable> entitiesToSave = new ArrayList<>();
 
-
-        // 1. Validate and Map
         for (TimetableDTO dto : dtos) {
+
+
             LocalDate examDate = LocalDate.parse(dto.getExamDate());
 
-            //check whether same subject incomplete exam already exist or not
-            if (timetableRepo.existsBySubjectIdAndCompletedFalse(dto.getSubjectId())) {
-                throw new IllegalArgumentException("Subject " + dto.getSubjectId() + " is already scheduled in the system.");
+            // FIX: Check if THIS specific subject for THIS branch is already scheduled
+            if (timetableRepo.existsBySubjectIdAndBranchAndCompletedFalse(dto.getSubjectId(), dto.getBranch())) {
+                throw new IllegalArgumentException("Subject " + dto.getSubjectId() +
+                        " for branch " + dto.getBranch() + " is already scheduled.");
             }
 
-            // Check: Date must be >=25 days from now
+            // Check: Date must be >= 25 days from now
             if (examDate.isBefore(minAllowedDate)) {
-                throw new IllegalArgumentException(
-                        "Validation failed: Subject " + dto.getSubjectId() +
-                                " is scheduled for " + examDate +
-                                ". Exams must be scheduled at least 25 days in advance (Min: " + minAllowedDate + ")"
-                );
+                throw new IllegalArgumentException("Exams must be scheduled at least 25 days in advance.");
             }
 
-            //check whether same branch semester have exam on same day and same time or not
+            // Check for group conflicts (Is this Branch-Semester busy at this time?)
             List<Timetable> conflicts = timetableRepo.findGroupConflicts(
                     dto.getBranch(), dto.getSemester(), examDate, LocalTime.parse(dto.getStartTime())
             );
 
             if (!conflicts.isEmpty()) {
-                throw new IllegalArgumentException("Conflict: " +" Branch "+ dto.getBranch() + " Semester " + dto.getSemester() +
-                        " already has an exam on " + examDate + " at " + dto.getStartTime());
+                throw new IllegalArgumentException("Conflict: Branch " + dto.getBranch() +
+                        " already has an exam at " + dto.getStartTime());
             }
 
-            // Map DTO to Entity
+            // Mapping Logic
             Timetable entity = new Timetable();
             entity.setSubjectId(dto.getSubjectId());
             entity.setSubjectName(dto.getSubjectName());
@@ -383,16 +386,18 @@ public class UniversityService {
             entity.setSemester(dto.getSemester());
             entity.setExamDate(examDate);
             entity.setStartTime(LocalTime.parse(dto.getStartTime()));
-            entity.setDurationMinutes(dto.getDuration());
-            // Default flags
+            // Inside the loop in saveAllExams
+            if (dto.getDuration() == 0) {
+                entity.setDurationMinutes(180); // Set a default if AI missed it
+            } else {
+                entity.setDurationMinutes(dto.getDuration());
+            }
             entity.setAllocated(false);
             entity.setCompleted(false);
-            entity.setQuestionGenrated(false);
 
             entitiesToSave.add(entity);
         }
-        // 2. Batch Insert
-        timetableRepo.saveAll(entitiesToSave);
+        timetableRepo.saveAll(entitiesToSave); //
     }
 
 
@@ -415,38 +420,51 @@ public class UniversityService {
         return subRepo.findByDepartmentAndBranchAndSemester(department,branch,semester);
     }
 
-    @Async
-    public void mainWork(Long examId,String universityId){
+    public void processAllocationQueue(Long examId, String universityId) {
+        allocationQueue.submit(() -> {
+            try {
+                System.out.println("Queue: Starting allocation for Exam ID " + examId);
+                executeMainWork(examId, universityId);
+            } catch (Exception e) {
+                System.err.println("Queue: Critical Error for Exam " + examId + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
+    }
 
-        //fetch semester and subject of exam
+    /**
+     * The actual logic that runs inside the queue worker.
+     * Note: @Async is removed here because the Executor handles the background thread.
+     */
+    private void executeMainWork(Long examId, String universityId) {
+        // 1. Fetch Exam Details
+        Timetable exam = timetableRepo.findById(examId)
+                .orElseThrow(() -> new RuntimeException("Exam not found"));
 
-        String subjectCode = timetableRepo.findsubjectIdById(examId);
-        Integer semester = timetableRepo.findSemesterById(examId);
-        System.out.println(subjectCode+" "+semester);
-        //fetch reguler and backlog stunets for exam
+        // 2. Fetch students for this SPECIFIC branch/subject/semester
         List<StudentEnrollmentDTO> students =
-                studentRepo.findStudentsForExam(subjectCode, semester);
-        System.out.println("list studnets"+students.size());
-        //group enr numbers which map to collegeID
+                studentRepo.findStudentsForExam(exam.getSubjectId(), exam.getBranch(), exam.getSemester());
+
+        System.out.println("Queue: Found " + students.size() + " students for " + exam.getBranch());
+
+        // 3. Group enrollment numbers by collegeId
         Map<String, List<String>> collegeToEnrMap = students.stream()
                 .collect(Collectors.groupingBy(
                         StudentEnrollmentDTO::getCollegeId,
-                        Collectors.mapping(
-                                StudentEnrollmentDTO::getEnrollmentNo,
-                                Collectors.toList()
-                        )
+                        Collectors.mapping(StudentEnrollmentDTO::getEnrollmentNo, Collectors.toList())
                 ));
 
-        // allocation
-        String finalStatus =
-                allocationService.allocateByGroupedMap(collegeToEnrMap, examId,universityId);
+        // 4. Trigger the Allocation Logic
+        // This method in AllocationService MUST have @Transactional(propagation = Propagation.REQUIRES_NEW)
+        String finalStatus = allocationService.allocateByGroupedMap(collegeToEnrMap, examId, universityId);
 
+        System.out.println("Queue: Finished. Status: " + finalStatus);
+    }
 
-        System.out.println(finalStatus);
-
-        //to send real time notification to client
-        //IOT - Sem 4 - CS301 - 2026-03-28 - payload example;
-        //to prevent multiple times allocation for particuler college
+    @PreDestroy
+    public void shutdownQueue() {
+        System.out.println("Shutting down allocation worker queue...");
+        allocationQueue.shutdown();
     }
 
     //find collegeId's whose students appear for particuler exam

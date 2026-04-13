@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 public class Timetable {
 
     @Id
-
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="timetable_id")
     private Long id;
@@ -44,7 +43,7 @@ public class Timetable {
     private Integer durationMinutes = 180; // 3 Hours
 
     @Column(name="completed")
-    private boolean completed;
+    private boolean completed=false;
 
     @Column(name = "is_allocated", nullable = false, columnDefinition = "boolean default false")
     private boolean allocated = false;
@@ -52,6 +51,8 @@ public class Timetable {
     @Column(name = "is_QuestionGenrated", nullable = false, columnDefinition = "boolean default false")
     private boolean QuestionGenrated = false;
 
+    @Column(name = "is_approved", nullable = false)
+    private boolean approved = false; // The new approval flag of AI generated question
 
     //Allowed to enter 30 mins before startTime
     public boolean isAccessAllowed() {

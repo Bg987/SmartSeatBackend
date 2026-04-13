@@ -2,22 +2,21 @@ package com.example.SmartSeatBackend.service;
 
 import com.example.SmartSeatBackend.entity.*;
 import com.example.SmartSeatBackend.repository.*;
-import com.example.SmartSeatBackend.utility.HelperMethods;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Propagation; // Import this!
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import org.springframework.transaction.annotation.Transactional; // Use Spring's version
+import org.springframework.transaction.annotation.Propagation;// This is what was red
 
 @Service
 @RequiredArgsConstructor
 public class AllocationService {
 
-    private final HelperMethods helper;
     private final StudentRepository studentRepo;
     private final RoomsRepository roomRepo;
     private final CollegeRepository collegeRepo;
@@ -25,26 +24,24 @@ public class AllocationService {
     private final TimetableRepo timetableRepo;
     private final NotificationRepository notificationRepo;
 
-    @Transactional
+    /**
+     * Propagation.REQUIRES_NEW ensures that each branch allocation is committed
+     * to the DB immediately. This allows the next branch to see the occupied seats.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public String allocateByGroupedMap(Map<String, List<String>> collegeToEnrMap,
                                        Long timetableId, String universityId) {
-
-        if (collegeToEnrMap == null || collegeToEnrMap.isEmpty()) {
-            return timetableRepo.getExamNameByTimetable(timetableId) + " no students for this exam";
-        }
 
         Timetable timetable = timetableRepo.findById(timetableId)
                 .orElseThrow(() -> new RuntimeException("Timetable not found"));
 
-        String examName = timetableRepo.getExamNameByTimetable(timetableId);
+        if (collegeToEnrMap == null || collegeToEnrMap.isEmpty()) {
+            return timetable.getSubjectName() + " (Sem " + timetable.getSemester() + "): No students.";
+        }
+
         List<Notification> notifications = new ArrayList<>();
         List<SeatAllocation> allAllocations = new ArrayList<>();
-        StringBuilder statusReport = new StringBuilder();
-
-        ZonedDateTime istZone = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-        LocalDateTime istLocal = istZone.toLocalDateTime();
-
-        // SecureRandom for high-quality randomness
+        LocalDateTime istLocal = ZonedDateTime.now(ZoneId.of("Asia/Kolkata")).toLocalDateTime();
         SecureRandom sr = new SecureRandom();
 
         for (Map.Entry<String, List<String>> entry : collegeToEnrMap.entrySet()) {
@@ -54,52 +51,33 @@ public class AllocationService {
             List<Students> students = studentRepo.findAllByEnrollmentNoIn(enrList);
             List<Rooms> rooms = roomRepo.findByCollegeCollegeId(collegeId);
 
-            // --- IMPROVEMENT 1: Shuffle both Students and Rooms ---
+            if (students.isEmpty() || rooms.isEmpty()) continue;
+
             Collections.shuffle(students, sr);
             Collections.shuffle(rooms, sr);
 
-            if (students.isEmpty() || rooms.isEmpty()) {
-                statusReport.append("College ").append(collegeId).append(": Skipped. ");
-                continue;
-            }
-
-            int totalSeats = rooms.stream().mapToInt(Rooms::getCapacity).sum();
-            if (students.size() > totalSeats) {
-                statusReport.append("College ").append(collegeId).append(": Insufficient Seats. ");
-                continue;
-            }
-
-            // Create Branch Queues from the already shuffled student list
             Map<String, Queue<Students>> branchMap = new LinkedHashMap<>();
             for (Students s : students) {
                 branchMap.computeIfAbsent(s.getBranch(), k -> new LinkedList<>()).add(s);
             }
 
+            // The grid logic now fetches "Fresh" data because of REQUIRES_NEW
             List<SeatAllocation> collegeResults = runGridLogic(rooms, branchMap, collegeId, timetable, sr);
             allAllocations.addAll(collegeResults);
 
-            // Add College Notification
             notifications.add(createNotification(collegeRepo.findUserIdByCollegeId(collegeId),
-                    "college", "ALLOCATION_DONE", "Exam allocation completed for " + examName, istLocal));
+                    "college", "ALLOCATION_DONE", "Allocation done for " + timetable.getSubjectName(), istLocal));
 
-            // Add Student Notifications
-            for (SeatAllocation allocation : collegeResults) {
-                notifications.add(createNotification(allocation.getStudent().getEnrollmentNo(),
-                        "student", "ALLOCATION_DONE",
-                        "Your seat for " + examName + " is at " + allocation.getRoom().getBlock() + " " + allocation.getRoom().getRoomNumber(),
-                        istLocal));
+            for (SeatAllocation sa : collegeResults) {
+                notifications.add(createNotification(sa.getStudent().getEnrollmentNo(),
+                        "student", "ALLOCATION_DONE", "Seat: " + sa.getRoom().getBlock() + " " + sa.getRoom().getRoomNumber(), istLocal));
             }
-            statusReport.append("College ").append(collegeId).append(": Success. ");
         }
 
         seatRepo.saveAll(allAllocations);
-
-        // Add University Notification
-        notifications.add(createNotification(universityId, "university", "ALLOCATION_DONE",
-                "Allocation process finished for " + examName, istLocal));
-
         notificationRepo.saveAll(notifications);
-        return examName + " allocation done";
+
+        return timetable.getSubjectName() + " allocation committed.";
     }
 
     private List<SeatAllocation> runGridLogic(List<Rooms> rooms,
@@ -107,14 +85,10 @@ public class AllocationService {
                                               Long collegeId,
                                               Timetable timetable,
                                               SecureRandom sr) {
-        College college = collegeRepo.findById(collegeId)
-                .orElseThrow(() -> new RuntimeException("College not found"));
 
-        List<SeatAllocation> allocations = new ArrayList<>();
+        College college = collegeRepo.findById(collegeId).orElseThrow();
+        List<SeatAllocation> newAllocations = new ArrayList<>();
         List<String> branches = new ArrayList<>(branchMap.keySet());
-
-        // --- IMPROVEMENT 2: Shuffle branch priority order ---
-        Collections.shuffle(branches, sr);
         int branchIndex = 0;
 
         for (Rooms room : rooms) {
@@ -124,8 +98,22 @@ public class AllocationService {
 
             Students[][] grid = new Students[rows][cols];
 
+            // Fetch students from PREVIOUSLY COMMITTED branches (e.g., Computer)
+            List<SeatAllocation> existing = seatRepo.findExistingInRoom(
+                    room.getId(), timetable.getExamDate(), timetable.getStartTime()
+            );
+
+            //System.out.println("Room " + room.getRoomNumber() + " - Existing students found: " + existing.size());
+
+            for (SeatAllocation sa : existing) {
+                if (sa.getRowNo() < rows && sa.getColNo() < cols) {
+                    grid[sa.getRowNo()][sa.getColNo()] = sa.getStudent();
+                }
+            }
+
             for (int r = 0; r < rows; r++) {
                 for (int c = 0; c < cols; c++) {
+                    if (grid[r][c] != null) continue; // Slot taken by previous branch
                     if (branchMap.isEmpty()) break;
 
                     Students allocatedStudent = null;
@@ -133,16 +121,14 @@ public class AllocationService {
 
                     while (attempts < branches.size()) {
                         if (branches.isEmpty()) break;
-
                         if (branchIndex >= branches.size()) branchIndex = 0;
 
-                        String branch = branches.get(branchIndex);
-                        Queue<Students> queue = branchMap.get(branch);
+                        String branchName = branches.get(branchIndex);
+                        Queue<Students> queue = branchMap.get(branchName);
 
                         if (queue == null || queue.isEmpty()) {
-                            branchMap.remove(branch);
+                            branchMap.remove(branchName);
                             branches.remove(branchIndex);
-                            if (branches.isEmpty()) break;
                             continue;
                         }
 
@@ -156,17 +142,6 @@ public class AllocationService {
                         attempts++;
                     }
 
-                    // Fallback if no safe branch found (forces allocation to prevent empty seats)
-                    if (allocatedStudent == null && !branches.isEmpty()) {
-                        for (String b : branches) {
-                            Queue<Students> q = branchMap.get(b);
-                            if (q != null && !q.isEmpty()) {
-                                allocatedStudent = q.poll();
-                                break;
-                            }
-                        }
-                    }
-
                     if (allocatedStudent != null) {
                         grid[r][c] = allocatedStudent;
                         SeatAllocation seat = new SeatAllocation();
@@ -176,13 +151,12 @@ public class AllocationService {
                         seat.setColNo(c);
                         seat.setCollege(college);
                         seat.setTimetable(timetable);
-
-                        allocations.add(seat);
+                        newAllocations.add(seat);
                     }
                 }
             }
         }
-        return allocations;
+        return newAllocations;
     }
 
     private boolean isSafe(Students[][] grid, int r, int c, Students s) {
@@ -194,12 +168,7 @@ public class AllocationService {
 
     private Notification createNotification(String userId, String role, String type, String msg, LocalDateTime time) {
         return Notification.builder()
-                .userId(userId)
-                .role(role)
-                .type(type)
-                .msg(msg)
-                .isRead(false)
-                .createdAt(time)
-                .build();
+                .userId(userId).role(role).type(type).msg(msg)
+                .isRead(false).createdAt(time).build();
     }
 }

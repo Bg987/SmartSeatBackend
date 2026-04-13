@@ -145,6 +145,19 @@ public class UniversityController {
         }
     }
 
+    @PreAuthorize("hasRole('university')")
+    @PostMapping("/confirm-ai-draft")
+    public ResponseEntity<?> confirmAiDraft(@RequestBody List<TimetableDTO> draft) {
+        System.out.println("api call");
+        try {
+            uniservice.saveAllExams(draft); // Uses the updated validation logic
+            return ResponseEntity.ok(Map.of("message", "Master Timetable confirmed and saved."));
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     //check whether incomplete exam or not for particuler subject
     @PreAuthorize("hasRole('university')")
     @PostMapping("/check-scheduled")
@@ -223,7 +236,7 @@ public class UniversityController {
         }
 
         timetableRepo.markAsAllocated(examId);
-        uniservice.mainWork(examId,helper.getId());
+        uniservice.processAllocationQueue(examId,helper.getId());
 
         return ResponseEntity.ok("Allocation started in background");
     }

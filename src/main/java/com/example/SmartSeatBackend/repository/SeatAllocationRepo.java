@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -49,5 +51,11 @@ public interface SeatAllocationRepo extends JpaRepository<SeatAllocation, Long> 
         List<Map<String, Object>> findAllocatedExamsByStatus(
                 @Param("enrollmentNo") String enrollmentNo,
                 @Param("status") boolean status);
+
+        @Query("SELECT s FROM SeatAllocation s WHERE s.room.id = :roomId " +
+                "AND s.timetable.examDate = :date AND s.timetable.startTime = :time")
+        List<SeatAllocation> findExistingInRoom(@Param("roomId") Long roomId,
+                                                @Param("date") LocalDate date,
+                                                @Param("time") LocalTime time);
 
 }
