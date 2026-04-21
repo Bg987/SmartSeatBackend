@@ -84,7 +84,9 @@ public class UniversityController {
 
     @PreAuthorize("hasRole('university')")
     @GetMapping("/colleges")
-    public ResponseEntity<List<User>> getAllColleges() {
+    public ResponseEntity<List<User>> getAllColleges() throws Exception {
+
+        //System.out.println(helper.getId());
         return uniservice.getAllColleges();
     }
 
@@ -228,7 +230,7 @@ public class UniversityController {
 
 
     @PostMapping("/main/{examId}")
-    public ResponseEntity<String> mainWork(@PathVariable Long examId) {
+    public ResponseEntity<String> mainWork(@PathVariable Long examId) throws Exception {
 
         Boolean status = uniservice.checkAllocationStatus(examId);
         if (Boolean.TRUE.equals(status)) {

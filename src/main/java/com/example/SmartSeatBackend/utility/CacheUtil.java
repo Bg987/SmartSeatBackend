@@ -16,7 +16,7 @@ public class CacheUtil {
     private final  HelperMethods helper;
 
 
-    public void deleteCache() {
+    public void deleteCache() throws Exception {
 
         String role = helper.getRole();
         if(role==null){

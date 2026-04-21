@@ -10,7 +10,7 @@ public class Cookie {
 
     private JwtUtil jwt;
 
-    public jakarta.servlet.http.Cookie setCookie(Long id, String role){
+    public jakarta.servlet.http.Cookie setCookie(Long id, String role) throws Exception {
 
             return cookieSetting("AUTH_JWT",jwt.generateToken(id,role),(24*60*60*10));
     }

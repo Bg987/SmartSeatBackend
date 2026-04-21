@@ -9,6 +9,7 @@ import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.repository.UserRepository;
 import com.example.SmartSeatBackend.utility.ApiResponse;
 import com.example.SmartSeatBackend.utility.Cookie;
+import com.example.SmartSeatBackend.utility.HelperMethods;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -31,10 +32,10 @@ public class AuthenticationService {
     private final StudentController stu;
     private final PasswordEncoder passwordEncoder;
     private final MessageService msg;
-
+    private final HelperMethods helper;
 
     //for university and colleges
-    public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response){
+    public ResponseEntity<?> verifyUser(UserDTO userdata, HttpServletResponse response) throws Exception {
 
         Set<String> validRoles = Set.of("university", "college", "student");
 
@@ -77,7 +78,7 @@ public class AuthenticationService {
     }
 
     //for studdent
-    public ResponseEntity<?> verifyStudent(UserDTO userdata, HttpServletResponse response){
+    public ResponseEntity<?> verifyStudent(UserDTO userdata, HttpServletResponse response) throws Exception {
 
         Set<String> validRoles = Set.of("university", "college", "student");
         if (!validRoles.contains(userdata.getRole())) {
@@ -119,16 +120,14 @@ public class AuthenticationService {
         return ResponseEntity.status(200).body("logout successfully");
     }
 
-    public ResponseEntity<?> passwordchange(PasswordDTO data, Authentication authentication){
-        Long userId = Long.valueOf(authentication.getName()); // username / userId
-        String role = authentication.getAuthorities()
-                .stream()
-                .findFirst()
-                .map(a -> a.getAuthority())
-                .orElse(null);
+    public ResponseEntity<?> passwordchange(PasswordDTO data, Authentication authentication) throws Exception {
+
+        Long userId = Long.valueOf(helper.getId());
+        String role = helper.getRole();
         if(role==null){
             new RuntimeException("role not found");
         }
+
         else if(role.equals("ROLE_student")){
 
             Students student = studentRepo.findByStudentId(userId);

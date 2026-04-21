@@ -15,15 +15,18 @@ public class JwtUtil {
 
 
     private final SecretKey key;
-
+    private final HelperMethods helper;
     // Spring injects "sec" right here, safely
-    public JwtUtil(@Value("ZmFrZVNlY3JldEtleUZha2VTZWNyZXRLZXlGYWtlU2VjcmV0") String sec) {
+    public JwtUtil(@Value("ZmFrZVNlY3JldEtleUZha2VTZWNyZXRLZXlGYWtlU2VjcmV0") String sec, HelperMethods helper) {
         this.key = Keys.hmacShaKeyFor(sec.getBytes(StandardCharsets.UTF_8));
+        this.helper = helper;
     }
 
-    public String generateToken(Long id ,String role) {
+    public String generateToken(Long id ,String role) throws Exception {
+
+        String encryptedId = helper.encrypt(id);
         return Jwts.builder()
-                .claim("id",id)
+                .claim("id",encryptedId)
                 .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + (1000L * 60 * 60 * 24 * 10)))
@@ -32,7 +35,7 @@ public class JwtUtil {
     }
 
     public String extractId(String token) {
-        return String.valueOf(getClaims(token).get("id",Integer.class));
+        return String.valueOf(getClaims(token).get("id",String.class));
     }
 
     public String extractRole(String token) {

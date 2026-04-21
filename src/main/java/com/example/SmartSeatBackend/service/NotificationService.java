@@ -34,7 +34,7 @@ public class NotificationService {
     }
 
     //fetch id/enrNumber based on role
-    public String getId(){
+    public String getId() throws Exception {
         String role = helper.getRole();
         if(role.equals("ROLE_student"))
             return helper.getEnrNumberIdByUserId();

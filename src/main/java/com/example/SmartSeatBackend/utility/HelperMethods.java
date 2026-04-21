@@ -11,8 +11,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.MessageDigest;
+import java.util.Base64;
 import java.util.List;
-
 
 @Component
 @AllArgsConstructor
@@ -22,39 +25,70 @@ public class HelperMethods {
     private final StudentRepository stuRepo;
     private final MessageService msgService;
 
-    public Long getCollegeIdByUserId() {
-        String userId= getId();
-        return collegeRepo.findByUser_userId(Long.parseLong(userId)) // Or the method we fixed earlier
+    private static final String ALGORITHM = "AES";
+    // This long string will now be hashed to exactly 32 bytes (256 bits)
+    private static final String AES_KEY_SEED = "my_super_secret_kdsvnjdnigdgudgyubduhygbyugdubguhdgdbuhgbudgbudbgudbgudbgggbuegububgyeubgebutebuudbgbdgbdbghdibgvinhgvuirnvyurnyunhtrnhyurnhyur";
+
+    /**
+     * Internal helper to generate a valid 32-byte AES key from the long seed string.
+     */
+    private SecretKeySpec getSecretKey() throws Exception {
+        byte[] key = AES_KEY_SEED.getBytes("UTF-8");
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        key = sha.digest(key); // This results in exactly 32 bytes
+        return new SecretKeySpec(key, ALGORITHM);
+    }
+
+    public Long getCollegeIdByUserId() throws Exception {
+        Long userId = Long.valueOf(getId());
+        return collegeRepo.findByUser_userId(userId)
                 .map(College::getCollegeId)
                 .orElseThrow(() -> new RuntimeException("College not found for User ID: " + userId));
     }
 
-    //fetch enrolement number using student_id
-    public String getEnrNumberIdByUserId() {
-        String studentId = getId();
-        return stuRepo.findEnrollmentNoByStudentId(Long.parseLong(studentId)) // Or the method we fixed earlier
-                .orElseThrow(() -> new RuntimeException("enr. number not found for student ID: " + studentId));
+    public String getEnrNumberIdByUserId() throws Exception {
+        Long studentId = Long.valueOf(getId());
+        return stuRepo.findEnrollmentNoByStudentId(studentId)
+                .orElseThrow(() -> new RuntimeException("Enrollment number not found for student ID: " + studentId));
     }
 
-    public String getId(){
+    public String getId() throws Exception {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // 2. Extract the Principal (which is "752" in your case)
-        return auth.getPrincipal().toString();
+
+        if (auth == null || auth.getPrincipal() == null) {
+            throw new RuntimeException("No authentication found in security context");
+        }
+
+        // The principal is usually the "subject" from your JWT (the encrypted ID string)
+        String principal = auth.getPrincipal().toString();
+        return String.valueOf(decrypt(principal));
     }
 
     public String getRole() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) return null;
 
-        // Spring Security stores roles in the Authorities collection
-        // We find the first authority and return it as a string
         return auth.getAuthorities().stream()
                 .findFirst()
                 .map(GrantedAuthority::getAuthority)
-                .orElse(null); // Default fallback
+                .orElse(null);
     }
 
+    public String encrypt(Long id) throws Exception {
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey());
+        byte[] encryptedBytes = cipher.doFinal(String.valueOf(id).getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
 
-    //send batch email in the case of csv college upload
+    public Long decrypt(String encryptedId) throws Exception {
+        Cipher cipher = Cipher.getInstance(ALGORITHM);
+        cipher.init(Cipher.DECRYPT_MODE, getSecretKey());
+        byte[] decodedBytes = Base64.getDecoder().decode(encryptedId);
+        byte[] decryptedBytes = cipher.doFinal(decodedBytes);
+        return Long.parseLong(new String(decryptedBytes));
+    }
+
     public void sendRegistrationBatch(List<UniversityService.RegistrationDetail> details) {
         for (UniversityService.RegistrationDetail detail : details) {
             try {
@@ -65,9 +99,7 @@ public class HelperMethods {
                         detail.collegeID()
                 );
             } catch (Exception e) {
-                // Log the error but don't stop the whole process
-                // since the DB save is already finished.
-                System.err.println("Failed to send event for: " + detail.email());
+                System.err.println("Failed to send email for: " + detail.email() + " Error: " + e.getMessage());
             }
         }
     }

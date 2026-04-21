@@ -26,7 +26,7 @@ public class NotificationController {
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @GetMapping("/unread-count")
-    public Long getUnreadCount() {
+    public Long getUnreadCount() throws Exception {
         //return x++;
         String id = notificationService.getId();
         return notificationService.unReadCount(id);
@@ -34,14 +34,14 @@ public class NotificationController {
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @GetMapping("/latest")
-    public ResponseEntity<List<Notification>> getLatestUnread(Authentication auth) {
+    public ResponseEntity<List<Notification>> getLatestUnread(Authentication auth) throws Exception {
         String id = notificationService.getId();
         return ResponseEntity.ok(notificationService.getNewestUnread(id));
     }
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PutMapping("/mark-as-read")
-    public ResponseEntity<Void> markAllRead() {
+    public ResponseEntity<Void> markAllRead() throws Exception {
 
         String id = notificationService.getId();
         notificationService.markUserNotificationsAsRead(id);

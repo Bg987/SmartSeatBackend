@@ -20,6 +20,7 @@ import java.util.List;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final HelperMethods helper;
 
     @Override
     protected void doFilterInternal(
@@ -36,9 +37,9 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
 
         //  Skip public endpoints
-        if (path.startsWith("/api/auth") ||
+        if ( path.startsWith("/api/auth/login") ||
                 path.startsWith("/swagger-ui") ||
-                path.startsWith("/v3/api-docs")||
+                path.startsWith("/v3/api-docs") ||
                 path.startsWith("/actuator")) {
 
             filterChain.doFilter(request, response);
@@ -75,9 +76,13 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //  Extract details
-        String id = jwtUtil.extractId(token);
+        String id = null;
+        try {
+            id = String.valueOf((jwtUtil.extractId(token)));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         String role = jwtUtil.extractRole(token);
-
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                         id,

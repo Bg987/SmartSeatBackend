@@ -228,7 +228,7 @@ public class CollegeService {
     }
 
 
-    public RoomsDTO addRooms(RoomsDTO dto) {
+    public RoomsDTO addRooms(RoomsDTO dto) throws Exception {
 
         College college = collegeRepo.findById(helper.getCollegeIdByUserId())
                 .orElseThrow(() -> new RuntimeException("College not found"));
@@ -247,7 +247,7 @@ public class CollegeService {
         return dto;
     }
 
-    public List<String> saveRoomsFromCSV(MultipartFile file) throws IOException {
+    public List<String> saveRoomsFromCSV(MultipartFile file) throws Exception {
         College college = collegeRepo.findById(helper.getCollegeIdByUserId())
                 .orElseThrow(() -> new RuntimeException("College not found"));
 

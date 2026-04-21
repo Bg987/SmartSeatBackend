@@ -47,13 +47,15 @@ public class AuthenticationController {
         }
         catch(BadCredentialsException e){
             return ResponseEntity.status(400).body(new ApiResponse(false, e.getMessage(), null));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
 
     }
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PostMapping("/logout")
-    public ResponseEntity<String> logout(HttpServletResponse response){
+    public ResponseEntity<String> logout(HttpServletResponse response) throws Exception {
 
         cache.deleteCache();
         return AuthService.logout(response);
@@ -61,7 +63,7 @@ public class AuthenticationController {
 
     @PreAuthorize("hasAnyRole('university', 'college', 'student')")
     @PatchMapping("/changePassword")
-    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, Authentication authentication){
+    public ResponseEntity<?> changePassword(@Valid @RequestBody PasswordDTO passworddata, Authentication authentication) throws Exception {
         return AuthService.passwordchange(passworddata,authentication);
     }
 }

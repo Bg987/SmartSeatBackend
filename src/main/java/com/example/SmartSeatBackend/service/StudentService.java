@@ -32,11 +32,10 @@ public class StudentService {
     private FaceApiService faceApiService; // The service we created earlier
 
 
-    public Students fetchStudent(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // 2. Extract the Principal (which is "752" in your case)
-        String userId = auth.getPrincipal().toString();
-        return studentRepo.findByStudentId(Long.valueOf(userId));
+    public Students fetchStudent() throws Exception {
+
+        String id = helper.getId();
+        return studentRepo.findByStudentId(Long.valueOf(id));
     }
     //insert url into databse
     public ResponseEntity<?> insertStudentImage(MultipartFile file, Long StudentId) throws  IOException{
@@ -105,7 +104,7 @@ public class StudentService {
 
 
     //fetch enrolment number from studentId stored in jwt token
-    public String getEnrNumber(){
+    public String getEnrNumber() throws Exception {
         return helper.getEnrNumberIdByUserId();
     }
 

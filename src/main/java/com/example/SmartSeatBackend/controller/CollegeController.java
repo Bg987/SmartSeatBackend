@@ -49,7 +49,7 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @GetMapping("/students")
-    public List<Students> getStudentsByCollege() {
+    public List<Students> getStudentsByCollege() throws Exception {
         Long collegeId = helper.getCollegeIdByUserId();
         return  colService.getStudents(collegeId);
     }
@@ -57,7 +57,7 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/addStudents")
-    public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) {
+    public ResponseEntity<String> addStudent(@Valid @RequestBody StudentsDTO studentDTO) throws Exception {
         Long collegeID = helper.getCollegeIdByUserId();
 
         // Service handles all logic and throws errors if validation fails
@@ -71,7 +71,7 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @PostMapping("/uploadStudents")
-    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<?> uploadStudents(@RequestParam("file") MultipartFile file) throws Exception {
         Long collegeID = helper.getCollegeIdByUserId();
         try {
             // If any row fails, this line throws an exception and nothing below it runs
@@ -103,7 +103,7 @@ public class CollegeController {
     @GetMapping("/rooms")
     public Page<Rooms> getRoomsByCollege(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size) {
+            @RequestParam(defaultValue = "5") int size) throws Exception {
 
         Long collegeId = helper.getCollegeIdByUserId();
         Pageable pageable = PageRequest.of(page, size);
@@ -171,8 +171,7 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getRoomInfo/{roomId}")
-    public Map<String, Object>  getRoomNumberAndCapacity(@PathVariable Long roomId)
-    {
+    public Map<String, Object>  getRoomNumberAndCapacity(@PathVariable Long roomId) throws Exception {
         Long collegeId = helper.getCollegeIdByUserId();
         return roomRepo.findCapacityAndRoomnumber(collegeId,roomId);
     }
@@ -180,7 +179,7 @@ public class CollegeController {
   //get details of exam for particuler college whose students appear in it which is incomplete
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getExamDetails")
-    public ResponseEntity<List<Map<String, Object>>> getExamDetails() {
+    public ResponseEntity<List<Map<String, Object>>> getExamDetails() throws Exception {
 
         Long collegeId = helper.getCollegeIdByUserId();
 
@@ -194,7 +193,7 @@ public class CollegeController {
     //fetch complete exams for college for analysis
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getCompletedExamDetails")
-    public ResponseEntity<List<Map<String, Object>>> getCompleteExamDetails() {
+    public ResponseEntity<List<Map<String, Object>>> getCompleteExamDetails() throws Exception {
 
         Long collegeId = helper.getCollegeIdByUserId();
 
@@ -207,8 +206,7 @@ public class CollegeController {
 
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getRoomInfoOfCollege")
-    public ResponseEntity<?>  getRoomInfoOfCollege()
-    {
+    public ResponseEntity<?>  getRoomInfoOfCollege() throws Exception {
         Long collegeId = helper.getCollegeIdByUserId();
         List<Rooms> response = roomRepo.findByCollegeId(collegeId);
         if(response.isEmpty()){
@@ -221,7 +219,7 @@ public class CollegeController {
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getSeatBYCollege/{exam_id}")
     public ResponseEntity<List<GetSeatByCollege>> getSeatByCollege(
-            @PathVariable Long exam_id) {
+            @PathVariable Long exam_id) throws Exception {
 
         //fetch college id based on userid stored in jwt cookie
         Long college_id= helper.getCollegeIdByUserId();

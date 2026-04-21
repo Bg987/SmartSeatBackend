@@ -33,7 +33,7 @@ public class StudentController {
 
     @PreAuthorize("hasRole('student')")
     @GetMapping("/getStudentDetails")
-    public  ResponseEntity<?> getStudentDetails(){
+    public  ResponseEntity<?> getStudentDetails() throws Exception {
         Students student = stuService.fetchStudent();
         if(student==null){
             return ResponseEntity.status(404).body("student not found");
@@ -53,7 +53,7 @@ public class StudentController {
     //fetch exam details which render in UI in case of show seat allocation for particler exam
     @PreAuthorize("hasRole('student')")
     @GetMapping("/getStudentExamDetails/{examId}")
-    public  ResponseEntity<?> getStudentExamDetails(@PathVariable Long examId){
+    public  ResponseEntity<?> getStudentExamDetails(@PathVariable Long examId) throws Exception {
         if(examId==null){
             ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("examId not found");
@@ -72,7 +72,7 @@ public class StudentController {
     //fetch exams whose allocation is done but not complete
     @PreAuthorize("hasRole('student')")
     @GetMapping("/getStudentIncomplteExam")
-    public  ResponseEntity<?> getStudentIncomplteExam(){
+    public  ResponseEntity<?> getStudentIncomplteExam() throws Exception {
 
 
         String enrNumber = stuService.getEnrNumber();
@@ -90,7 +90,7 @@ public class StudentController {
     //opposite of above api
     @PreAuthorize("hasRole('student')")
     @GetMapping("/getStudentComplteExam")
-    public  ResponseEntity<?> getStudentComplteExam(){
+    public  ResponseEntity<?> getStudentComplteExam() throws Exception {
 
 
         String enrNumber = stuService.getEnrNumber();
@@ -150,6 +150,8 @@ public class StudentController {
         }
         catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
