@@ -71,6 +71,8 @@ spring:
           physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         format_sql: true
 app:
+  security:
+    aes-seed: ${secret}
   cloudinary:
     url: ${CLOUDINARY_URL}
 logging:

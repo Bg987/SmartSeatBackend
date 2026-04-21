@@ -6,6 +6,8 @@ import com.example.SmartSeatBackend.repository.StudentRepository;
 import com.example.SmartSeatBackend.service.MessageService;
 import com.example.SmartSeatBackend.service.UniversityService;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,12 +15,13 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
 import java.util.List;
 
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class HelperMethods {
 
     private final CollegeRepository collegeRepo;
@@ -27,13 +30,14 @@ public class HelperMethods {
 
     private static final String ALGORITHM = "AES";
     // This long string will now be hashed to exactly 32 bytes (256 bits)
-    private static final String AES_KEY_SEED = "my_super_secret_kdsvnjdnigdgudgyubduhygbyugdubguhdgdbuhgbudgbudbgudbgudbgggbuegububgyeubgebutebuudbgbdgbdbghdibgvinhgvuirnvyurnyunhtrnhyurnhyur";
+    @Value("${app.security.aes-seed}")
+    private String aesKeySeed;
 
     /**
      * Internal helper to generate a valid 32-byte AES key from the long seed string.
      */
     private SecretKeySpec getSecretKey() throws Exception {
-        byte[] key = AES_KEY_SEED.getBytes("UTF-8");
+        byte[] key = aesKeySeed.getBytes(StandardCharsets.UTF_8);
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
         key = sha.digest(key); // This results in exactly 32 bytes
         return new SecretKeySpec(key, ALGORITHM);
