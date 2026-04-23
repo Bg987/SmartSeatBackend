@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.service;
 
+import com.example.SmartSeatBackend.DTO.ExamSlotProjection;
 import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
@@ -31,7 +32,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -351,4 +356,67 @@ public class CollegeService {
         return student;
     }
 
+    /**
+     * Fetches only the physical room locations for a specific time slot
+     */
+    public List<Map<String, Object>> getRoomsByTimeSlot(String dateStr, String timeStr) throws Exception {
+        Long collegeId = helper.getCollegeIdByUserId();
+
+        // Parsing the strings from request into Java 8 Date/Time objects
+        LocalDate date = LocalDate.parse(dateStr);
+        LocalTime time = LocalTime.parse(timeStr);
+
+        List<Map<String, Object>> rooms  = roomsRepo.findOccupiedRoomsBySlot(date, time, collegeId);
+
+        return rooms != null ? rooms : Collections.emptyList();
+    }
+
+    public List<Map<String, Object>> getGroupedExamDetails() throws Exception {
+        Long collegeId = helper.getCollegeIdByUserId();
+
+        ZoneId istZone = ZoneId.of("Asia/Kolkata");
+        LocalDate today = LocalDate.now(istZone);
+        LocalDate tenDaysHence = today.plusDays(10);
+
+        // 1. Fetch data using the Projection from Repo
+        List<ExamSlotProjection> result = timetableRepo.findUpcomingExams(
+                collegeId,
+                false,
+                today,
+                tenDaysHence
+        );
+
+        if (result.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 2. Group by Date + Time string
+        Map<String, List<ExamSlotProjection>> groupedBySlot = result.stream()
+                .collect(Collectors.groupingBy(res ->
+                        res.getExamDate().toString() + " " + res.getStartTime().toString()
+                ));
+
+        // 3. Transform into the final List of Slots
+        return groupedBySlot.entrySet().stream()
+                .map(entry -> {
+                    Map<String, Object> slot = new LinkedHashMap<>();
+                    List<ExamSlotProjection> exams = entry.getValue();
+
+                    slot.put("examDate", exams.get(0).getExamDate());
+                    slot.put("startTime", exams.get(0).getStartTime());
+
+                    // Map projection list to a list of simple maps for the "exams" field
+                    List<Map<String, Object>> examList = exams.stream().map(e -> {
+                        Map<String, Object> info = new HashMap<>();
+                        info.put("id", e.getId());
+                        info.put("examName", e.getExamName());
+                        return info;
+                    }).collect(Collectors.toList());
+
+                    slot.put("exams", examList);
+                    return slot;
+                })
+                .sorted(Comparator.comparing(m -> m.get("examDate").toString()))
+                .collect(Collectors.toList());
+    }
 }

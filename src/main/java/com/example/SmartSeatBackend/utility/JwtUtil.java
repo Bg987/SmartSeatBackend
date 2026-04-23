@@ -16,7 +16,7 @@ public class JwtUtil {
 
     private final SecretKey key;
     private final HelperMethods helper;
-    // Spring injects "sec" right here, safely
+
     public JwtUtil(@Value("ZmFrZVNlY3JldEtleUZha2VTZWNyZXRLZXlGYWtlU2VjcmV0") String sec, HelperMethods helper) {
         this.key = Keys.hmacShaKeyFor(sec.getBytes(StandardCharsets.UTF_8));
         this.helper = helper;

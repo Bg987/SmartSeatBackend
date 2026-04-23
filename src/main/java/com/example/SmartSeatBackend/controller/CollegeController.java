@@ -1,6 +1,7 @@
 package com.example.SmartSeatBackend.controller;
 
 
+import com.example.SmartSeatBackend.DTO.ExamSlotProjection;
 import com.example.SmartSeatBackend.DTO.GetSeatByCollege;
 import com.example.SmartSeatBackend.DTO.RoomsDTO;
 import com.example.SmartSeatBackend.DTO.StudentsDTO;
@@ -26,9 +27,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @RestController
@@ -179,15 +180,40 @@ public class CollegeController {
   //get details of exam for particuler college whose students appear in it which is incomplete
     @PreAuthorize("hasRole('college')")
     @GetMapping("/getExamDetails")
-    public ResponseEntity<List<Map<String, Object>>> getExamDetails() throws Exception {
+    public ResponseEntity<List<Map<String, Object>>> getExamDetails() {
+        try {
+            List<Map<String, Object>> result = colService.getGroupedExamDetails();
 
-        Long collegeId = helper.getCollegeIdByUserId();
+            if (result.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
 
-        List<Map<String, Object>> result = timetableRepo.findExamNamesByCollegeAndStatus(collegeId,false);
-        if (result.isEmpty()) {
-            return ResponseEntity.noContent().build(); // Returns 204 if no exams found
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            // Log the error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
-        return ResponseEntity.ok(result);
+    }
+
+
+    //fetch room for particuler date and time for college handle multiple exam at same date and time
+    @PreAuthorize("hasRole('college')")
+    @GetMapping("/getRoomsBySlot")
+    public ResponseEntity<List<Map<String, Object>>> getRoomsBySlot(
+            @RequestParam("date") String date,
+            @RequestParam("time") String time) {
+        try {
+            List<Map<String, Object>> occupiedRooms = colService.getRoomsByTimeSlot(date, time);
+
+            if (occupiedRooms.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+
+            return ResponseEntity.ok(occupiedRooms);
+        } catch (Exception e) {
+            // Log error for debugging
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     //fetch complete exams for college for analysis

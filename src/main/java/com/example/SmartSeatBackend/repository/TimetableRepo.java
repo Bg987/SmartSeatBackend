@@ -1,5 +1,6 @@
 package com.example.SmartSeatBackend.repository;
 
+import com.example.SmartSeatBackend.DTO.ExamSlotProjection;
 import com.example.SmartSeatBackend.entity.Timetable;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -70,6 +71,27 @@ WHERE t.id = :timeTableId
     List<Map<String, Object>> findExamNamesByCollegeAndStatus(
             @Param("collegeId") Long collegeId,
             @Param("status") boolean status
+    );
+
+    @Query(value = """
+        SELECT DISTINCT 
+            t.timetable_id AS id, 
+            CONCAT(t.branch, ' - Sem ', t.semester, ' - ', t.subjectid, ' - ', t.exam_date) AS examName,
+            t.exam_date AS examDate,
+            t.start_time AS startTime
+        FROM seat_allocation s 
+        JOIN time_table t ON s.timetable_id = t.timetable_id
+        WHERE s.college_id = :collegeId 
+          AND t.is_allocated = true 
+          AND t.completed = :status
+          AND t.exam_date BETWEEN :today AND :tenDaysHence
+        ORDER BY t.exam_date ASC, t.start_time ASC
+        """, nativeQuery = true)
+    List<ExamSlotProjection> findUpcomingExams(
+            @Param("collegeId") Long collegeId,
+            @Param("status") boolean status,
+            @Param("today") LocalDate today,
+            @Param("tenDaysHence") LocalDate tenDaysHence
     );
 
     // Check if a Branch/Semester group is already busy on a specific date/time

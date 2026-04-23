@@ -29,13 +29,10 @@ public class HelperMethods {
     private final MessageService msgService;
 
     private static final String ALGORITHM = "AES";
-    // This long string will now be hashed to exactly 32 bytes (256 bits)
+
     @Value("${app.security.aes-seed}")
     private String aesKeySeed;
 
-    /**
-     * Internal helper to generate a valid 32-byte AES key from the long seed string.
-     */
     private SecretKeySpec getSecretKey() throws Exception {
         byte[] key = aesKeySeed.getBytes(StandardCharsets.UTF_8);
         MessageDigest sha = MessageDigest.getInstance("SHA-256");
