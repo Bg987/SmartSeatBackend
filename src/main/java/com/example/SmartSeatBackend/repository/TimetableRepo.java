@@ -84,14 +84,11 @@ WHERE t.id = :timeTableId
         WHERE s.college_id = :collegeId 
           AND t.is_allocated = true 
           AND t.completed = :status
-          AND t.exam_date BETWEEN :today AND :tenDaysHence
         ORDER BY t.exam_date ASC, t.start_time ASC
         """, nativeQuery = true)
     List<ExamSlotProjection> findUpcomingExams(
             @Param("collegeId") Long collegeId,
-            @Param("status") boolean status,
-            @Param("today") LocalDate today,
-            @Param("tenDaysHence") LocalDate tenDaysHence
+            @Param("status") boolean status
     );
 
     // Check if a Branch/Semester group is already busy on a specific date/time

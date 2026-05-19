@@ -376,14 +376,12 @@ public class CollegeService {
 
         ZoneId istZone = ZoneId.of("Asia/Kolkata");
         LocalDate today = LocalDate.now(istZone);
-        LocalDate tenDaysHence = today.plusDays(10);
+        //LocalDate tenDaysHence = today.plusDays(10);
 
         // 1. Fetch data using the Projection from Repo
         List<ExamSlotProjection> result = timetableRepo.findUpcomingExams(
                 collegeId,
-                false,
-                today,
-                tenDaysHence
+                false
         );
 
         if (result.isEmpty()) {
